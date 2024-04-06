@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import Hero from "../components/Hero";
 import navbar from "../components/Navbar";
+import CoachPage from "./coach_page/page"
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata = {
@@ -15,7 +16,8 @@ export default function RootLayout({ children }) {
     <html lang="en">
       <body className={inter.className}>
           {/* <Navbar/> */}
-          <Hero />
+          {/* <Hero /> */}
+          { <CoachPage /> }
       {children}</body>
     </html>
   );

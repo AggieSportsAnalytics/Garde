@@ -50,21 +50,21 @@ const navbar = () => {
         <div>
           <ul className="hidden items-center md:flex">
             <Link href="/#features">
-              <li className="ml-10 text-md text-[#6e7273] hover:text-[#ac4bac] transition-colors duration-500">
+              <li className="ml-10 text-md text-[#6e7273] hover:text-[#5bb1d5] transition-colors duration-500">
                  Features
               </li>
             </Link>
             <Link href="/#projects">
-              <li className="ml-10 text-md text-[#6e7273] hover:text-[#ac4bac] transition-colors duration-500">
+              <li className="ml-10 text-md text-[#6e7273] hover:text-[#5bb1d5] transition-colors duration-500">
                  About
               </li>
             </Link>
             <Link href="/#contact">
-              <li className="ml-10 text-md text-[#6e7273] hover:text-[#ac4bac] transition-colors duration-500">
+              <li className="ml-10 text-md text-[#6e7273] hover:text-[#5bb1d5] transition-colors duration-500">
                  Contact
               </li>
             </Link>
-            <button class="login ml-10 hover:text-[#ac4bac] transition-colors duration-500 text-md">Login</button>
+            <button class="login ml-10 hover:text-[#5bb1d5] transition-colors duration-500 text-md">Login</button>
             <Link href='/sign-up'>
               <button class="button ml-3"><span class="button-content font-bold">Get Started</span></button>
             </Link>

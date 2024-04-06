@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import "../app/globals.css";
 
-const Navbar = () => {
+const navbar = () => {
   const [nav, setNav] = useState(false);
   const [shadow, setShadow] = useState(false);
   const hamburgerRef = useRef(null);
@@ -37,13 +37,14 @@ const Navbar = () => {
       }
     >
       <div className="flex justify-between items-center w-full h-full px-2 2xl:px-16">
-        <Link href="/#home" className="hover:animate-spin duration-500">
+        <Link href="/#home">
           <Image
             src="/images/logo.png"
             alt="logo"
-            width={30}
-            height={30}
+            width={45}
+            height={45}
             quality={100}
+            className="rounded-full hover:animate-pulse"
           />
         </Link>
         <div>
@@ -64,7 +65,9 @@ const Navbar = () => {
               </li>
             </Link>
             <button class="login ml-10 hover:text-[#ac4bac] transition-colors duration-500 text-md">Login</button>
-            <button class="button ml-3"><span class="button-content font-bold">Get Started</span></button>
+            <Link href='/sign-up'>
+              <button class="button ml-3"><span class="button-content font-bold">Get Started</span></button>
+            </Link>
           </ul>
           <div className="md:hidden flex items-center justify-center">
             <label className="hamburger">
@@ -128,4 +131,4 @@ const Navbar = () => {
   );
 };
 
-export default Navbar;
+export default navbar;

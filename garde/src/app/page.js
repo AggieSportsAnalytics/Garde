@@ -18,5 +18,12 @@ export default function Home() {
             <Contact />
             <Footer />
         </div>
+     )
+    /*
+    return ( 
+        <div className="">
+            <Fencer_Page />
+        </div>
     )
+    */
 }

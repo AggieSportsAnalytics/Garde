@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Stream_Vid from '../../components/Stream_Vid.jsx';
 import Timer from '../../components/Timer.jsx';
 import AI_Feedback from '../../components/AI_Feedback.jsx';
@@ -7,43 +7,53 @@ import Fencer_Stats from '../../components/Fencer_Stats.jsx';
 import Instruction from '../../components/Instruction.jsx';
 
 export default function Fencer_Page() {
+  const [videoSource, setVideoSource] = useState('');
+
+  const handleVideoChange = (newVideoSource) => {
+    setVideoSource(newVideoSource);
+  };
+
   return (
-    <div className="flex flex-col h-screen font-sans bg-gray-100">
+    <div className="flex flex-col h-screen font-sans bg-gray-900 text-white">
       {/* Navbar */}
-      <div className="flex items-center justify-between p-4 bg-white border-b border-gray-200">
-        {/* Back Button */}
-        <button className="bg-gray-200 text-gray-800 py-2 px-4 rounded text-lg font-semibold hover:bg-gray-300">
-          &#8592; Back 
+      <div className="flex items-center justify-between p-4 bg-black border-b border-gray-700">
+        {/* Left Side - Back Button */}
+        <button className="bg-gray-700 text-white py-2 px-4 rounded text-lg font-semibold hover:bg-gray-600">
+          &#8592;
         </button>
-        <span className="text-lg font-semibold flex-grow text-center">Fencer Name</span>
-        <div style={{width: '68px'}}></div>
+        {/* Center - Fencer Name */}
+        <span className="text-lg font-semibold flex-1 text-center">Fencer Name</span>
+        {/* Right Side - Stream Vid Buttons */}
+        <div className="absolute right-4 top-10">
+          <Stream_Vid onVideoChange={handleVideoChange} />
+        </div>
       </div>
 
       {/* Main Content */}
-      <div className="grid grid-cols-3 flex-grow">
-        {/* Left Section - Videos */}
-        <div className="flex flex-col p-5 bg-white">
-          <div className="mb-5">
-            <Stream_Vid />
+      <div className="flex flex-grow overflow-hidden">
+        {/* Column 1 - Feedback and Stats */}
+        <div className="w-1/3 bg-gray-800 p-4 flex flex-col space-y-4 border-r border-gray-700" /* Added a right border and space between children */>
+          <div className="box-border h-full p-4 border-2 border-gray-700 rounded-lg shadow-lg" /* Added box styling */>
+            <AI_Feedback />
+          </div>
+          <div className="box-border h-full p-4 border-2 border-gray-700 rounded-lg shadow-lg" /* Added box styling */>
+            <Fencer_Stats />
           </div>
         </div>
 
-        {/* Middle Section - Timer and Instructions */}
-        <div className="flex flex-col items-center p-5 bg-white">
-          <Timer />
-          <Instruction />
-          <Fencer_Canvas />
-        </div>
-
-        {/* Right Section - Feedback and Stats */}
-        <div className="flex flex-col p-5 bg-white">
-          <h3 className="text-center text-lg mb-5">Feedback</h3>
-          <AI_Feedback />
-
-          <Fencer_Stats />
+        {/* Column 2 - Timer, Instruction, Canvas */}
+        <div className="w-2/3 bg-gray-800 flex flex-col">
+          <div className="mt-9">
+            <Timer />
+          </div>
+          <div className="my-5">
+            <Instruction />
+          </div>
+          <div className="flex-grow">
+            <Fencer_Canvas videoSource={videoSource} />
+          </div>
         </div>
       </div>
     </div>
   );
 }
-

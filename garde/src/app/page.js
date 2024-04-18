@@ -6,9 +6,19 @@ import About from "../components/About";
 import Fencer_Page from "./fencer_page/page";
 
 export default function Home() {
-    return (    
-            <div className="">
-                <Fencer_Page />
-            </div>   
+    /*return (
+        <div className="">
+            <Navbar />
+            <Hero />
+            <About />
+            <Features />
+            <Contact />
+            <Footer />
+        </div>
+    )*/
+    return ( 
+        <div className="">
+            <Fencer_Page />
+        </div>
     )
 }

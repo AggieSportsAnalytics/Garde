@@ -266,3 +266,37 @@ function TopBar() {
         </div>
     );
 }
+
+// {
+//   "userID": "",
+//   "sessions": [
+//     {
+//       "sessionID": "",
+//       "videos": [
+//         {
+//           "videoID": "",
+//           "userAngles": [
+//             {
+//               "time": "",
+//               "name": "",
+//               "elbow_left": "",
+//               "hip_left": "",
+//               "knee_left": "",
+//               "elbow_right": "",
+//               "hip_right": "",
+//               "knee_right": ""
+//             }
+//           ]
+//         }
+//       ],
+//       "accuracy": ""
+//     }
+//   ],
+//   "cumulativeAccuracy": "",
+//   "averageTimes": {
+//     "Advance": "",
+//     "Lunge": "",
+//     "En-Guarde": "",
+//     "Retreat": ""
+//   }
+// }

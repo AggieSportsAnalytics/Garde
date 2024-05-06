@@ -1,7 +1,10 @@
+"use client";
 import React, { useState } from 'react';
 import Stream_Vid from '../../components/Stream_Vid.jsx';
+import Link from 'next/link.js';
 import Timer from '../../components/Timer.jsx';
 import AI_Feedback from '../../components/AI_Feedback.jsx';
+import { UserButton, auth} from '@clerk/nextjs';
 import Fencer_Canvas from '../../components/Fencer_Canvas.jsx';
 import Fencer_Stats from '../../components/Fencer_Stats.jsx';
 import Instruction from '../../components/Instruction.jsx';
@@ -18,11 +21,13 @@ export default function Fencer_Page() {
       {/* Navbar */}
       <div className="flex items-center justify-between p-4 bg-black border-b border-gray-700">
         {/* Left Side - Back Button */}
-        <button className="bg-gray-700 text-white py-2 px-4 rounded text-lg font-semibold hover:bg-gray-600">
+        <Link href="/">
+          <button className="bg-gray-700 text-white py-2 px-4 rounded text-lg font-semibold hover:bg-gray-600">
           &#8592;
-        </button>
+          </button>
+        </Link>
         {/* Center - Fencer Name */}
-        <span className="text-lg font-semibold flex-1 text-center">Fencer Name</span>
+        <UserButton />
         {/* Right Side - Stream Vid Buttons */}
         <div className="absolute right-4 top-10">
           <Stream_Vid onVideoChange={handleVideoChange} />

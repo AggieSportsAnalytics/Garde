@@ -7,6 +7,7 @@ import 'chart.js/auto';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
+import Link from "next/link";
 
 export default function CoachPage() {
     return (
@@ -240,9 +241,11 @@ function TopBar() {
         <div className="text-white">
             <header className="flex items-center justify-between border-b">
                 <button onClick={doSomething} className="cursor-pointer duration-200 hover:scale-125 active:scale-100" title="Go Back">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="50px" height="50px" viewBox="0 0 24 24" className="stroke-blue-300">
+                    <Link href="/">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="50px" height="50px" viewBox="0 0 24 24" className="stroke-blue-300">
                     <path strokeLinejoin="round" strokeLinecap="round" strokeWidth="1.5" d="M11 6L5 12M5 12L11 18M5 12H19"></path>
                     </svg>
+                    </Link>
                 </button>
                 <span className="flex-grow text-center text-3xl">{name}
                     <span onClick={handleClick} className="cursor-pointer"> &#9660;</span>

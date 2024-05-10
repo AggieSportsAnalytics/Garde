@@ -9,6 +9,7 @@ import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 
 export default function CoachPage() {
+
     return (
         <div>
             <TopBar />
@@ -267,36 +268,52 @@ function TopBar() {
     );
 }
 
-// {
-//   "userID": "",
-//   "sessions": [
-//     {
-//       "sessionID": "",
-//       "videos": [
-//         {
-//           "videoID": "",
-//           "userAngles": [
-//             {
-//               "time": "",
-//               "name": "",
-//               "elbow_left": "",
-//               "hip_left": "",
-//               "knee_left": "",
-//               "elbow_right": "",
-//               "hip_right": "",
-//               "knee_right": ""
-//             }
-//           ]
-//         }
-//       ],
-//       "accuracy": ""
-//     }
-//   ],
-//   "cumulativeAccuracy": "",
-//   "averageTimes": {
-//     "Advance": "",
-//     "Lunge": "",
-//     "En-Guarde": "",
-//     "Retreat": ""
-//   }
-// }
+
+/*
+**New Schema**
+
+coaches:
+{
+  "_id": coach id,
+  "name": string,
+  "fencers": [ array of fencer ids ]
+}
+
+fencers:
+{
+  "_id": fencer id,
+  "name": string,
+  "sessions": [ array of session ids ],
+  "cumulativeAccuracy": number,
+  "averageTimes": {
+    "advance": number,
+    "lunge": number,
+    "enGuarde": number,
+    "retreat": number
+  }
+}
+
+sessions:
+{
+  "_id": session id,
+  "videos": [ array of video ids ],
+  accuracy: number
+}
+
+videos:
+{
+  "_id": video id,
+  "userAngles": [
+    {
+      "time": number,
+      "name": string,
+      "elbowLeft": number,
+      "hipLeft": number,
+      "kneeLeft": number,
+      "elbowRight": number,
+      "hipRight": number,
+      "kneeRight": number
+    }
+  ],
+}
+*/

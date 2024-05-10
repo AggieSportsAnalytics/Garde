@@ -1,3 +1,5 @@
+'use client'
+
 import React, { useState } from 'react';
 import Stream_Vid from '../../components/Stream_Vid.jsx';
 import Timer from '../../components/Timer.jsx';

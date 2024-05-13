@@ -16,7 +16,8 @@ export default function Fencer_Page() {
 
   useEffect(() => {
     const fetchFencer = async () => {
-      await getFencer(user.id, user.fullName, "fencer", setFencer);
+      const f = await getFencer(user.id, user.fullName, "fencer", setFencer);
+      setFencer(f);
     };
   
     if (user && user.id && user.fullName) {
@@ -78,7 +79,7 @@ export default function Fencer_Page() {
   );
 }
 
-const getFencer = async (userId, name, type, setFencer) => {
+const getFencer = async (userId, name, type) => {
   const response = await fetch('/api/user', {
     method: 'POST',
     headers: {
@@ -89,5 +90,5 @@ const getFencer = async (userId, name, type, setFencer) => {
 
   const result = await response.json();
   
-  setFencer(result.document);
+  // setFencer(result.document);
 };

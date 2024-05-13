@@ -8,8 +8,10 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsi
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import { useUser } from '@clerk/nextjs';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 
-const getCoach = async (userId, name, type, setCoach) => {
+const getCoach = async (userId, name, type) => {
   const response = await fetch('/api/user', {
     method: 'POST',
     headers: {
@@ -20,16 +22,22 @@ const getCoach = async (userId, name, type, setCoach) => {
 
   const result = await response.json();
   
-  setCoach(result.document);
+  // setCoach(result.document);
+
+  return result.document;
 };
 
 export default function CoachPage() {
     const [coach, setCoach] = useState({});
+    const [fencers, setFencers] = useState([{}]);
+    const [currFencer, setCurrFencer] = useState({});
     const { user } = useUser();
 
     useEffect(() => {
       const fetchCoach = async () => {
-        await getCoach(user.id, user.fullName, "coach", setCoach);
+        const c = await getCoach(user.id, user.fullName, "coach");
+        setCoach(c);
+        // console.log(c);
       };
     
       if (user && user.id && user.fullName) {
@@ -39,50 +47,39 @@ export default function CoachPage() {
 
     return (
         <div>
-            <TopBar />
-            <Feedback />
-            <Analytics />
+            <TopBar coach={coach} fencers={fencers} setFencers={setFencers} setCurrFencer={setCurrFencer} />
+            <Feedback fencer={currFencer}  />
+            <Analytics fencer={currFencer} />
+            {/* {coach && fencers && currFencer && (
+              <div className="text-white">
+                Coach {coach.name}: {coach._id}
+                {fencers.map((fencer) => (
+                  <div>Fencer {fencer.name}: {fencer._id}</div>
+                ))}
+                current {currFencer.name}: {currFencer._id}
+              </div>
+            )} */}
         </div>
     );
 }
 
-function Feedback() {
+function Feedback({ fencer }) {
     return (
         <div className="flex flex-row w-full pt-10 text-white">
-            <Videos />
-            <Editor />
+            <Videos fencer={fencer}/>
+            <Editor fencer={fencer}/>
         </div>
     );
 }
 
-function Videos() {
-    const videos = [
-      {
-        id: 1,
-        thumbnail: '/fencing-thumbnail.png',
-        videoUrl: '/fencing-demo.mov',
-      },
-      {
-        id: 2,
-        thumbnail: '/fencing-thumbnail.png',
-        videoUrl: '/fencing-demo.mov',
-      },
-      {
-        id: 3,
-        thumbnail: '/fencing-thumbnail.png',
-        videoUrl: '/fencing-demo.mov',
-      },
-      {
-        id: 4,
-        thumbnail: '/fencing-thumbnail.png',
-        videoUrl: '/fencing-demo.mov',
-      },
-      {
-        id: 5,
-        thumbnail: '/fencing-thumbnail.png',
-        videoUrl: '/fencing-demo.mov',
-      },
-    ];
+function Videos({ fencer }) {
+    const [videos, setVideos] = useState([]);
+
+    useEffect(() => {
+      if(fencer && fencer.sessions && fencer.sessions.length > 0) {
+        console.log("User has videos");
+      }
+    }, [fencer]);
 
     const [selectedVideo, setSelectedVideo] = useState(null);
 
@@ -106,7 +103,7 @@ function Videos() {
     
     return (
       <div className="video-thumbnails border border-white w-1/2 h-96 ml-10 rounded-xl flex flex-wrap overflow-y-auto">
-        {videos.map(video => (
+        {videos.length > 0 && videos.map(video => (
           <div key={video.id} className="thumbnail w-1/4 p-1">
             <img
               src={video.thumbnail}
@@ -120,17 +117,48 @@ function Videos() {
     );
 }
 
-function Editor() {
+function Editor({ fencer }) {
+  const [content, setContent] = useState('Enter feedback');
+
   const editor = useEditor({
     extensions: [
       StarterKit,
     ],
-    content: 'Enter feedback',
+    content: content,
+    onUpdate: ({ editor }) => {
+      setContent(editor.getHTML());
+    }
   });
+  
+  const exportPDF = async (content) => {
+    const container = document.createElement('div');
+    container.innerHTML = content;
+    document.body.appendChild(container);
 
-  const handleSubmit = () => {
+    const canvas = await html2canvas(container);
+    const data = canvas.toDataURL('image/png');
+
+    let pdf = new jsPDF({
+        orientation: 'portrait',
+    });
+
+    const imgProps = pdf.getImageProperties(data);
+    const pdfWidth = pdf.internal.pageSize.getWidth();
+    const horizontalMargin = 10;
+    const availableWidth = pdfWidth - 2 * horizontalMargin;
+    const pdfHeight = (imgProps.height * availableWidth) / imgProps.width;
+    const verticalMargin = 10;
+
+    pdf.addImage(data, 'PNG', horizontalMargin, verticalMargin, availableWidth, pdfHeight);
+
+    pdf.save('download.pdf');
+
+    document.body.removeChild(container);
+  };
+
+  const handleSubmit = async () => {
+    await exportPDF(content);
     editor.commands.setContent('Enter feedback');
-    console.log("Submitting feedback:", editor.getHTML());
   };
 
   return (
@@ -141,7 +169,7 @@ function Editor() {
           className="mt-4 px-4 py-2 bg-blue-500 hover:bg-blue-700 text-white font-bold rounded"
           onClick={handleSubmit}
         >
-          Submit Feedback
+          Export as PDF
         </button>
       </div>
     </div>
@@ -149,21 +177,39 @@ function Editor() {
 }
 
 
-function Analytics() {
-    const [pieData, setPieData] = useState({ labels: [], values: [] });
+function Analytics({ fencer }) {
+    const [pieData, setPieData] = useState({labels: [], values: []});
     const [lineData, setLineData] = useState([{ name: '', accuracy: 0 }, { name: '', accuracy: 0 }]);
+    const [noData, setNoData] = useState(false);
 
     useEffect(() => {
-        setPieData({ labels: ['Advance', 'Retreat', 'Lunge'], values: [12, 19, 3]});
-        setLineData([{ name: '1', accuracy: 35 }, { name: '2', accuracy: 45 }, { name: '3', accuracy: 30 }, { name: '4', accuracy: 60 }]);
+        const times = fencer.averageTimes;
+        if(times && times.advance && times.lunge && times.enGuarde && times.retreat) {
+          setPieData({ labels: ['Advance', 'Retreat', 'Lunge', 'enGuarde'], values: [times.advance, times.retreat, times.lunge, times.enGuarde]});
+        }
+        else {
+          setNoData(true);
+        }
+        if(fencer && fencer.sessions) {
+            fencer.sessions.map((session, index) => {
+              setLineData(previous => [...previous, {name: index, accuracy: session.accuracy}]);
+            });
+        }
+        else {
+          setNoData(true);
+        }
     }, []);
 
     return (
         <section className="text-white">
             <p className="text-center text-2xl py-10">Analytics</p>
             <div className="flex justify-center items-center space-x-4 w-full">
-                <PieChart data={pieData} />
-                <LineGraph data={lineData} />
+                {noData ? (<p>No fencer data on time in positions & session accuracy</p>) :
+                  <div>
+                    <PieChart data={pieData} />
+                    <LineGraph data={lineData} />
+                  </div>
+                }
             </div>
         </section>
     );
@@ -239,17 +285,27 @@ function LineGraph({ data }) {
     );
 }
 
-
-function TopBar() {
-    const nameList = [
-        "Chris",
-        "Bob",
-        "Steven",
-        "Vikram"
-    ];
-
-    const [name, setName] = useState(nameList[0]);
+function TopBar({ coach, fencers, setFencers, setCurrFencer }) {
+    const [nameList, setNameList] = useState([]);
+    // const [fencers, setFencers] = useState([{}]);
+    const [name, setName] = useState();
     const [isVisible, setIsVisible] = useState(false);
+
+    useEffect(() => {
+      async function fetchFencers() {
+        if (coach && coach.fencers && coach.fencers.length > 0) {
+          const fencerPromises = coach.fencers.map(id => getCoach(id, "", "fencer"));
+          const fencerResults = await Promise.all(fencerPromises);
+          setFencers(fencerResults);
+          // console.log(fencerResults);
+          setNameList(fencerResults.map(fencer => fencer.name));
+          setName(fencerResults[0].name);
+          setCurrFencer(fencerResults[0]);
+        }
+      }
+  
+      fetchFencers();
+    }, [coach]);
 
     const doSomething = () => {
         console.log("something");
@@ -261,6 +317,10 @@ function TopBar() {
 
     const handleNameClick = (selectedName) => {
         setName(selectedName);
+
+        const selectedFencer = fencers.find(fencer => fencer.name === selectedName);
+        setCurrFencer(selectedFencer);
+        
         setIsVisible(false);
     };
 

@@ -7,8 +7,35 @@ import 'chart.js/auto';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
+import { useUser } from '@clerk/nextjs';
+
+const getCoach = async (userId, name, type, setCoach) => {
+  const response = await fetch('/api/user', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({"_id": userId, "name": name, "type": type}),
+  })
+
+  const result = await response.json();
+  
+  setCoach(result.document);
+};
 
 export default function CoachPage() {
+    const [coach, setCoach] = useState({});
+    const { user } = useUser();
+
+    useEffect(() => {
+      const fetchCoach = async () => {
+        await getCoach(user.id, user.fullName, "coach", setCoach);
+      };
+    
+      if (user && user.id && user.fullName) {
+        fetchCoach();
+      }
+    }, [user]);
 
     return (
         <div>

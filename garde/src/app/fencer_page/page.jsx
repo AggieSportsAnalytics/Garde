@@ -1,15 +1,28 @@
 'use client'
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Stream_Vid from '../../components/Stream_Vid.jsx';
 import Timer from '../../components/Timer.jsx';
 import AI_Feedback from '../../components/AI_Feedback.jsx';
 import Fencer_Canvas from '../../components/Fencer_Canvas.jsx';
 import Fencer_Stats from '../../components/Fencer_Stats.jsx';
 import Instruction from '../../components/Instruction.jsx';
+import { useUser } from '@clerk/nextjs';
 
 export default function Fencer_Page() {
   const [videoSource, setVideoSource] = useState('');
+  const [fencer, setFencer] = useState({});
+  const { user } = useUser();
+
+  useEffect(() => {
+    const fetchFencer = async () => {
+      await getFencer(user.id, user.fullName, "fencer", setFencer);
+    };
+  
+    if (user && user.id && user.fullName) {
+      fetchFencer();
+    }
+  }, [user]);
 
   const handleVideoChange = (newVideoSource) => {
     setVideoSource(newVideoSource);
@@ -24,7 +37,7 @@ export default function Fencer_Page() {
           &#8592;
         </button>
         {/* Center - Fencer Name */}
-        <span className="text-lg font-semibold flex-1 text-center">Fencer Name</span>
+        {user && user.fullName && (<span className="text-lg font-semibold flex-1 text-center">{user.fullName}</span>)}
         {/* Right Side - Stream Vid Buttons */}
         <div className="absolute right-4 top-10">
           <Stream_Vid onVideoChange={handleVideoChange} />
@@ -56,6 +69,25 @@ export default function Fencer_Page() {
           </div>
         </div>
       </div>
+      {/* <div>
+        _id: {fencer._id}
+        <br></br>
+        Name: {fencer.name}
+      </div> */}
     </div>
   );
 }
+
+const getFencer = async (userId, name, type, setFencer) => {
+  const response = await fetch('/api/user', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({"_id": userId, "name": name, "type": type}),
+  })
+
+  const result = await response.json();
+  
+  setFencer(result.document);
+};

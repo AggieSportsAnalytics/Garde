@@ -6,7 +6,7 @@ import { ClerkProvider } from '@clerk/nextjs'
 import "./globals.css";
 
 import navbar from "../components/Navbar";
-import CoachPage from "./coach_page/page"
+// import CoachPage from "./coach_page/page"
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata = {

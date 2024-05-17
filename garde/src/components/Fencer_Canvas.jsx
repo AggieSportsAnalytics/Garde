@@ -10,7 +10,7 @@ const WebcamPose = ({ onVideoChange, isRecording, videoSource, runtime = 'mediap
   const webcamRef = useRef(null);
   const canvasRef = useRef(null);
   let intervalId = useRef(null);
-  const minConfidence = 0.5; 
+  const minConfidence = 0.5;
 
   useEffect(() => {
     if (videoRef.current && videoSource) {
@@ -61,15 +61,15 @@ const WebcamPose = ({ onVideoChange, isRecording, videoSource, runtime = 'mediap
   }, [isRecording, videoSource, runtime, modelType]);
 
   return (
-    <div className="flex flex-col items-center space-y-4" style={{ position: "relative", width: 640, height: 480 }}>
-      {isRecording || videoSource ? ( // Adjusted condition to ensure video element is rendered when there is a video source
+    <div className="flex flex-col items-center space-y-4" style={{ position: "relative", width: '100%', maxWidth: '640px', height: 'auto', top: '-40%' }}> 
+      {isRecording || videoSource ? ( 
         <>
           {videoSource ? (
-            <video className="rounded-md" ref={videoRef} style={{ position: "absolute", left: 0, top: 0, width: "100%", height: "100%" }} autoPlay loop muted />
+            <video className="rounded-md" ref={videoRef} style={{ position: "absolute", left: 0, top: 0, width: "100%", height: "auto" }} autoPlay loop muted />
           ) : (
-            <Webcam className="rounded-md" ref={webcamRef} style={{ position: "absolute", left: 0, top: 0, width: "100%", height: "100%" }} />
+            <Webcam className="rounded-md" ref={webcamRef} style={{ position: "absolute", left: 0, top: 0, width: "100%", height: "auto" }} />
           )}
-          <canvas className="rounded-md" ref={canvasRef} style={{ position: "absolute", left: 0, top: 0, width: "100%", height: "100%" }} />
+          <canvas className="rounded-md" ref={canvasRef} style={{ position: "absolute", left: 0, top: 0, width: "100%", height: "auto" }} />
         </>
       ) : null}
     </div>
@@ -83,20 +83,23 @@ export function drawCanvas(pose, videoWidth, videoHeight, canvas, minConfidence)
   ctx.clearRect(0, 0, videoWidth, videoHeight); 
 
   const nodeSize = 10;
-  const selectedKeypoints = [11, 12, 13, 14, 15, 16, 23, 24, 25, 26, 29,30];
+  const selectedKeypoints = [11, 12, 13, 14, 15, 16, 23, 24, 25, 26, 29, 30];
   pose.keypoints.forEach((keypoint, index) => {
     if (selectedKeypoints.includes(index) && keypoint.score >= minConfidence) {
-      const { x, y } = keypoint;
+      let { x, y } = keypoint;
+
+      // Ensure the keypoints stay within the canvas boundaries
+      x = Math.max(0, Math.min(videoWidth, x));
+      y = Math.max(0, Math.min(videoHeight, y));
+
       drawKeypoints(x, y, nodeSize, ctx);
-     // console.log(calculateAngle(pose.keypoints[11], pose.keypoints[13], pose.keypoints[15]));
-     // console.log('Feet angle:', displayFeetDistance(pose.keypoints, ctx, videoWidth));
     }
   });
 
-  drawSkeleton(pose.keypoints, minConfidence, ctx);  
+  drawSkeleton(pose.keypoints, minConfidence, ctx, videoWidth, videoHeight);  
 }
 
-function drawKeypoints(x, y, size, ctx, keypoints) {
+function drawKeypoints(x, y, size, ctx) {
   ctx.beginPath();
   ctx.arc(x, y, size, 0, 2 * Math.PI); 
   ctx.fillStyle = 'black';
@@ -111,18 +114,13 @@ let xDist = 0;
 
 export function calculateSpeed(keypoints) {
   let relevantPts = [11, 12, 13, 14, 15, 16, 23, 24, 25, 26, 27, 28];
-  
-  // let prevPoint = {x: 0, y: 0};
 
   for (let i of relevantPts) {
-    // drawKeypoints(keypoints[i]);
-
-    if (i === 23) { // && !(this.frameCount % 5)) { //??? 
-      timeElapsed = Date.now() - startTime; //???
-      if (timeElapsed > 500) { //Hardcoded to display time after every 500 milliseconds
+    if (i === 23) { 
+      timeElapsed = Date.now() - startTime;
+      if (timeElapsed > 500) {
         xDist = keypoints[i].x - prevPoint.x;
-        currentSpeed = xDist / (timeElapsed/100) //Calculates speed using the formula: distance/time (Time is converted to a tenth of a millisecond so 1000/100 = 10)
-        // console.log(xDist, currentSpeed, timeElapsed);
+        currentSpeed = xDist / (timeElapsed/100);
         startTime = Date.now();
         prevPoint = keypoints[i];
       }
@@ -132,11 +130,11 @@ export function calculateSpeed(keypoints) {
   return {currentSpeed, timeElapsed, xDist}
 }
 
-function drawSkeleton(keypoints, minConfidence, ctx) {
+function drawSkeleton(keypoints, minConfidence, ctx, videoWidth, videoHeight) {
   const connections = {
-    'orange': [[11, 13], [13, 15], [23, 25], [25, 27]], // Left side
-    'aqua': [[12, 14], [14, 16], [24, 26], [26, 28]], // Right side
-    'white': [[11,12], [11, 23], [24, 23], [12, 24]] // Body
+    'orange': [[11, 13], [13, 15], [23, 25], [25, 27]], 
+    'aqua': [[12, 14], [14, 16], [24, 26], [26, 28]], 
+    'white': [[11,12], [11, 23], [24, 23], [12, 24]] 
   };
 
   Object.entries(connections).forEach(([color, pairs]) => {
@@ -145,8 +143,14 @@ function drawSkeleton(keypoints, minConfidence, ctx) {
       const kp2 = keypoints[pair[1]];
       if (kp1 && kp2 && kp1.score >= minConfidence && kp2.score >= minConfidence) {
         ctx.beginPath();
-        ctx.moveTo(kp1.x, kp1.y);
-        ctx.lineTo(kp2.x, kp2.y);
+        ctx.moveTo(
+          Math.max(0, Math.min(videoWidth, kp1.x)), 
+          Math.max(0, Math.min(videoHeight, kp1.y))
+        );
+        ctx.lineTo(
+          Math.max(0, Math.min(videoWidth, kp2.x)), 
+          Math.max(0, Math.min(videoHeight, kp2.y))
+        );
         ctx.strokeStyle = color;
         ctx.lineWidth = 4;
         ctx.stroke();
@@ -162,15 +166,10 @@ function calculateDistance(point1, point2, point3) {
 }
 
 export function calculateAngle(keypoint1, keypoint2, keypoint3) {
-  //Start coordinates
   const x1 = keypoint1.x;
   const y1 = keypoint1.y;
-
-  //Middle coordinates
   const x2 = keypoint2.x;
   const y2 = keypoint2.y;
-
-  //End coordinates
   const x3 = keypoint3.x;
   const y3 = keypoint3.y;
 
@@ -188,16 +187,13 @@ function radiansToDegrees(radianAngles) {
 }
 
 export function displayFeetDistance(keypoints) {
-  const kp1 = keypoints[16];  // left foot
-  const kp2 = keypoints[15];  // right foot
+  const kp1 = keypoints[16];  
+  const kp2 = keypoints[15];  
 
-  // Calculate (horizontal) distance
   const feetDistance = Math.abs(kp1.x - kp2.x);
 
-  // const currentSpeed = 0; // Define currentSpeed here
   let predictedPose = "";
   let absSpeed = Math.abs(currentSpeed)
-  // Hardcoded cutoffs, we might want to tune these
   if (feetDistance > 275) {
     predictedPose = "lunge";
   } else if (feetDistance > 200) {
@@ -207,74 +203,16 @@ export function displayFeetDistance(keypoints) {
       predictedPose = "advance";
     }
   } else {
-    // Distance less than 200px, could be en guarde or part of an advance/retreat
     if (absSpeed > 20) {
-      // Probably advance/retreat
-      if (currentSpeed < -20) { //These values are hardcoded, maybe in the future we could train a Neural Net to gauge out values. Although that will be a VERY challenging task
+      if (currentSpeed < -20) {
         predictedPose = "retreat";
       } else {
         predictedPose = "advance";
       }
     } else {
-      // Probably en guarde
       predictedPose = "en guarde"
     }
   }
 
   return { feetDistance, predictedPose };
 }
-/* function displayFeetDistance(keypoints, ctx, videoWidth) {
-  const kp1 = keypoints[16];  // left foot
-  const kp2 = keypoints[15];  // right foot
-
-  // Calculate (horizontal) distance
-  const feetDistance = Math.abs(kp1.x - kp2.x);
-
-  // Display distance on line between the feet
-  ctx.moveTo(kp1.x, kp1.y);
-  ctx.fillStyle = 'Green';
-  ctx.strokeStyle = 'Green';
-  ctx.lineWidth = 5;
-  ctx.beginPath();
-  ctx.lineTo(kp2.x, kp2.y);
-  ctx.stroke();
-
-  const fontsize = 20;
-  const fontface = 'roboto';
-  const lineHeight = fontsize * 1.1;
-  ctx.font = "bold " + fontsize + 'px ' + fontface;
-  const distanceText = "" + feetDistance.toFixed(2);
-
-  const x = (kp1.x + kp2.x)/2
-  const y = (kp1.y + kp2.y)/2
-
-  let textWidth = ctx.measureText(distanceText).width;
-  ctx.textBaseline = 'top';
-  ctx.textAlign = 'left';
-  ctx.fillStyle = 'Green';
-  ctx.fillRect(x, y, textWidth, lineHeight);
-  ctx.fillStyle = 'Black';
-  ctx.fillText(distanceText, x, y);
-  const currentSpeed = 0;
-  let predictedPose = "";
-  let absSpeed = Math.abs(currentSpeed)
-  // Hardcoded cutoffs, we might want to tune these
-  if (feetDistance > 325) {
-    predictedPose = "lunge";
-  } else if (feetDistance > 200) {
-    predictedPose = (currentSpeed > 0) ? "advance" : "retreat";
-  } else {
-    // Distance less than 200px, could be en guarde or part of an advance/retreat
-    if (absSpeed > 20) {
-      // Probably advance/retreat
-      predictedPose = (currentSpeed > 0) ? "advance" : "retreat";
-    } else {
-      // Probably en guarde
-      predictedPose = "en guarde"
-    }
-  }
-
-  ctx.strokeStyle = 'Green';
-  ctx.fillStyle = "Green";
-  ctx.fillText("Predicted pose: " + predictedPose, 2*videoWidth / 3, 20);
-} */

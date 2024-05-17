@@ -83,7 +83,7 @@ export function drawCanvas(pose, videoWidth, videoHeight, canvas, minConfidence)
   ctx.clearRect(0, 0, videoWidth, videoHeight); 
 
   const nodeSize = 10;
-  const selectedKeypoints = [11, 12, 13, 14, 15, 16, 23, 24, 25, 26];
+  const selectedKeypoints = [11, 12, 13, 14, 15, 16, 23, 24, 25, 26, 29,30];
   pose.keypoints.forEach((keypoint, index) => {
     if (selectedKeypoints.includes(index) && keypoint.score >= minConfidence) {
       const { x, y } = keypoint;

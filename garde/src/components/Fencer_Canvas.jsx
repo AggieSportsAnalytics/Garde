@@ -39,7 +39,6 @@ const WebcamPose = ({ onVideoChange, isRecording, videoSource, runtime = 'mediap
         video.height = videoHeight;
         canvasRef.current.width = videoWidth;
         canvasRef.current.height = videoHeight;
-
         const poses = await detector.estimatePoses(video);
         setPose(poses[0]);
         if (canvasRef.current && poses.length > 0) { 
@@ -66,11 +65,11 @@ const WebcamPose = ({ onVideoChange, isRecording, videoSource, runtime = 'mediap
       {isRecording || videoSource ? ( // Adjusted condition to ensure video element is rendered when there is a video source
         <>
           {videoSource ? (
-            <video ref={videoRef} style={{ position: "absolute", left: 0, top: 0, width: "100%", height: "100%" }} autoPlay loop muted />
+            <video className="rounded-md" ref={videoRef} style={{ position: "absolute", left: 0, top: 0, width: "100%", height: "100%" }} autoPlay loop muted />
           ) : (
-            <Webcam ref={webcamRef} style={{ position: "absolute", left: 0, top: 0, width: "100%", height: "100%" }} />
+            <Webcam className="rounded-md" ref={webcamRef} style={{ position: "absolute", left: 0, top: 0, width: "100%", height: "100%" }} />
           )}
-          <canvas ref={canvasRef} style={{ position: "absolute", left: 0, top: 0, width: "100%", height: "100%" }} />
+          <canvas className="rounded-md" ref={canvasRef} style={{ position: "absolute", left: 0, top: 0, width: "100%", height: "100%" }} />
         </>
       ) : null}
     </div>
@@ -97,11 +96,40 @@ export function drawCanvas(pose, videoWidth, videoHeight, canvas, minConfidence)
   drawSkeleton(pose.keypoints, minConfidence, ctx);  
 }
 
-function drawKeypoints(x, y, size, ctx) {
+function drawKeypoints(x, y, size, ctx, keypoints) {
   ctx.beginPath();
   ctx.arc(x, y, size, 0, 2 * Math.PI); 
   ctx.fillStyle = 'black';
   ctx.fill();
+}
+
+let prevPoint = {x: 0, y: 0};
+let startTime = Date.now();
+let timeElapsed = 0;
+let currentSpeed = 0;
+let xDist = 0;
+
+export function calculateSpeed(keypoints) {
+  let relevantPts = [11, 12, 13, 14, 15, 16, 23, 24, 25, 26, 27, 28];
+  
+  // let prevPoint = {x: 0, y: 0};
+
+  for (let i of relevantPts) {
+    // drawKeypoints(keypoints[i]);
+
+    if (i === 23) { // && !(this.frameCount % 5)) { //??? 
+      timeElapsed = Date.now() - startTime; //???
+      if (timeElapsed > 500) { //Hardcoded to display time after every 500 milliseconds
+        xDist = keypoints[i].x - prevPoint.x;
+        currentSpeed = xDist / (timeElapsed/100) //Calculates speed using the formula: distance/time (Time is converted to a tenth of a millisecond so 1000/100 = 10)
+        // console.log(xDist, currentSpeed, timeElapsed);
+        startTime = Date.now();
+        prevPoint = keypoints[i];
+      }
+    }
+  }
+
+  return {currentSpeed, timeElapsed, xDist}
 }
 
 function drawSkeleton(keypoints, minConfidence, ctx) {
@@ -166,19 +194,27 @@ export function displayFeetDistance(keypoints) {
   // Calculate (horizontal) distance
   const feetDistance = Math.abs(kp1.x - kp2.x);
 
-  const currentSpeed = 0; // Define currentSpeed here
+  // const currentSpeed = 0; // Define currentSpeed here
   let predictedPose = "";
   let absSpeed = Math.abs(currentSpeed)
   // Hardcoded cutoffs, we might want to tune these
-  if (feetDistance > 325) {
+  if (feetDistance > 275) {
     predictedPose = "lunge";
   } else if (feetDistance > 200) {
-    predictedPose = (currentSpeed > 0) ? "advance" : "retreat";
+    if (currentSpeed < -20) {
+      predictedPose = "retreat";
+    } else {
+      predictedPose = "advance";
+    }
   } else {
     // Distance less than 200px, could be en guarde or part of an advance/retreat
     if (absSpeed > 20) {
       // Probably advance/retreat
-      predictedPose = (currentSpeed > 0) ? "advance" : "retreat";
+      if (currentSpeed < -20) { //These values are hardcoded, maybe in the future we could train a Neural Net to gauge out values. Although that will be a VERY challenging task
+        predictedPose = "retreat";
+      } else {
+        predictedPose = "advance";
+      }
     } else {
       // Probably en guarde
       predictedPose = "en guarde"

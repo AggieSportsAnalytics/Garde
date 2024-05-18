@@ -9,7 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@clerk/nextjs": "^5.0.3",
+    "@clerk/nextjs": "^5.0.12",
     "@emailjs/browser": "^4.3.3",
     "@mediapipe/pose": "^0.5.1675469404",
     "@splinetool/react-spline": "^2.2.6",

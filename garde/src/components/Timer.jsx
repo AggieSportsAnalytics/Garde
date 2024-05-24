@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-const Timer = () => {
+const Timer = ({ onTimerStart, onReset, isStartDisabled }) => {
   const [isRunning, setIsRunning] = useState(false);
   const [time, setTime] = useState(0);
 
@@ -16,11 +16,14 @@ const Timer = () => {
     }
 
     return () => clearInterval(interval);
-  }, [isRunning, time]);
+  }, [isRunning/*, time*/]);
 
   const handleStart = () => {
-    if (!isRunning) {
+    if (!isRunning && !isStartDisabled) {
+      setTime(0);
       setIsRunning(true);
+      onTimerStart();
+    } else if (time != 0) {
     }
   };
 
@@ -33,6 +36,7 @@ const Timer = () => {
   const handleReset = () => {
     setTime(0);
     setIsRunning(false);
+    onReset();
   };
 
   const formatTime = (time) => {
@@ -49,13 +53,23 @@ const Timer = () => {
           {formatTime(time)}
         </div>
         <div className="space-x-2">
-          <button className="text-white border border-blue-700 py-2 px-4 rounded text-sm hover:bg-blue-700 hover:border-blue-700 transition duration-150 ease-in-out" onClick={handleStart}>
+          <button
+            className="text-white border border-blue-700 py-2 px-4 rounded text-sm hover:bg-blue-700 hover:border-blue-700 transition duration-150 ease-in-out"
+            onClick={handleStart}
+            disabled={isStartDisabled}
+          >
             Start
           </button>
-          <button className="text-white border border-red-700 py-2 px-4 rounded text-sm hover:bg-red-700 hover:border-red-700 transition duration-150 ease-in-out" onClick={handleStop}>
+          <button
+            className="text-white border border-red-700 py-2 px-4 rounded text-sm hover:bg-red-700 hover:border-red-700 transition duration-150 ease-in-out"
+            onClick={handleStop}
+          >
             Stop
           </button>
-          <button className="text-white border border-gray-500 py-2 px-4 rounded text-sm hover:bg-gray-500 hover:border-gray-500 transition duration-150 ease-in-out" onClick={handleReset}>
+          <button
+            className="text-white border border-gray-500 py-2 px-4 rounded text-sm hover:bg-gray-500 hover:border-gray-500 transition duration-150 ease-in-out"
+            onClick={handleReset}
+          >
             Reset
           </button>
         </div>

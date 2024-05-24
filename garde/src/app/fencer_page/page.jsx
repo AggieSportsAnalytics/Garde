@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import * as posedetection from '@tensorflow-models/pose-detection';
 import * as tf from '@tensorflow/tfjs-core';
-import '@tensorflow/tfjs-backend-webgl'; 
+import '@tensorflow/tfjs-backend-webgl';
 import Stream_Vid from '../../components/Stream_Vid.jsx';
 import Link from 'next/link.js';
 import Timer from '../../components/Timer.jsx';
@@ -10,23 +10,46 @@ import AI_Feedback from '../../components/AI_Feedback.jsx';
 import { UserButton, auth} from '@clerk/nextjs';
 import Fencer_Canvas from '../../components/Fencer_Canvas.jsx';
 import Fencer_Stats from '../../components/Fencer_Stats.jsx';
-import Instruction from '../../components/Instruction.jsx'; 
+import Instruction from '../../components/Instruction.jsx';
+
+const instructions = [
+  "Perform an en guarde...",
+  "Perform an advance...",
+  "Perform a lunge...",
+  "Peform a defensive stance..."
+]
 
 export default function Fencer_Page() {
   const [videoSource, setVideoSource] = useState('');
-  const [isRecording, setIsRecording] = useState(false); 
+  const [isRecording, setIsRecording] = useState(false);
   const [pose, setPose] = useState(null);
 
+  const [instructionIndex, setInstructionIndex] = useState(-1);
+  const [isStartDisabled, setIsStartDisabled] = useState(false);
+
+  const handleTimerStart = () => {
+    setInstructionIndex((prevIndex) => {
+      if (prevIndex >= instructions.length - 1) {
+        setIsStartDisabled(true);
+      }
+      return prevIndex + 1;
+    });
+  };
+
+  const handleReset = () => {
+    setInstructionIndex(-1);
+    setIsStartDisabled(false);
+  };
   const handleVideoChange = (newVideoSource) => {
     setVideoSource(newVideoSource);
   };
 
   const toggleRecording = () => {
-    setIsRecording(!isRecording);  
+    setIsRecording(!isRecording);
   };
 
   return (
-    <div className="flex flex-col h-screen font-sans bg-gray-900 text-white">
+    <div className="flex flex-col h-max font-sans bg-gray-900 text-white">
       {/* Navbar */}
       <div className="flex items-center justify-between p-4 bg-black border-b border-gray-700">
         {/* Left Side - Back Button */}
@@ -44,7 +67,7 @@ export default function Fencer_Page() {
       </div>
 
       {/* Main Content */}
-      <div className="flex flex-grow overflow-hidden">
+      <div className="flex flex-grow overflow-auto">
         {/* Column 1 - Feedback and Stats */}
         <div className="w-1/3 bg-gray-800 p-4 flex flex-col space-y-4 border-r border-gray-700">
           <div className="box-border h-full p-4 border-2 border-gray-700 rounded-lg shadow-lg">
@@ -58,10 +81,10 @@ export default function Fencer_Page() {
         {/* Column 2 - Timer, Instruction, Canvas */}
         <div className="w-2/3 bg-gray-800 flex flex-col">
           <div className="mt-9">
-            <Timer />
+            <Timer onTimerStart={handleTimerStart} onReset={handleReset} isStartDisabled={isStartDisabled} />
           </div>
           <div className="my-5">
-            <Instruction />
+            <Instruction instructionIndex={instructionIndex} instructions={instructions} />
           </div>
           <div className="flex-grow flex justify-center items-center">
             <Fencer_Canvas videoSource={videoSource} isRecording={isRecording} setPose={setPose} />

@@ -28,6 +28,6 @@ export default function Home() {
         <div className="">
             <Fencer_Page />
             
-        </div>
+         </div>
      )
 }

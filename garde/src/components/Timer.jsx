@@ -16,14 +16,13 @@ const Timer = ({ onTimerStart, onReset, isStartDisabled }) => {
     }
 
     return () => clearInterval(interval);
-  }, [isRunning/*, time*/]);
+  }, [isRunning]);
 
   const handleStart = () => {
     if (!isRunning && !isStartDisabled) {
       setTime(0);
       setIsRunning(true);
       onTimerStart();
-    } else if (time != 0) {
     }
   };
 
@@ -47,7 +46,7 @@ const Timer = ({ onTimerStart, onReset, isStartDisabled }) => {
   };
 
   return (
-    <div className="timer-wrapper" style={{ marginBottom: '20px' }}> {/* Add bottom margin to move up */}
+    <div className="timer-wrapper" style={{ marginBottom: '20px' }}>
       <div className="flex flex-col items-center justify-center" style={{ maxHeight: '10vh', width: '100%' }}>
         <div style={{color: 'white'}} className="font-sans text-6xl mb-4 transition-all ease-out duration-300 rounded-full">
           {formatTime(time)}

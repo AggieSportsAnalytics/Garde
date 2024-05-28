@@ -163,7 +163,7 @@ const WebcamPose = ({ onVideoChange, isRecording, videoSource, runtime = 'mediap
         background: 'rgba(0,0,0,0)', 
         borderRadius: '15px',
         border: '2px solid white',
-        overflow: 'hidden'  // Ensure content is clipped to the rounded border
+        overflow: 'hidden'  
       }}></div>
 
     </>

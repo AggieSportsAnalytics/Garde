@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import * as posedetection from '@tensorflow-models/pose-detection';
 import * as tf from '@tensorflow/tfjs-core';
 import '@tensorflow/tfjs-backend-webgl';
@@ -7,12 +7,13 @@ import Stream_Vid from '../../components/Stream_Vid.jsx';
 import Link from 'next/link.js';
 import Timer from '../../components/Timer.jsx';
 import AI_Feedback from '../../components/AI_Feedback.jsx';
-import { UserButton, auth } from '@clerk/nextjs';
+import { UserButton } from '@clerk/nextjs';
 import Fencer_Canvas from '../../components/Fencer_Canvas.jsx';
 import Fencer_Stats from '../../components/Fencer_Stats.jsx';
 import Instruction from '../../components/Instruction.jsx';
 import { useSpeechSynthesis } from 'react-speech-kit';
 import { displayFeetDistance } from '../../components/Fencer_Canvas.jsx';
+import { FaCheckCircle, FaTimesCircle } from 'react-icons/fa'; // Import icons
 
 const instructions = [
   "Perform an en guarde...",
@@ -25,12 +26,13 @@ export default function Fencer_Page() {
   const [videoSource, setVideoSource] = useState('');
   const [isRecording, setIsRecording] = useState(false);
   const [pose, setPose] = useState(null);
-
   const [instructionIndex, setInstructionIndex] = useState(-1);
   const [isStartDisabled, setIsStartDisabled] = useState(false);
   const [poseStartTime, setPoseStartTime] = useState(null);
   const [performedPose, setPerformedPose] = useState("");
-  const [hasSpoken, setHasSpoken] = useState(false); // Added state to control speaking once per instruction
+  const [hasSpoken, setHasSpoken] = useState(false);
+  const [poseResult, setPoseResult] = useState("");
+  const [countdown, setCountdown] = useState(3); // Added state for countdown timer
 
   const { speak, voices } = useSpeechSynthesis();
   const [voice, setVoice] = useState(null);
@@ -43,14 +45,8 @@ export default function Fencer_Page() {
 
   useEffect(() => {
     if (instructionIndex >= 0 && instructionIndex < instructions.length && !hasSpoken) {
-      speak({ 
-        text: instructions[instructionIndex], 
-        voice: voice,
-        rate: 1, 
-        pitch: 1, 
-        lang: 'en-US'
-      });
-      setHasSpoken(true); // Mark that the instruction has been spoken
+      speak({ text: instructions[instructionIndex], voice: voice, rate: 1, pitch: 1, lang: 'en-US' });
+      setHasSpoken(true);
     }
   }, [instructionIndex, voice, speak, hasSpoken]);
 
@@ -59,16 +55,20 @@ export default function Fencer_Page() {
       if (prevIndex >= instructions.length - 1) {
         setIsStartDisabled(true);
       }
-      setHasSpoken(false); // Reset the spoken state for the next instruction
+      setHasSpoken(false);
       return prevIndex + 1;
     });
+    setPoseResult("");
+    setCountdown(3); // Reset countdown for new instruction
   };
 
   const handleReset = () => {
     setInstructionIndex(-1);
     setIsStartDisabled(false);
     setPoseStartTime(null);
-    setHasSpoken(false); // Reset the spoken state
+    setHasSpoken(false);
+    setPoseResult("");
+    setCountdown(3); // Reset countdown on reset
   };
 
   const handleVideoChange = (newVideoSource) => {
@@ -89,19 +89,28 @@ export default function Fencer_Page() {
     };
     const expectedPose = instructionToPose[currentInstruction];
     setPerformedPose(predictedPose);
-    
+
     if (predictedPose && expectedPose && predictedPose === expectedPose) {
       if (!poseStartTime) {
         setPoseStartTime(Date.now());
       } else {
         const elapsedTime = Date.now() - poseStartTime;
+        setCountdown(3 - Math.floor(elapsedTime / 1000));
         if (elapsedTime >= 3000) {
-          handleTimerStart();
+          setPoseResult("Success");
+          speak({ text: "Success", voice: voice, rate: 1, pitch: 1, lang: 'en-US' });
+          setTimeout(() => {
+            handleTimerStart();
+          }, 500);
           setPoseStartTime(null);
         }
       }
     } else {
-      setPoseStartTime(null);
+      if (poseStartTime) {
+        setPoseResult("Failure");
+        speak({ text: "Failure", voice: voice, rate: 1, pitch: 1, lang: 'en-US' });
+        setPoseStartTime(null);
+      }
     }
   };
 
@@ -119,14 +128,14 @@ export default function Fencer_Page() {
         {/* Left Side - Back Button */}
         <Link href="/">
           <button className="bg-gray-700 text-white py-2 px-4 rounded text-lg font-semibold hover:bg-gray-600">
-          &#8592;
+            &#8592;
           </button>
         </Link>
         {/* Center - Fencer Name */}
         <UserButton />
         {/* Right Side - Stream Vid Buttons */}
         <div className="absolute right-4 top-10">
-        <Stream_Vid onVideoChange={handleVideoChange} isRecording={isRecording} toggleRecording={toggleRecording} videoSource={videoSource} />
+          <Stream_Vid onVideoChange={handleVideoChange} isRecording={isRecording} toggleRecording={toggleRecording} videoSource={videoSource} />
         </div>
       </div>
 
@@ -138,7 +147,7 @@ export default function Fencer_Page() {
             <AI_Feedback />
           </div>
           <div className="box-border h-full p-4 border-2 border-gray-700 rounded-lg shadow-lg">
-          <Fencer_Stats pose={pose}/>
+            <Fencer_Stats pose={pose} />
           </div>
         </div>
 
@@ -150,11 +159,30 @@ export default function Fencer_Page() {
           <div className="my-5">
             <Instruction instructionIndex={instructionIndex} instructions={instructions} performedPose={performedPose} />
           </div>
+          <div className="flex justify-center items-center">
+            <div id="poseResult" className="text-2xl font-semibold text-white flex items-center">
+              {poseResult === "Success" && <FaCheckCircle className="text-green-500 mr-2" />}
+              {poseResult === "Failure" && <FaTimesCircle className="text-red-500 mr-2" />}
+              {poseStartTime && <div className="countdown-circle">{countdown}</div>}
+            </div>
+          </div>
           <div className="flex-grow flex justify-center items-center">
             <Fencer_Canvas videoSource={videoSource} isRecording={isRecording} setPose={setPose} />
           </div>
         </div>
       </div>
+      <style jsx>{`
+        .countdown-circle {
+          width: 40px;
+          height: 40px;
+          border: 2px solid white;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 1.5rem;
+        }
+      `}</style>
     </div>
   );
 }

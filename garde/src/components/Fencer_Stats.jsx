@@ -114,6 +114,6 @@ export const GetUserData = (props) => {
        speed = Math.round(calculateSpeed(pose.keypoints).currentSpeed);
      }
 
-     return {"pose": predictedPose, "feet-distance": feetDistance, "left-elbow": leftElbAngle, "right-elbow": rightElbAngle, "right-hip": rightHipAngle, "left-hip": leftHipAngle, "left-knee": leftElbAngle, "right-knee": rightKneeAngle, "speed": speed};
+     return {"pose": predictedPose, "feet-distance": feetDistance, "left-elbow": leftElbAngle, "right-elbow": rightElbAngle, "right-hip": rightHipAngle, "left-hip": leftHipAngle, "left-knee": leftKneeAngle, "right-knee": rightKneeAngle, "speed": speed};
 };
 export default Fencer_Stats;

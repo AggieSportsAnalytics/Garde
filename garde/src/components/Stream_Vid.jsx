@@ -6,7 +6,7 @@ const Stream_Vid = ({ onVideoChange, isRecording, toggleRecording }) => {
   const refFileInput = useRef(null);
   const [videoAdded, setVideoAdded] = useState(false);  // Track if video has been added
 
-  const handleFileChange = async (event) => {
+  const handleFileChange = (event) => {
     const file = event.target.files[0];
     if (file) {
       const videoURL = URL.createObjectURL(file);

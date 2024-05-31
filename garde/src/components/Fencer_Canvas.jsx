@@ -320,7 +320,7 @@ export async function OpenAIAPIFeedback(props) {
 
   const idealAngles = [
     {
-      "name": "En-Guarde",
+      "name": "en guarde",
       "elbow_left": "96",
       "hip_left": "117",
       "knee_left": "121",
@@ -329,7 +329,7 @@ export async function OpenAIAPIFeedback(props) {
       "knee_right": "160"
     },
     {
-      "name": "Advance",
+      "name": "advance",
       "elbow_left": "87",
       "hip_left": "126",
       "knee_left": "132",
@@ -338,7 +338,7 @@ export async function OpenAIAPIFeedback(props) {
       "knee_right": "160"
     },
     {
-      "name": "Retreat",
+      "name": "retreat",
       "elbow_left": "90",
       "hip_left": "127",
       "knee_left": "144",
@@ -347,7 +347,7 @@ export async function OpenAIAPIFeedback(props) {
       "knee_right": "170"
     },
     {
-      "name": "Lunge",
+      "name": "lunge",
       "elbow_left": "178",
       "hip_left": "84",
       "knee_left": "110",
@@ -356,15 +356,28 @@ export async function OpenAIAPIFeedback(props) {
       "knee_right": "165"
     }
   ]
-    
+
   const openai = new OpenAI({
     apiKey: process.env.NEXT_PUBLIC_OPENAI_KEY,
     dangerouslyAllowBrowser: true
   });
   
+  if(userAngles.pose == "en guarde") {
+    comparison = ideal_en_guarde;
+  }
+  else if(userAngles.pose == "advance") {
+    comparison = ideal_advance;
+  }
+  else if(userAngles.pose == "retreat") {
+    comparison = ideal_retreat;
+  }
+  else if(userAngles.pose == "lunge") {
+    comparison = ideal_lunge;
+  } 
+
   //const prompt = "";
   let dataComp = `User's angles: ${JSON.stringify(userAngles)}, ideal angles: ${JSON.stringify(comparison)}.`;
-  let query = `Please compare the user's angles ${JSON.stringify(userAngles)} with the ideal angles for the ${user_angles.name} position and provide a detailed analysis.`;
+  let query = `Please compare the user's angles ${JSON.stringify(userAngles)} with the ideal angles for the ${userAngles.pose} position and provide a detailed analysis.`;
 
   const chatCompletion = await openai.chat.completions.create({
     messages: [
@@ -379,15 +392,14 @@ export async function OpenAIAPIFeedback(props) {
                 },
                 { 
                   role: 'user', 
-                  content: `Suggest how a fencer should improve their posture given ${idealAngles[1]}
-                  that they want to become better fencers`
+                  content: query
                 }
               
               ],
     model: 'gpt-4',
   });
 
-  //console.log(chatCompletion.choices[0].message.content);
+  console.log(chatCompletion.choices[0].message.content);
   return chatCompletion.choices[0].message.content;
   //return chatCompletion.choices[0].content;
 }

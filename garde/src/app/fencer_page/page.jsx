@@ -9,7 +9,7 @@ import Timer from '../../components/Timer.jsx';
 import AI_Feedback from '../../components/AI_Feedback.jsx';
 import { UserButton } from '@clerk/nextjs';
 import Fencer_Canvas from '../../components/Fencer_Canvas.jsx';
-import Fencer_Stats from '../../components/Fencer_Stats.jsx';
+import Fencer_Stats, { GetUserData } from '../../components/Fencer_Stats.jsx';
 import Instruction from '../../components/Instruction.jsx';
 import { useSpeechSynthesis } from 'react-speech-kit';
 import { displayFeetDistance } from '../../components/Fencer_Canvas.jsx';
@@ -224,8 +224,8 @@ export default function Fencer_Page() {
       <div className="flex flex-grow overflow-auto">
         {/* Column 1 - Feedback and Stats */}
         <div className="w-1/3 bg-gray-800 p-4 flex flex-col space-y-4 border-r border-gray-700">
-          <div className="box-border h-full p-4 border-2 border-gray-700 rounded-lg shadow-lg">
-            {isRecording && <AI_Feedback angles={GetUserData(pose)}/>}
+          <div className="box-border h-full p-4 border-2 border-blue-700 rounded-lg shadow-lg">
+            {pose ? <AI_Feedback angles={GetUserData(pose)} /> : null}
           </div>
           <div className="box-border h-full p-4 border-2 border-gray-700 rounded-lg shadow-lg">
             <Fencer_Stats pose={pose} />

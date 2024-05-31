@@ -1,4 +1,5 @@
 "use client";
+
 import React, { useState, useEffect } from 'react';
 import * as posedetection from '@tensorflow-models/pose-detection';
 import * as tf from '@tensorflow/tfjs-core';
@@ -11,6 +12,23 @@ import { UserButton } from '@clerk/nextjs';
 import Fencer_Canvas from '../../components/Fencer_Canvas.jsx';
 import Fencer_Stats from '../../components/Fencer_Stats.jsx';
 import Instruction from '../../components/Instruction.jsx';
+import { useUser } from '@clerk/nextjs';
+
+export default function Fencer_Page() {
+  const [videoSource, setVideoSource] = useState('');
+  const [fencer, setFencer] = useState({});
+  const { user } = useUser();
+
+  useEffect(() => {
+    const fetchFencer = async () => {
+      const f = await getFencer(user.id, user.fullName, "fencer", setFencer);
+      setFencer(f);
+    };
+  
+    if (user && user.id && user.fullName) {
+      fetchFencer();
+    }
+  }, [user]);
 import { useSpeechSynthesis } from 'react-speech-kit';
 import { displayFeetDistance } from '../../components/Fencer_Canvas.jsx';
 import { FaCheckCircle, FaTimesCircle } from 'react-icons/fa';
@@ -213,6 +231,7 @@ export default function Fencer_Page() {
           </button>
         </Link>
         {/* Center - Fencer Name */}
+        {user && user.fullName && (<span className="text-lg font-semibold flex-1 text-center">{user.fullName}</span>)}
         <UserButton />
         {/* Right Side - Stream Vid Buttons */}
         <div className="absolute right-4 top-10">
@@ -275,3 +294,19 @@ export default function Fencer_Page() {
     </div>
   );
 }
+
+               
+const getFencer = async (userId, name, type) => {
+  const response = await fetch('/api/user', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({"_id": userId, "name": name, "type": type}),
+  })
+
+  const result = await response.json();
+  
+  // setFencer(result.document);
+  return result.document
+};

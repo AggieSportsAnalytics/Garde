@@ -8,14 +8,23 @@ import Contact from "../components/Contact";
 import Footer from "../components/Footer";
 
 export default function Home() {
-    return (
+     
+        // return (
+        
+        //     <div className="">
+        //         <Navbar />
+        //         <Hero />
+        //         <About />
+        //         <Features />
+        //         <Contact />
+        //         <Footer />
+        //         {/**/}
+        //     </div>
+        // )
+     
+     return ( 
         <div className="">
-            <Navbar />
-            <Hero />
-            <About />
-            <Features />
-            <Contact />
-            <Footer />  
+            <Fencer_Page /> 
         </div>
      )
 }

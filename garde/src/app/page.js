@@ -9,22 +9,16 @@ import Footer from "../components/Footer";
 
 export default function Home() {
      
-        // return (
+        return (
         
-        //     <div className="">
-        //         <Navbar />
-        //         <Hero />
-        //         <About />
-        //         <Features />
-        //         <Contact />
-        //         <Footer />
-        //         {/**/}
-        //     </div>
-        // )
-     
-     return ( 
-        <div className="">
-            <Fencer_Page /> 
-        </div>
-     )
+            <div className="">
+                <Navbar />
+                <Hero />
+                <About />
+                <Features />
+                <Contact />
+                <Footer />
+                {/**/}
+            </div>
+        )
 }

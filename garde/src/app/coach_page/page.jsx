@@ -74,7 +74,7 @@ function Feedback({ fencer }) {
 }
 
 function Videos({ fencer }) {
-    const [videos, setVideos] = useState([]);
+    // const [videos, setVideos] = useState([]);
 
     useEffect(() => {
       if(fencer && fencer.sessions && fencer.sessions.length > 0) {
@@ -83,6 +83,19 @@ function Videos({ fencer }) {
     }, [fencer]);
 
     const [selectedVideo, setSelectedVideo] = useState(null);
+
+    const videos = [
+      {
+        id: 1,
+        thumbnail: '/fencing-thumbnail.png',
+        videoUrl: '/fencing-demo.mov',
+      },
+      {
+        id: 2,
+        thumbnail: '/ss_fencer.png',
+        videoUrl: '/En-Garde+Lunge - Made with Clipchamp.mov',
+      },
+    ];
 
     if (selectedVideo) {
       return (
@@ -183,37 +196,38 @@ function Analytics({ fencer }) {
     const [lineData, setLineData] = useState([{ name: '', accuracy: 0 }, { name: '', accuracy: 0 }]);
     const [noData, setNoData] = useState(false);
 
-    useEffect(() => {
-        const times = fencer.averageTimes;
-        if(times && times.advance && times.lunge && times.enGuarde && times.retreat) {
-          setPieData({ labels: ['Advance', 'Retreat', 'Lunge', 'enGuarde'], values: [times.advance, times.retreat, times.lunge, times.enGuarde]});
-        }
-        else {
-          setNoData(true);
-        }
-        if(fencer && fencer.sessions) {
-            fencer.sessions.map((session, index) => {
-              setLineData(previous => [...previous, {name: index, accuracy: session.accuracy}]);
-            });
-        }
-        else {
-          setNoData(true);
-        }
-    }, []);
+    // useEffect(() => {
+    //     const times = fencer.averageTimes;
+    //     if(times && times.advance && times.lunge && times.enGuarde && times.retreat) {
+    //       setPieData({ labels: ['Advance', 'Retreat', 'Lunge', 'enGuarde'], values: [times.advance, times.retreat, times.lunge, times.enGuarde]});
+    //     }
+    //     else {
+    //       setNoData(true);
+    //     }
+    //     if(fencer && fencer.sessions) {
+    //         fencer.sessions.map((session, index) => {
+    //           setLineData(previous => [...previous, {name: index, accuracy: session.accuracy}]);
+    //         });
+    //     }
+    //     else {
+    //       setNoData(true);
+    //     }
+    // }, []);
 
-    return (
-        <section className="text-white">
-            <p className="text-center text-2xl py-10">Analytics</p>
-            <div className="flex justify-center items-center space-x-4 w-full">
-                {noData ? (<p>No fencer data on time in positions & session accuracy</p>) :
-                  <div>
-                    <PieChart data={pieData} />
-                    <LineGraph data={lineData} />
-                  </div>
-                }
-            </div>
-        </section>
-    );
+    useEffect(() => {
+      setPieData({ labels: ['Advance', 'Retreat', 'Lunge'], values: [12, 19, 3]});
+      setLineData([{ name: '1', accuracy: 35 }, { name: '2', accuracy: 45 }, { name: '3', accuracy: 30 }, { name: '4', accuracy: 60 }]);
+  }, []);
+
+  return (
+    <section className="text-white">
+        <p className="text-center text-2xl py-10">Analytics</p>
+        <div className="flex justify-center items-center space-x-4 w-full">
+            <PieChart data={pieData} />
+            <LineGraph data={lineData} />
+        </div>
+    </section>
+);
 }
 
 function PieChart({ data }) {
@@ -383,27 +397,23 @@ fencers:
   }
 }
 
-sessions:
-{
-  "_id": session id,
-  "videos": [ array of video ids ],
-  accuracy: number
-}
-
 videos:
 {
-  "_id": video id,
-  "userAngles": [
-    {
-      "time": number,
-      "name": string,
-      "elbowLeft": number,
-      "hipLeft": number,
-      "kneeLeft": number,
-      "elbowRight": number,
-      "hipRight": number,
-      "kneeRight": number
-    }
-  ],
+  [
+    "_id": video id,
+    "userAngles": [
+      {
+        "time": number,
+        "name": string,
+        "elbowLeft": number,
+        "hipLeft": number,
+        "kneeLeft": number,
+        "elbowRight": number,
+        "hipRight": number,
+        "kneeRight": number
+      }
+      accuracy: number
+    ],
+  ]
 }
 */

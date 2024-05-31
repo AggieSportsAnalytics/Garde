@@ -13,31 +13,26 @@ import Fencer_Canvas from '../../components/Fencer_Canvas.jsx';
 import Fencer_Stats from '../../components/Fencer_Stats.jsx';
 import Instruction from '../../components/Instruction.jsx';
 import { useUser } from '@clerk/nextjs';
-
-export default function Fencer_Page() {
-  const [videoSource, setVideoSource] = useState('');
-  const [fencer, setFencer] = useState({});
-  const { user } = useUser();
-
-  useEffect(() => {
-    const fetchFencer = async () => {
-      const f = await getFencer(user.id, user.fullName, "fencer", setFencer);
-      setFencer(f);
-    };
-  
-    if (user && user.id && user.fullName) {
-      fetchFencer();
-    }
-  }, [user]);
 import { useSpeechSynthesis } from 'react-speech-kit';
 import { displayFeetDistance } from '../../components/Fencer_Canvas.jsx';
 import { FaCheckCircle, FaTimesCircle } from 'react-icons/fa';
+import { GetAngles } from "../../components/Fencer_Stats.jsx"
 
 const instructions = [
   "Perform an en guarde...",
   "Perform an advance...",
   "Perform a lunge...",
 ];
+
+function generateObjectId() {
+  const timestamp = Math.floor(Date.now() / 1000).toString(16).padStart(8, '0');
+  const randomValue = Array.from({ length: 5 }, () => 
+    Math.floor(Math.random() * 256).toString(16).padStart(2, '0')
+  ).join('');
+  const counter = Math.floor(Math.random() * 16777216).toString(16).padStart(6, '0');
+  
+  return timestamp + randomValue + counter;
+}
 
 export default function Fencer_Page() {
   const [videoSource, setVideoSource] = useState('');
@@ -58,8 +53,24 @@ export default function Fencer_Page() {
   const [showPreInstructionCountdown, setShowPreInstructionCountdown] = useState(false); // To control rendering
   const [isInstructionBeingSaid, setIsInstructionBeingSaid] = useState(false);
 
+  const [lastCalled, setLastCalled] = useState(Date.now());
+
   const { speak, voices } = useSpeechSynthesis();
   const [voice, setVoice] = useState(null);
+
+  const [fencer, setFencer] = useState({});
+  const { user } = useUser();
+
+  useEffect(() => {
+    const fetchFencer = async () => {
+      const f = await getFencer(user.id, user.fullName, "fencer", setFencer);
+      setFencer(f);
+    };
+  
+    if (user && user.id && user.fullName) {
+      fetchFencer();
+    }
+  }, [user]);
 
   useEffect(() => {
     if (voices.length > 0) {
@@ -194,7 +205,6 @@ export default function Fencer_Page() {
       }
     }
   };
-  
 
   useEffect(() => {
     if (pose) {
@@ -247,7 +257,7 @@ export default function Fencer_Page() {
             <AI_Feedback />
           </div>
           <div className="box-border h-full p-4 border-2 border-gray-700 rounded-lg shadow-lg">
-            <Fencer_Stats pose={pose} />
+            <Fencer_Stats pose={pose} lastCalled={lastCalled} setLastCalled={setLastCalled} />
           </div>
         </div>
 
@@ -294,8 +304,7 @@ export default function Fencer_Page() {
     </div>
   );
 }
-
-               
+         
 const getFencer = async (userId, name, type) => {
   const response = await fetch('/api/user', {
     method: 'POST',

@@ -3,6 +3,7 @@ import Webcam from "react-webcam";
 import * as poseDetection from '@tensorflow-models/pose-detection';
 import '@tensorflow/tfjs-core';
 import '@tensorflow/tfjs-backend-webgl';
+const {Configuration, OpenAIApi, OpenAI} = require("openai")
 import '@mediapipe/pose';
 import Plotly from 'plotly.js-dist-min';
 import Modal from 'react-modal';
@@ -310,3 +311,119 @@ export function displayFeetDistance(keypoints) {
 
   return { feetDistance, predictedPose };
 }
+
+
+
+export async function OpenAIAPIFeedback(props) {
+  
+  const userAngles = props;
+
+  const idealAngles = [
+    {
+      "name": "En-Guarde",
+      "elbow_left": "96",
+      "hip_left": "117",
+      "knee_left": "121",
+      "elbow_right": "2",
+      "hip_right": "170",
+      "knee_right": "160"
+    },
+    {
+      "name": "Advance",
+      "elbow_left": "87",
+      "hip_left": "126",
+      "knee_left": "132",
+      "elbow_right": "36",
+      "hip_right": "170",
+      "knee_right": "160"
+    },
+    {
+      "name": "Retreat",
+      "elbow_left": "90",
+      "hip_left": "127",
+      "knee_left": "144",
+      "elbow_right": "8",
+      "hip_right": "172",
+      "knee_right": "170"
+    },
+    {
+      "name": "Lunge",
+      "elbow_left": "178",
+      "hip_left": "84",
+      "knee_left": "110",
+      "elbow_right": "170",
+      "hip_right": "151",
+      "knee_right": "165"
+    }
+  ]
+    
+  const openai = new OpenAI({
+    apiKey: process.env.NEXT_PUBLIC_OPENAI_KEY,
+    dangerouslyAllowBrowser: true
+  });
+  
+  //const prompt = "";
+  let dataComp = `User's angles: ${JSON.stringify(userAngles)}, ideal angles: ${JSON.stringify(comparison)}.`;
+  let query = `Please compare the user's angles ${JSON.stringify(userAngles)} with the ideal angles for the ${user_angles.name} position and provide a detailed analysis.`;
+
+  const chatCompletion = await openai.chat.completions.create({
+    messages: [
+                //Prompt engineering the AI feedback coach to give more precise feedback
+                { 
+                  role: 'system',
+                  content: `You are a helpful AI assistant embedded in an automated fencing coach
+                  program. You possess expert knowledge about fencing as a sport and are very 
+                  articulate when giving feedback on how a fencer can improve their form. 
+                  You keep your feedback short, concise and snappy and don't stray too far away from the point.
+                  You are professional, inspiring and helpful.`
+                },
+                { 
+                  role: 'user', 
+                  content: `Suggest how a fencer should improve their posture given ${idealAngles[1]}
+                  that they want to become better fencers`
+                }
+              
+              ],
+    model: 'gpt-4',
+  });
+
+  //console.log(chatCompletion.choices[0].message.content);
+  return chatCompletion.choices[0].message.content;
+  //return chatCompletion.choices[0].content;
+}
+
+// const url = process.env.MONGODB_URL
+// const client = new MongoClient(url, {
+//   serverApi: ServerApiVersion.v1,
+//   useNewUrlParser: true,
+//   useUnifiedTopology: true,
+// });
+
+// export async function getFromMongo(req, res) {
+//     try {
+//         const data = req.body;
+
+//         await client.connect();
+
+//         const db = client.db("Garde");
+//         const collection = db.collection(data.type);
+
+//         let document = await collection.find({}).toArray();
+
+//         // if(data.type === "fencer" && !document) {
+//         //     document = createFencer(data, collection);
+//         // }
+//         // else if(data.type === "coach" && !document) {
+//         //     document = createCoach(data, collection);
+//         // }
+
+//         res.status(200).json({ "document": document });
+//     } catch (err) {
+//         res.status(500).json({ error: err.message });
+//     }
+// }
+
+
+
+
+

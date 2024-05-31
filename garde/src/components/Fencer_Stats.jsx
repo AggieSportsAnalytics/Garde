@@ -83,8 +83,37 @@ const Fencer_Stats = (props) => {
      </div>
 
      </div>
-     </>
      
+     </>
      );
+};
+
+export const GetUserData = (props) => {
+     const pose = props.pose || {};
+     let leftElbAngle = "";
+     let rightElbAngle = "";
+     let leftKneeAngle = "";
+     let rightKneeAngle = "";
+     let rightHipAngle = "";
+     let leftHipAngle = "";
+     let feetDistance = "";
+     let predictedPose = "";
+     let speed = "";
+
+     if (pose.keypoints && pose.keypoints.length >= 16) {
+       leftElbAngle = Math.round(calculateAngle(pose.keypoints[11], pose.keypoints[13], pose.keypoints[15]));
+       //console.log('angle:', angle); 
+       rightElbAngle = Math.round(calculateAngle(pose.keypoints[12], pose.keypoints[14], pose.keypoints[16]));
+       leftHipAngle = Math.round(calculateAngle(pose.keypoints[23], pose.keypoints[25], pose.keypoints[27]));
+       rightHipAngle = Math.round(calculateAngle(pose.keypoints[12], pose.keypoints[24], pose.keypoints[26]));
+       leftKneeAngle = Math.round(calculateAngle(pose.keypoints[11], pose.keypoints[23], pose.keypoints[25]));
+       rightKneeAngle = Math.round(calculateAngle(pose.keypoints[24], pose.keypoints[26], pose.keypoints[28]));
+       feetDistance = Math.round(displayFeetDistance(pose.keypoints).feetDistance);
+       predictedPose = displayFeetDistance(pose.keypoints).predictedPose;
+       //11, 12, 13, 14, 15, 16, 23, 24, 25, 26, 27, 28
+       speed = Math.round(calculateSpeed(pose.keypoints).currentSpeed);
+     }
+
+     return {"pose": predictedPose, "feet-distance": feetDistance, "left-elbow": leftElbAngle, "right-elbow": rightElbAngle, "right-hip": rightHipAngle, "left-hip": leftHipAngle, "left-knee": leftElbAngle, "right-knee": rightKneeAngle, "speed": speed};
 };
 export default Fencer_Stats;

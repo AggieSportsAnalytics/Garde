@@ -13,13 +13,12 @@ import Fencer_Stats from '../../components/Fencer_Stats.jsx';
 import Instruction from '../../components/Instruction.jsx';
 import { useSpeechSynthesis } from 'react-speech-kit';
 import { displayFeetDistance } from '../../components/Fencer_Canvas.jsx';
-import { FaCheckCircle, FaTimesCircle } from 'react-icons/fa'; // Import icons
+import { FaCheckCircle, FaTimesCircle } from 'react-icons/fa';
 
 const instructions = [
   "Perform an en guarde...",
   "Perform an advance...",
   "Perform a lunge...",
-  "Perform a defensive stance..."
 ];
 
 export default function Fencer_Page() {
@@ -32,7 +31,14 @@ export default function Fencer_Page() {
   const [performedPose, setPerformedPose] = useState("");
   const [hasSpoken, setHasSpoken] = useState(false);
   const [poseResult, setPoseResult] = useState("");
-  const [countdown, setCountdown] = useState(3); // Added state for countdown timer
+  const [countdown, setCountdown] = useState(3); // State for success countdown timer
+  const [failureTimeout, setFailureTimeout] = useState(null); // State to handle failure timeout
+  const [hasStarted, setHasStarted] = useState(false);
+  const [resetTimer, setResetTimer] = useState(false);
+  const [countdownFinished, setCountdownFinished] = useState(false);
+  const [preInstructionCountdown, setPreInstructionCountdown] = useState(3); // State for pre-instruction countdown
+  const [showPreInstructionCountdown, setShowPreInstructionCountdown] = useState(false); // To control rendering
+  const [isInstructionBeingSaid, setIsInstructionBeingSaid] = useState(false);
 
   const { speak, voices } = useSpeechSynthesis();
   const [voice, setVoice] = useState(null);
@@ -44,21 +50,68 @@ export default function Fencer_Page() {
   }, [voices]);
 
   useEffect(() => {
-    if (instructionIndex >= 0 && instructionIndex < instructions.length && !hasSpoken) {
-      speak({ text: instructions[instructionIndex], voice: voice, rate: 1, pitch: 1, lang: 'en-US' });
-      setHasSpoken(true);
+    if (instructionIndex >= 0 && instructionIndex < instructions.length && !hasSpoken && !isInstructionBeingSaid) {
+      setHasSpoken(true); // Ensure this is set to prevent duplicate speech
+      setTimeout(() => {
+        speak({
+          text: `${instructions[instructionIndex]} Starting in 3, 2, 1`,
+          voice: voice,
+          rate: 1,
+          pitch: 1,
+          lang: 'en-US',
+          onend: () => {
+            setShowPreInstructionCountdown(false);
+            setHasSpoken(false); // Allow the success countdown to start after speaking
+          },
+        });
+        setShowPreInstructionCountdown(true);
+        startPreInstructionCountdown();
+        setResetTimer(true);
+      }, 0); // 1000 milliseconds = 1 second delay
     }
-  }, [instructionIndex, voice, speak, hasSpoken]);
+  }, [instructionIndex, voice, speak, hasSpoken, videoSource, isInstructionBeingSaid]);
+
+  const startPreInstructionCountdown = () => {
+    setPreInstructionCountdown(3);
+    const interval = setInterval(() => {
+      setPreInstructionCountdown((prevCountdown) => {
+        if (prevCountdown > 1) {
+          return prevCountdown - 1;
+        } else {
+          clearInterval(interval);
+          startSuccessCountdown(); // Start the success countdown after the pre-instruction countdown has finished
+          return 0;
+        }
+      });
+    }, 1000);
+  };
+
+  const startSuccessCountdown = () => {
+    setCountdown(3);
+    const interval = setInterval(() => {
+      setCountdown((prevCountdown) => {
+        if (prevCountdown > 1) {
+          return prevCountdown - 1;
+        } else {
+          clearInterval(interval);
+          return 0;
+        }
+      });
+    }, 1000);
+  };
 
   const handleTimerStart = () => {
+    setHasStarted(true);
+    setShowPreInstructionCountdown(false);
     setInstructionIndex((prevIndex) => {
       if (prevIndex >= instructions.length - 1) {
         setIsStartDisabled(true);
       }
-      setHasSpoken(false);
+      setHasSpoken(false); // Reset spoken state for the next instruction
       return prevIndex + 1;
     });
     setPoseResult("");
+    setResetTimer(false);
     setCountdown(3); // Reset countdown for new instruction
   };
 
@@ -69,6 +122,10 @@ export default function Fencer_Page() {
     setHasSpoken(false);
     setPoseResult("");
     setCountdown(3); // Reset countdown on reset
+    setResetTimer(true);
+    setPreInstructionCountdown(3); // Reset pre-instruction countdown on reset
+    setShowPreInstructionCountdown(false);
+    clearTimeout(failureTimeout); // Clear the failure timeout on reset
   };
 
   const handleVideoChange = (newVideoSource) => {
@@ -89,30 +146,37 @@ export default function Fencer_Page() {
     };
     const expectedPose = instructionToPose[currentInstruction];
     setPerformedPose(predictedPose);
-
+  
     if (predictedPose && expectedPose && predictedPose === expectedPose) {
       if (!poseStartTime) {
         setPoseStartTime(Date.now());
       } else {
         const elapsedTime = Date.now() - poseStartTime;
-        setCountdown(3 - Math.floor(elapsedTime / 1000));
+        setCountdown(3 - Math.floor(elapsedTime / 1000)); // Update countdown based on elapsed time
         if (elapsedTime >= 3000) {
           setPoseResult("Success");
           speak({ text: "Success", voice: voice, rate: 1, pitch: 1, lang: 'en-US' });
+          setPoseStartTime(null);
           setTimeout(() => {
             handleTimerStart();
-          }, 500);
-          setPoseStartTime(null);
+          }, 3000); // 3-second pause before moving to the next instruction
         }
       }
     } else {
-      if (poseStartTime) {
+      if (poseStartTime && !(instructionIndex === instructions.length - 1 && poseResult === "Success")) {
         setPoseResult("Failure");
-        speak({ text: "Failure", voice: voice, rate: 1, pitch: 1, lang: 'en-US' });
+        if (!failureTimeout) {
+          speak({ text: "Failure", voice: voice, rate: 1, pitch: 1, lang: 'en-US' });
+          const timeout = setTimeout(() => {
+            setFailureTimeout(null);
+          }, 20000);
+          setFailureTimeout(timeout);
+        }
         setPoseStartTime(null);
       }
     }
   };
+  
 
   useEffect(() => {
     if (pose) {
@@ -120,6 +184,23 @@ export default function Fencer_Page() {
       checkPoseDuration(predictedPose);
     }
   }, [pose]);
+
+  useEffect(() => {
+    if (countdownFinished && poseResult === "Success") {
+      const interval = setInterval(() => {
+        setCountdown((prevCountdown) => {
+          if (prevCountdown > 0) {
+            return prevCountdown - 1;
+          } else {
+            clearInterval(interval);
+            setCountdownFinished(true); // Set countdownFinished to true when countdown reaches 0
+            return 3;
+          }
+        });
+      }, 1000);
+      return () => clearInterval(interval);
+    }
+  }, [countdownFinished, poseResult]);
 
   return (
     <div className="flex flex-col h-max font-sans bg-gray-900 text-white">
@@ -153,8 +234,13 @@ export default function Fencer_Page() {
 
         {/* Column 2 - Timer, Instruction, Canvas */}
         <div className="w-2/3 bg-gray-800 flex flex-col">
-          <div className="mt-9">
-            <Timer onTimerStart={handleTimerStart} onReset={handleReset} isStartDisabled={isStartDisabled} />
+          <div className="mt-9 flex flex-col items-center">
+            {showPreInstructionCountdown && (
+              <div className="pre-instruction-countdown text-4xl font-semibold mb-2">
+                {preInstructionCountdown}
+              </div>
+            )}
+            <Timer onTimerStart={handleTimerStart} onReset={handleReset} isStartDisabled={isStartDisabled} resetTimer={resetTimer} />
           </div>
           <div className="my-5">
             <Instruction instructionIndex={instructionIndex} instructions={instructions} performedPose={performedPose} />
@@ -163,7 +249,7 @@ export default function Fencer_Page() {
             <div id="poseResult" className="text-2xl font-semibold text-white flex items-center">
               {poseResult === "Success" && <FaCheckCircle className="text-green-500 mr-2" />}
               {poseResult === "Failure" && <FaTimesCircle className="text-red-500 mr-2" />}
-              {poseStartTime && <div className="countdown-circle">{countdown}</div>}
+              {hasSpoken && <div className="countdown-circle">{countdown}</div>}
             </div>
           </div>
           <div className="flex-grow flex justify-center items-center">
@@ -181,6 +267,9 @@ export default function Fencer_Page() {
           align-items: center;
           justify-content: center;
           font-size: 1.5rem;
+        }
+        .pre-instruction-countdown {
+          color: white;
         }
       `}</style>
     </div>

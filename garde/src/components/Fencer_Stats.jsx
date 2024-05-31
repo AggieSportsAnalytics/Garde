@@ -1,11 +1,12 @@
 import React from 'react';
 import Fencer_Canvas from './Fencer_Canvas';
 import { calculateAngle, displayFeetDistance, calculateSpeed } from './Fencer_Canvas';
+import { OpenAIAPIFeedback } from './Fencer_Canvas';
 import "@mediapipe/pose";
+const Fencer_Stats = (props, setLastCalled, setAiFeedback) => {
 
-const Fencer_Stats = (props) => {
-     console.log('pose:', props.pose);
      const pose = props.pose || {};
+     
      let leftElbAngle = "";
      let rightElbAngle = "";
      let leftKneeAngle = "";
@@ -29,7 +30,16 @@ const Fencer_Stats = (props) => {
        //11, 12, 13, 14, 15, 16, 23, 24, 25, 26, 27, 28
        speed = Math.round(calculateSpeed(pose.keypoints).currentSpeed);
      }
+     let result;
      
+
+     if (props.pose && Date.now() - props.lastCalled >= 30000) {
+          props.setLastCalled(Date.now());
+          OpenAIAPIFeedback({ "pose": predictedPose, "feet_distance": feetDistance, "left_elbow": leftElbAngle, "right_elbow": rightElbAngle, "right_hip": rightHipAngle, "left_hip": leftHipAngle, "left_knee": leftKneeAngle, "right_knee": rightKneeAngle, "speed": speed})
+          .then(result => {
+               props.setAiFeedback(result);
+          });
+     }
      return (
      <> 
      <div className="font-bold text-xl flex justify-center">

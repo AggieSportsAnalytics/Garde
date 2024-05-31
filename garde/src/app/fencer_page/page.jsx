@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import * as posedetection from '@tensorflow-models/pose-detection';
 import * as tf from '@tensorflow/tfjs-core';
 import '@tensorflow/tfjs-backend-webgl';
@@ -9,7 +9,7 @@ import Timer from '../../components/Timer.jsx';
 import AI_Feedback from '../../components/AI_Feedback.jsx';
 import { UserButton } from '@clerk/nextjs';
 import Fencer_Canvas from '../../components/Fencer_Canvas.jsx';
-import Fencer_Stats, { GetUserData } from '../../components/Fencer_Stats.jsx';
+import Fencer_Stats from '../../components/Fencer_Stats.jsx';
 import Instruction from '../../components/Instruction.jsx';
 import { useSpeechSynthesis } from 'react-speech-kit';
 import { displayFeetDistance } from '../../components/Fencer_Canvas.jsx';
@@ -19,6 +19,7 @@ const instructions = [
   "Perform an en guarde...",
   "Perform an advance...",
   "Perform a lunge...",
+  "Perform a defensive stance..."
 ];
 
 export default function Fencer_Page() {
@@ -31,23 +32,25 @@ export default function Fencer_Page() {
   const [performedPose, setPerformedPose] = useState("");
   const [hasSpoken, setHasSpoken] = useState(false);
   const [poseResult, setPoseResult] = useState("");
-  const [countdown, setCountdown] = useState(3); // State for success countdown timer
-  const [failureTimeout, setFailureTimeout] = useState(null); // State to handle failure timeout
+  const [countdown, setCountdown] = useState(3);
+  const [failureTimeout, setFailureTimeout] = useState(null);
   const [hasStarted, setHasStarted] = useState(false);
   const [resetTimer, setResetTimer] = useState(false);
   const [countdownFinished, setCountdownFinished] = useState(false);
-  const [preInstructionCountdown, setPreInstructionCountdown] = useState(3); // State for pre-instruction countdown
-  const [showPreInstructionCountdown, setShowPreInstructionCountdown] = useState(false); // To control rendering
+  const [preInstructionCountdown, setPreInstructionCountdown] = useState(3);
+  const [showPreInstructionCountdown, setShowPreInstructionCountdown] = useState(false);
   const [isInstructionBeingSaid, setIsInstructionBeingSaid] = useState(false);
+  const [lastCalled, setLastCalled] = useState(Date.now());
+  const [aiResult, setAiResult] = useState(null);
 
   const { speak, voices } = useSpeechSynthesis();
   const [voice, setVoice] = useState(null);
 
   useEffect(() => {
-    if (voices.length > 0) {
-      setVoice(voices[18]); // Daniel from https://mikeyparton.github.io/react-speech-kit/
+    if (voices.length > 0 && !voice) {
+      setVoice(voices.find(voice => voice.name === 'Daniel'));
     }
-  }, [voices]);
+  }, [voices, voice]);
 
   useEffect(() => {
     if (instructionIndex >= 0 && instructionIndex < instructions.length && !hasSpoken && !isInstructionBeingSaid) {
@@ -107,12 +110,12 @@ export default function Fencer_Page() {
       if (prevIndex >= instructions.length - 1) {
         setIsStartDisabled(true);
       }
-      setHasSpoken(false); // Reset spoken state for the next instruction
+      setHasSpoken(false);
       return prevIndex + 1;
     });
     setPoseResult("");
     setResetTimer(false);
-    setCountdown(3); // Reset countdown for new instruction
+    setCountdown(3);
   };
 
   const handleReset = () => {
@@ -121,11 +124,11 @@ export default function Fencer_Page() {
     setPoseStartTime(null);
     setHasSpoken(false);
     setPoseResult("");
-    setCountdown(3); // Reset countdown on reset
+    setCountdown(3);
     setResetTimer(true);
-    setPreInstructionCountdown(3); // Reset pre-instruction countdown on reset
+    setPreInstructionCountdown(3);
     setShowPreInstructionCountdown(false);
-    clearTimeout(failureTimeout); // Clear the failure timeout on reset
+    clearTimeout(failureTimeout);
   };
 
   const handleVideoChange = (newVideoSource) => {
@@ -146,27 +149,27 @@ export default function Fencer_Page() {
     };
     const expectedPose = instructionToPose[currentInstruction];
     setPerformedPose(predictedPose);
-  
+
     if (predictedPose && expectedPose && predictedPose === expectedPose) {
       if (!poseStartTime) {
         setPoseStartTime(Date.now());
       } else {
         const elapsedTime = Date.now() - poseStartTime;
-        setCountdown(3 - Math.floor(elapsedTime / 1000)); // Update countdown based on elapsed time
+        setCountdown(3 - Math.floor(elapsedTime / 1000));
         if (elapsedTime >= 3000) {
           setPoseResult("Success");
           speak({ text: "Success", voice: voice, rate: 1, pitch: 1, lang: 'en-US' });
           setPoseStartTime(null);
           setTimeout(() => {
             handleTimerStart();
-          }, 3000); // 3-second pause before moving to the next instruction
+          }, 3000);
         }
       }
     } else {
       if (poseStartTime && !(instructionIndex === instructions.length - 1 && poseResult === "Success")) {
         setPoseResult("Failure");
+        speak({ text: "Failure", voice: voice, rate: 1, pitch: 1, lang: 'en-US' });
         if (!failureTimeout) {
-          speak({ text: "Failure", voice: voice, rate: 1, pitch: 1, lang: 'en-US' });
           const timeout = setTimeout(() => {
             setFailureTimeout(null);
           }, 20000);
@@ -176,7 +179,6 @@ export default function Fencer_Page() {
       }
     }
   };
-  
 
   useEffect(() => {
     if (pose) {
@@ -193,7 +195,7 @@ export default function Fencer_Page() {
             return prevCountdown - 1;
           } else {
             clearInterval(interval);
-            setCountdownFinished(true); // Set countdownFinished to true when countdown reaches 0
+            setCountdownFinished(true);
             return 3;
           }
         });
@@ -204,35 +206,28 @@ export default function Fencer_Page() {
 
   return (
     <div className="flex flex-col h-max font-sans bg-gray-900 text-white">
-      {/* Navbar */}
       <div className="flex items-center justify-between p-4 bg-black border-b border-gray-700">
-        {/* Left Side - Back Button */}
         <Link href="/">
           <button className="bg-gray-700 text-white py-2 px-4 rounded text-lg font-semibold hover:bg-gray-600">
             &#8592;
           </button>
         </Link>
-        {/* Center - Fencer Name */}
         <UserButton />
-        {/* Right Side - Stream Vid Buttons */}
         <div className="absolute right-4 top-10">
           <Stream_Vid onVideoChange={handleVideoChange} isRecording={isRecording} toggleRecording={toggleRecording} videoSource={videoSource} />
         </div>
       </div>
 
-      {/* Main Content */}
       <div className="flex flex-grow overflow-auto">
-        {/* Column 1 - Feedback and Stats */}
         <div className="w-1/3 bg-gray-800 p-4 flex flex-col space-y-4 border-r border-gray-700">
           <div className="box-border h-full p-4 border-2 border-blue-700 rounded-lg shadow-lg">
-            {pose ? <AI_Feedback angles={GetUserData(pose)} /> : null}
+            {aiResult}
           </div>
           <div className="box-border h-full p-4 border-2 border-gray-700 rounded-lg shadow-lg">
-            <Fencer_Stats pose={pose} />
+            <Fencer_Stats pose={pose} lastCalled={lastCalled} setLastCalled={setLastCalled} setAiFeedback={setAiResult} />
           </div>
         </div>
 
-        {/* Column 2 - Timer, Instruction, Canvas */}
         <div className="w-2/3 bg-gray-800 flex flex-col">
           <div className="mt-9 flex flex-col items-center">
             {showPreInstructionCountdown && (

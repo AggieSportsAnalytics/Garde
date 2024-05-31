@@ -3,8 +3,8 @@ import Webcam from "react-webcam";
 import * as poseDetection from '@tensorflow-models/pose-detection';
 import '@tensorflow/tfjs-core';
 import '@tensorflow/tfjs-backend-webgl';
-const {Configuration, OpenAIApi, OpenAI} = require("openai")
-import '@mediapipe/pose';
+const { Configuration, OpenAIApi, OpenAI } = require("openai");
+import "@mediapipe/pose";
 import Plotly from 'plotly.js-dist-min';
 import Modal from 'react-modal';
 
@@ -13,6 +13,7 @@ const WebcamPose = ({ onVideoChange, isRecording, videoSource, runtime = 'mediap
   const webcamRef = useRef(null);
   const canvasRef = useRef(null);
   let intervalId = useRef(null);
+  let openAICallIntervalId = useRef(null);
   const minConfidence = 0.5;
 
   const [latestPose, setLatestPose] = useState(null);
@@ -126,7 +127,6 @@ const WebcamPose = ({ onVideoChange, isRecording, videoSource, runtime = 'mediap
 
     Plotly.react('3d-plot', [tracePoints, ...traceLines], layout, { displayModeBar: false });
   };
-  
 
   useEffect(() => {
     if (videoSource || isRecording) {
@@ -137,6 +137,7 @@ const WebcamPose = ({ onVideoChange, isRecording, videoSource, runtime = 'mediap
       clearInterval(intervalId.current);
     };
   }, [isRecording, videoSource, runtime, modelType]);
+
 
   return (
     <>
@@ -312,11 +313,18 @@ export function displayFeetDistance(keypoints) {
   return { feetDistance, predictedPose };
 }
 
-
-
 export async function OpenAIAPIFeedback(props) {
-  
-  const userAngles = props;
+  //const sleep = ms => new Promise(r => setTimeout(r, ms));
+  const pose = props.pose || {};
+  const userAngles = {
+    "name": props.pose,
+    "elbow_left": props.left_elbow,
+    "hip_left": props.left_hip,
+    "knee_left": props.left_knee,
+    "elbow_right": props.right_elbow,
+    "hip_right": props.right_hip,
+    "knee_right": props.right_knee,
+  }
 
   const idealAngles = [
     {
@@ -355,53 +363,53 @@ export async function OpenAIAPIFeedback(props) {
       "hip_right": "151",
       "knee_right": "165"
     }
-  ]
+  ];
 
-  const openai = new OpenAI({
+  let comparison;
+  
+  if(pose == "en guarde") {
+    comparison = idealAngles[0];
+  }
+  else if(pose == "advance") {
+    comparison = idealAngles[1];
+  }
+  else if(pose == "retreat") {
+    comparison = idealAngles[2];
+  }
+  else if(pose == "lunge") {
+    comparison = idealAngles[3];
+  } 
+
+
+    let query = `Please compare the user's angles ${JSON.stringify(userAngles)} with the ideal angles ${JSON.stringify(comparison)} for the ${userAngles.pose} position and provide a detailed analysis.`;
+    const openai = new OpenAI({
     apiKey: process.env.NEXT_PUBLIC_OPENAI_KEY,
     dangerouslyAllowBrowser: true
   });
-  
-  if(userAngles.pose == "en guarde") {
-    comparison = ideal_en_guarde;
-  }
-  else if(userAngles.pose == "advance") {
-    comparison = ideal_advance;
-  }
-  else if(userAngles.pose == "retreat") {
-    comparison = ideal_retreat;
-  }
-  else if(userAngles.pose == "lunge") {
-    comparison = ideal_lunge;
-  } 
+  // console.log('Test');
+  // return ("success");
 
-  //const prompt = "";
-  let dataComp = `User's angles: ${JSON.stringify(userAngles)}, ideal angles: ${JSON.stringify(comparison)}.`;
-  let query = `Please compare the user's angles ${JSON.stringify(userAngles)} with the ideal angles for the ${userAngles.pose} position and provide a detailed analysis.`;
 
   const chatCompletion = await openai.chat.completions.create({
     messages: [
-                //Prompt engineering the AI feedback coach to give more precise feedback
-                { 
-                  role: 'system',
-                  content: `You are a helpful AI assistant embedded in an automated fencing coach
-                  program. You possess expert knowledge about fencing as a sport and are very 
-                  articulate when giving feedback on how a fencer can improve their form. 
-                  You keep your feedback short, concise and snappy and don't stray too far away from the point.
-                  You are professional, inspiring and helpful.`
-                },
-                { 
-                  role: 'user', 
-                  content: query
-                }
-              
-              ],
+      { 
+        role: 'system',
+        content: `You are a helpful AI assistant embedded in an automated fencing coach
+        program. You possess expert knowledge about fencing as a sport and are very 
+        articulate when giving feedback on how a fencer can improve their form. 
+        You keep your feedback short, concise and snappy and don't stray too far away from the point.
+        You are professional, inspiring and helpful.`
+      },
+      { 
+        role: 'user', 
+        content: query
+      }
+    ],
     model: 'gpt-4',
   });
-
   console.log(chatCompletion.choices[0].message.content);
   return chatCompletion.choices[0].message.content;
-  //return chatCompletion.choices[0].content;
+
 }
 
 // const url = process.env.MONGODB_URL
@@ -434,8 +442,3 @@ export async function OpenAIAPIFeedback(props) {
 //         res.status(500).json({ error: err.message });
 //     }
 // }
-
-
-
-
-

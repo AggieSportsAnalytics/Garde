@@ -91,4 +91,5 @@ const getFencer = async (userId, name, type) => {
   const result = await response.json();
   
   // setFencer(result.document);
+  return result.document
 };

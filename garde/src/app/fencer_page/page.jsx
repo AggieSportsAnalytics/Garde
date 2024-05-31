@@ -19,7 +19,6 @@ const instructions = [
   "Perform an en guarde...",
   "Perform an advance...",
   "Perform a lunge...",
-  "Perform a defensive stance..."
 ];
 
 export default function Fencer_Page() {
@@ -48,7 +47,7 @@ export default function Fencer_Page() {
 
   useEffect(() => {
     if (voices.length > 0 && !voice) {
-      setVoice(voices.find(voice => voice.name === 'Daniel'));
+      setVoice(voices[18]);
     }
   }, [voices, voice]);
 
@@ -144,8 +143,7 @@ export default function Fencer_Page() {
     const instructionToPose = {
       "Perform an en guarde...": "en guarde",
       "Perform an advance...": "advance",
-      "Perform a lunge...": "lunge",
-      "Perform a defensive stance...": "defensive stance"
+      "Perform a lunge...": "lunge"
     };
     const expectedPose = instructionToPose[currentInstruction];
     setPerformedPose(predictedPose);
@@ -168,8 +166,8 @@ export default function Fencer_Page() {
     } else {
       if (poseStartTime && !(instructionIndex === instructions.length - 1 && poseResult === "Success")) {
         setPoseResult("Failure");
-        speak({ text: "Failure", voice: voice, rate: 1, pitch: 1, lang: 'en-US' });
         if (!failureTimeout) {
+          speak({ text: "Failure", voice: voice, rate: 1, pitch: 1, lang: 'en-US' });
           const timeout = setTimeout(() => {
             setFailureTimeout(null);
           }, 20000);
@@ -221,7 +219,9 @@ export default function Fencer_Page() {
       <div className="flex flex-grow overflow-auto">
         <div className="w-1/3 bg-gray-800 p-4 flex flex-col space-y-4 border-r border-gray-700">
           <div className="box-border h-full p-4 border-2 border-blue-700 rounded-lg shadow-lg">
-            {aiResult}
+            {(aiResult ? aiResult.split('\n') : []).map((item, key) => {
+              return <span key={key}>{item}<br/></span>
+            })}
           </div>
           <div className="box-border h-full p-4 border-2 border-gray-700 rounded-lg shadow-lg">
             <Fencer_Stats pose={pose} lastCalled={lastCalled} setLastCalled={setLastCalled} setAiFeedback={setAiResult} />

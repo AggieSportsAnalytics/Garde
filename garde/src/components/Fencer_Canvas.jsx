@@ -3,7 +3,8 @@ import Webcam from "react-webcam";
 import * as poseDetection from '@tensorflow-models/pose-detection';
 import '@tensorflow/tfjs-core';
 import '@tensorflow/tfjs-backend-webgl';
-import '@mediapipe/pose';
+const { Configuration, OpenAIApi, OpenAI } = require("openai");
+import "@mediapipe/pose";
 import Plotly from 'plotly.js-dist-min';
 import Modal from 'react-modal';
 
@@ -12,6 +13,7 @@ const WebcamPose = ({ onVideoChange, isRecording, videoSource, runtime = 'mediap
   const webcamRef = useRef(null);
   const canvasRef = useRef(null);
   let intervalId = useRef(null);
+  let openAICallIntervalId = useRef(null);
   const minConfidence = 0.5;
 
   const [latestPose, setLatestPose] = useState(null);
@@ -125,7 +127,6 @@ const WebcamPose = ({ onVideoChange, isRecording, videoSource, runtime = 'mediap
 
     Plotly.react('3d-plot', [tracePoints, ...traceLines], layout, { displayModeBar: false });
   };
-  
 
   useEffect(() => {
     if (videoSource || isRecording) {
@@ -136,6 +137,7 @@ const WebcamPose = ({ onVideoChange, isRecording, videoSource, runtime = 'mediap
       clearInterval(intervalId.current);
     };
   }, [isRecording, videoSource, runtime, modelType]);
+
 
   return (
     <>
@@ -310,3 +312,133 @@ export function displayFeetDistance(keypoints) {
 
   return { feetDistance, predictedPose };
 }
+
+export async function OpenAIAPIFeedback(props) {
+  //const sleep = ms => new Promise(r => setTimeout(r, ms));
+  const pose = props.pose || {};
+  const userAngles = {
+    "name": props.pose,
+    "elbow_left": props.left_elbow,
+    "hip_left": props.left_hip,
+    "knee_left": props.left_knee,
+    "elbow_right": props.right_elbow,
+    "hip_right": props.right_hip,
+    "knee_right": props.right_knee,
+  }
+
+  const idealAngles = [
+    {
+      "name": "en guarde",
+      "elbow_left": "96",
+      "hip_left": "117",
+      "knee_left": "121",
+      "elbow_right": "2",
+      "hip_right": "170",
+      "knee_right": "160"
+    },
+    {
+      "name": "advance",
+      "elbow_left": "87",
+      "hip_left": "126",
+      "knee_left": "132",
+      "elbow_right": "36",
+      "hip_right": "170",
+      "knee_right": "160"
+    },
+    {
+      "name": "retreat",
+      "elbow_left": "90",
+      "hip_left": "127",
+      "knee_left": "144",
+      "elbow_right": "8",
+      "hip_right": "172",
+      "knee_right": "170"
+    },
+    {
+      "name": "lunge",
+      "elbow_left": "178",
+      "hip_left": "84",
+      "knee_left": "110",
+      "elbow_right": "170",
+      "hip_right": "151",
+      "knee_right": "165"
+    }
+  ];
+
+  let comparison;
+  
+  if(pose == "en guarde") {
+    comparison = idealAngles[0];
+  }
+  else if(pose == "advance") {
+    comparison = idealAngles[1];
+  }
+  else if(pose == "retreat") {
+    comparison = idealAngles[2];
+  }
+  else if(pose == "lunge") {
+    comparison = idealAngles[3];
+  } 
+
+
+    let query = `Please compare the user's angles ${JSON.stringify(userAngles)} with the ideal angles ${JSON.stringify(comparison)} for the ${userAngles.pose} position and provide a detailed analysis.`;
+    const openai = new OpenAI({
+    apiKey: process.env.NEXT_PUBLIC_OPENAI_KEY,
+    dangerouslyAllowBrowser: true
+  });
+  // console.log('Test');
+  // return ("success");
+
+
+  const chatCompletion = await openai.chat.completions.create({
+    messages: [
+      { 
+        role: 'system',
+        content: `You are a helpful AI assistant embedded in an automated fencing coach
+        program. You possess expert knowledge about the fencing sport and are very 
+        articulate when giving feedback on how a fencer can improve their form. 
+        You keep your feedback to 3 short, helpful bullet points, concise and snappy and don't stray too far away from the point.
+        You are professional, inspiring and helpful.`
+      },
+      { 
+        role: 'user', 
+        content: query
+      }
+    ],
+    model: 'gpt-4',
+  });
+  console.log(chatCompletion.choices[0].message.content);
+  return chatCompletion.choices[0].message.content;
+
+}
+
+// const url = process.env.MONGODB_URL
+// const client = new MongoClient(url, {
+//   serverApi: ServerApiVersion.v1,
+//   useNewUrlParser: true,
+//   useUnifiedTopology: true,
+// });
+
+// export async function getFromMongo(req, res) {
+//     try {
+//         const data = req.body;
+
+//         await client.connect();
+
+//         const db = client.db("Garde");
+//         const collection = db.collection(data.type);
+
+//         let document = await collection.find({}).toArray();
+
+//         // if(data.type === "fencer" && !document) {
+//         //     document = createFencer(data, collection);
+//         // }
+//         // else if(data.type === "coach" && !document) {
+//         //     document = createCoach(data, collection);
+//         // }
+
+//         res.status(200).json({ "document": document });
+//     } catch (err) {
+//         res.status(500).json({ error: err.message });
+//     }
+// }

@@ -1,0 +1,18 @@
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+generator client {
+  provider = "prisma-client-js"
+}
+
+model garde_ideal_angles {
+  id             String   @id @default(auto()) @map("_id") @db.ObjectId
+  name           String
+  elbow_left     String 
+  hip_left       String
+  knee_left      String
+  elbow_right    String
+  hip_right      String
+  knee_right     String
+}

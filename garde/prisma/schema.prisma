@@ -19,4 +19,5 @@ model garde_ideal_angles {
 
 model fencer_instructions {
     id          String    @id @default(auto()) @map("_id") @db.ObjectId
+    name        String
 }

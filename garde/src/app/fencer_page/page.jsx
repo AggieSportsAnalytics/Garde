@@ -14,7 +14,6 @@ import Instruction from '../../components/Instruction.jsx';
 import { useSpeechSynthesis } from 'react-speech-kit';
 import { displayFeetDistance } from '../../components/Fencer_Canvas.jsx';
 import { FaCheckCircle, FaTimesCircle } from 'react-icons/fa';
-
 const instructions = [
   "Perform an en guarde...",
   "Perform an advance...",
@@ -211,6 +210,7 @@ export default function Fencer_Page() {
           </button>
         </Link>
         <UserButton />
+
         <div className="absolute right-4 top-10">
           <Stream_Vid onVideoChange={handleVideoChange} isRecording={isRecording} toggleRecording={toggleRecording} videoSource={videoSource} />
         </div>
@@ -227,7 +227,6 @@ export default function Fencer_Page() {
             <Fencer_Stats pose={pose} lastCalled={lastCalled} setLastCalled={setLastCalled} setAiFeedback={setAiResult} />
           </div>
         </div>
-
         <div className="w-2/3 bg-gray-800 flex flex-col">
           <div className="mt-9 flex flex-col items-center">
             {showPreInstructionCountdown && (

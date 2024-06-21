@@ -1,13 +1,19 @@
 'use client'
 
 import "../../app/globals.css"
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef} from "react";
 import { Pie } from 'react-chartjs-2';
 import 'chart.js/auto';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import {createFencerInstruction} from '../../../prisma/fencer_instructions';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Link from "next/link";
+import { PrismaClient } from '@prisma/client'
+import { Button, Input} from 'antd';
+import {FormEvent} from 'react';
+
+const prisma = new PrismaClient()
 
 export default function CoachPage() {
     return (
@@ -15,6 +21,7 @@ export default function CoachPage() {
             <TopBar />
             <Feedback />
             <Analytics />
+            <AddFencerInstruction />
         </div>
     );
 }
@@ -58,7 +65,7 @@ function Videos() {
     ];
 
     const [selectedVideo, setSelectedVideo] = useState(null);
-
+    
     if (selectedVideo) {
       return (
         <div className="video-player w-1/2 ml-10 rounded-xl">
@@ -265,7 +272,32 @@ function TopBar() {
                 </span>
                 
                 <div className="w-50px"></div> 
+                
             </header>
         </div>
     );
+}
+
+const onSubmit = async (name) => {
+  const response = await fetch("/api/fencer_instructions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({name: name})
+  })
+}
+
+function AddFencerInstruction() {
+  return (
+    <div>
+        <div className="flex justify-center mt-5">
+          <Input placeholder="Input Instruction Here" type="text" className="w-[300px]" id="textInput"/>
+        </div>
+        <div className="flex justify-center mt-2">
+          <Button type="dashed" onClick={() => onSubmit(document.getElementById("textInput").value)}>Add Instruction</Button>
+        </div>
+    </div>
+  )
+  
 }

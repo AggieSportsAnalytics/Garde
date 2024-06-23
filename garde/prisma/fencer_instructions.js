@@ -11,3 +11,8 @@ export const createFencerInstruction = async (name) => {
 
     return fencer_instruction;
 }
+
+export const getFencerInstructions = async () => {
+    const fencerInstructions = await prisma.fencer_instructions.findMany();
+    return fencerInstructions;
+}

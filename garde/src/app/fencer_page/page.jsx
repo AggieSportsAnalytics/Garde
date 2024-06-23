@@ -14,6 +14,7 @@ import Instruction from '../../components/Instruction.jsx';
 import { useSpeechSynthesis } from 'react-speech-kit';
 import { displayFeetDistance } from '../../components/Fencer_Canvas.jsx';
 import { FaCheckCircle, FaTimesCircle } from 'react-icons/fa';
+import { getFencerInstructions } from '../../../prisma/fencer_instructions.js';
 const instructions = [
   "Perform an en guarde...",
   "Perform an advance...",

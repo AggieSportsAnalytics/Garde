@@ -1,6 +1,6 @@
 import { SquareX } from 'lucide-react'
 import { Select, Space, Input, Button, Table} from "antd";
-import React, {useEffect, useState} from 'react'
+import React, {useEffect, useState, useRef} from 'react'
 import {showInstructionMenu, setInstructionMenu} from './Fencer_Canvas';
 
 // const CloseInstructionMenu = () => {
@@ -41,6 +41,57 @@ const FencerInstructionMenu = () => {
   
   // console.log(fencerInstructions);
 
+  const columns = [
+    {
+      title: 'Name',
+      dataIndex: 'name',
+      key: 'name'
+    },
+    {
+      title: 'Time (s)',
+      dataIndex: 'time',
+      key: 'time'
+    }
+  ]
+
+  // const dataSource = [
+  //   {
+  //     key: '1',
+  //     name: {fencerInstructionInputValue},
+  //     time: {timeValue}
+  //   }
+  // ]
+
+  const [timeValue, setTimeValue] = useState(""); 
+
+  const [data, setData] = useState([]);
+
+  const [fencerInstructionInputValue, setFencerInstructionInputValue] = useState("");
+
+  const addDataValues = () => {
+
+    const keyId = data.length + 1;
+
+    const newDataItem = {
+      key: keyId,
+      name: fencerInstructionInputValue,
+      time: timeValue
+    };
+
+    console.log(document.getElementById("fencerDropdown").value);
+
+    setData([...data, newDataItem]); // Update data with the new item
+
+  }
+
+  const changeTimeValue = event => {
+    setTimeValue(event.target.value);
+  }
+
+  const changeFencerInstructionValue = value => {
+    setFencerInstructionInputValue(value);
+  }
+
   return (
     <div>
       <div className="absolute bottom-[-1/16] left-[1/4] mt-[-85px] ml-[-300px] bg-gray-500 w-[750px] h-[500px] rounded-md z-10">
@@ -48,7 +99,7 @@ const FencerInstructionMenu = () => {
             <SquareX onClick={() => GetFencerInstructions()}/>
         </div>
         <Space>
-            <Select placeholder="Choose Instruction" className="mt-[-10px] ml-10 w-80" 
+            <Select id="fencerDropdown" placeholder="Choose Instruction" className="mt-[-10px] ml-10 w-80" onChange={changeFencerInstructionValue}
                 options={fencerInstructions.map((instruction) => ({ //For each loop
                   label: instruction, 
                   value: instruction
@@ -56,13 +107,13 @@ const FencerInstructionMenu = () => {
             />
         </Space>
         <div className="mt-[-32px] ml-96">
-            <Input placeholder="Time" className="w-20"/>
+            <Input name="time" placeholder="Time" className="w-20" value={timeValue} onChange={changeTimeValue}/>
         </div>
         <div className="mt-[-32px] ml-[500px]">
-            <Button type="primary">Add</Button>
+            <Button type="primary" onClick={() => addDataValues()}>Add</Button>
         </div>
         <div className="mt-10">
-            <Table />
+            <Table dataSource={data} columns={columns}/>
         </div>
       </div>
     </div>

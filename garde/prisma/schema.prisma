@@ -16,3 +16,9 @@ model garde_ideal_angles {
   hip_right      String
   knee_right     String
 }
+
+model fencer_instructions {
+    id          String    @id @default(auto()) @map("_id") @db.ObjectId
+    name        String
+
+}

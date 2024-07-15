@@ -15,6 +15,7 @@ import { useSpeechSynthesis } from 'react-speech-kit';
 import { displayFeetDistance } from '../../components/Fencer_Canvas.jsx';
 import { FaCheckCircle, FaTimesCircle } from 'react-icons/fa';
 import HeightInputModal from '../../components/HeightInputModal.jsx';
+import { getFencerInstructions } from '../../../prisma/fencer_instructions.js';
 
 const instructions = [
   "Perform an en guarde...",
@@ -230,6 +231,7 @@ export default function Fencer_Page() {
           </button>
         </Link>
         <UserButton />
+
         <div className="absolute right-4 top-10">
           <Stream_Vid onVideoChange={handleVideoChange} isRecording={isRecording} toggleRecording={toggleRecording} videoSource={videoSource} />
         </div>
@@ -258,7 +260,6 @@ export default function Fencer_Page() {
           />
           </div>
         </div>
-
         <div className="w-2/3 bg-gray-800 flex flex-col">
           <div className="mt-9 flex flex-col items-center">
             {showPreInstructionCountdown && (

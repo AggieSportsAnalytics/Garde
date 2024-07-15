@@ -7,6 +7,10 @@ const { Configuration, OpenAIApi, OpenAI } = require("openai");
 import "@mediapipe/pose";
 import Plotly from 'plotly.js-dist-min';
 import Modal from 'react-modal';
+import FencerInstructionMenu from './FencerInstructionMenu';
+import {Hammer, HammerIcon} from 'lucide-react';
+
+
 
 const WebcamPose = ({ onVideoChange, isRecording, videoSource, runtime = 'mediapipe', modelType = 'full', setPose }) => {
   const videoRef = useRef(null);
@@ -17,6 +21,7 @@ const WebcamPose = ({ onVideoChange, isRecording, videoSource, runtime = 'mediap
   const minConfidence = 0.5;
 
   const [latestPose, setLatestPose] = useState(null);
+  const [showInstructionMenu, setInstructionMenu] = useState(false);
 
   useEffect(() => {
     Modal.setAppElement('body');
@@ -138,6 +143,13 @@ const WebcamPose = ({ onVideoChange, isRecording, videoSource, runtime = 'mediap
     };
   }, [isRecording, videoSource, runtime, modelType]);
 
+  const ShowInstructionMenu = () => {
+    if (showInstructionMenu == true) {
+      setInstructionMenu(false);
+    } else {
+      setInstructionMenu(true);
+    }
+  }
 
   return (
     <>
@@ -167,7 +179,11 @@ const WebcamPose = ({ onVideoChange, isRecording, videoSource, runtime = 'mediap
         border: '2px solid white',
         overflow: 'hidden'  
       }}></div>
-
+    <div className="mt-[-610px] ml-[-1100px]">
+      <Hammer className="w-10 h-10 hover:bg-slate-700 rounded-md" onClick={ShowInstructionMenu}/> {
+        showInstructionMenu && (<FencerInstructionMenu />)
+      }
+    </div>
     </>
   );
 };

@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import * as posedetection from '@tensorflow-models/pose-detection';
 import * as tf from '@tensorflow/tfjs-core';
 import '@tensorflow/tfjs-backend-webgl';
@@ -14,6 +14,7 @@ import Instruction from '../../components/Instruction.jsx';
 import { useSpeechSynthesis } from 'react-speech-kit';
 import { displayFeetDistance } from '../../components/Fencer_Canvas.jsx';
 import { FaCheckCircle, FaTimesCircle } from 'react-icons/fa';
+import HeightInputModal from '../../components/HeightInputModal.jsx';
 
 const instructions = [
   "Perform an en guarde...",
@@ -41,9 +42,21 @@ export default function Fencer_Page() {
   const [isInstructionBeingSaid, setIsInstructionBeingSaid] = useState(false);
   const [lastCalled, setLastCalled] = useState(Date.now());
   const [aiResult, setAiResult] = useState(null);
-
+  const [height, setHeight] = useState(null);
+  const [isHeightModalOpen, setIsHeightModalOpen] = useState(false);
   const { speak, voices } = useSpeechSynthesis();
   const [voice, setVoice] = useState(null);
+
+  const handleHeightSave = (heightInMeters) => {
+    setHeight(heightInMeters);
+    setIsHeightModalOpen(false);
+  };
+
+  const convertPixelsToMeters = (pixels) => {
+    if (!height) return null;
+    const pixelToMeterRatio = height / 100; // Adjust this ratio based on calibration
+    return pixels * pixelToMeterRatio;
+  };
 
   useEffect(() => {
     if (voices.length > 0 && !voice) {
@@ -53,7 +66,7 @@ export default function Fencer_Page() {
 
   useEffect(() => {
     if (instructionIndex >= 0 && instructionIndex < instructions.length && !hasSpoken && !isInstructionBeingSaid) {
-      setHasSpoken(true); // Ensure this is set to prevent duplicate speech
+      setHasSpoken(true);
       setTimeout(() => {
         speak({
           text: `${instructions[instructionIndex]} Starting in 3, 2, 1`,
@@ -63,13 +76,13 @@ export default function Fencer_Page() {
           lang: 'en-US',
           onend: () => {
             setShowPreInstructionCountdown(false);
-            setHasSpoken(false); // Allow the success countdown to start after speaking
+            setHasSpoken(false);
           },
         });
         setShowPreInstructionCountdown(true);
         startPreInstructionCountdown();
         setResetTimer(true);
-      }, 0); // 1000 milliseconds = 1 second delay
+      }, 0);
     }
   }, [instructionIndex, voice, speak, hasSpoken, videoSource, isInstructionBeingSaid]);
 
@@ -81,7 +94,7 @@ export default function Fencer_Page() {
           return prevCountdown - 1;
         } else {
           clearInterval(interval);
-          startSuccessCountdown(); // Start the success countdown after the pre-instruction countdown has finished
+          startSuccessCountdown();
           return 0;
         }
       });
@@ -132,9 +145,13 @@ export default function Fencer_Page() {
 
   const handleVideoChange = (newVideoSource) => {
     setVideoSource(newVideoSource);
+    if (!height) setIsHeightModalOpen(true);
   };
 
   const toggleRecording = () => {
+    if (!height) {
+      setIsHeightModalOpen(true);
+    }
     setIsRecording(!isRecording);
   };
 
@@ -180,8 +197,10 @@ export default function Fencer_Page() {
 
   useEffect(() => {
     if (pose) {
-      const { predictedPose } = displayFeetDistance(pose.keypoints);
+      const { predictedPose, feetDistance } = displayFeetDistance(pose.keypoints);
       checkPoseDuration(predictedPose);
+      const distanceInMeters = convertPixelsToMeters(feetDistance);
+      // Use distanceInMeters for further processing
     }
   }, [pose]);
 
@@ -216,6 +235,12 @@ export default function Fencer_Page() {
         </div>
       </div>
 
+      <HeightInputModal
+        isOpen={isHeightModalOpen}
+        onClose={() => setIsHeightModalOpen(false)}
+        onSave={handleHeightSave}
+      />
+
       <div className="flex flex-grow overflow-auto">
         <div className="w-1/3 bg-gray-800 p-4 flex flex-col space-y-4 border-r border-gray-700">
           <div className="box-border h-full p-4 border-2 border-blue-700 rounded-lg shadow-lg">
@@ -224,7 +249,13 @@ export default function Fencer_Page() {
             })}
           </div>
           <div className="box-border h-full p-4 border-2 border-gray-700 rounded-lg shadow-lg">
-            <Fencer_Stats pose={pose} lastCalled={lastCalled} setLastCalled={setLastCalled} setAiFeedback={setAiResult} />
+          <Fencer_Stats 
+            pose={pose} 
+            lastCalled={lastCalled} 
+            setLastCalled={setLastCalled} 
+            setAiFeedback={setAiResult} 
+            height={height} 
+          />
           </div>
         </div>
 

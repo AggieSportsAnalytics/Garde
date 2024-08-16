@@ -156,7 +156,7 @@ const WebcamPose = ({ onVideoChange, isRecording, videoSource, runtime = 'mediap
       <div className="flex flex-col items-center space-y-4" style={{ position: "relative", width: '100%', maxWidth: '640px', height: 'auto' }}>
         {isRecording || videoSource ? (
           <>
-            <div style={{ position: "relative", width: "100%" }}>
+            <div className="video-container" style={{ position: "fixed", top: '350px', left: '750px', width: "640px", height: "auto" }}>
               {videoSource ? (
                 <video className="rounded-md" ref={videoRef} style={{ width: "100%", height: "auto" }} autoPlay loop muted />
               ) : (
@@ -179,12 +179,13 @@ const WebcamPose = ({ onVideoChange, isRecording, videoSource, runtime = 'mediap
         border: '2px solid white',
         overflow: 'hidden'  
       }}></div>
-    <div className="mt-[-610px] ml-[-1100px]">
+       
+    <div className="fixed" style={{ position: 'absolute', top: '230px', left: '800px' }}> 
       <Hammer className="w-10 h-10 hover:bg-slate-700 rounded-md" onClick={ShowInstructionMenu}/> {
-        showInstructionMenu && (<FencerInstructionMenu />)
+        showInstructionMenu && (<FencerInstructionMenu setInstructionMenu={setInstructionMenu}/>)
       }
     </div>
-    </>
+    </> 
   );
 };
 

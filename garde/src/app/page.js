@@ -11,23 +11,23 @@ import CoachPage from "./coach_page/page";
 
 export default function Home() {
      
-        // return (
+        return (
         
-        //     <div className="">
-        //         <Navbar />
-        //         <Hero />
-        //         <About />
-        //         <Features />
-        //         <Contact />
-        //         <Footer />
-        //         {/**/}
-        //     </div>
-        // )
+            <div className="">
+                <Navbar />
+                <Hero />
+                <About />
+                <Features />
+                <Contact />
+                <Footer />
+                {/**/}
+            </div>
+        )
      
-     return ( 
-        <div className="">
-            <Fencer_Page />
+   //   return ( 
+   //      <div className="">
+   //          <Fencer_Page />
             
-         </div>
-     )
+   //       </div>
+   //   )
 }

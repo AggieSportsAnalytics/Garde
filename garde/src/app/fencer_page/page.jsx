@@ -16,12 +16,7 @@ import { displayFeetDistance } from '../../components/Fencer_Canvas.jsx';
 import { FaCheckCircle, FaTimesCircle } from 'react-icons/fa';
 import HeightInputModal from '../../components/HeightInputModal.jsx';
 import { getFencerInstructions } from '../../../prisma/fencer_instructions.js';
-
-const instructions = [
-  "Perform an en guarde...",
-  "Perform an advance...",
-  "Perform a lunge...",
-];
+import InstructionContext from '../../components/InstructionContext.js';
 
 export default function Fencer_Page() {
   const [videoSource, setVideoSource] = useState('');
@@ -47,6 +42,10 @@ export default function Fencer_Page() {
   const [isHeightModalOpen, setIsHeightModalOpen] = useState(false);
   const { speak, voices } = useSpeechSynthesis();
   const [voice, setVoice] = useState(null);
+  const [instructions, setInstructions] = useState([]);
+  const [isRunning, setIsRunning] = useState(false);
+  const [data, setData] = useState();
+  const [videoInput, setVideoInput] = useState(false);
 
   const handleHeightSave = (heightInMeters) => {
     setHeight(heightInMeters);
@@ -70,7 +69,7 @@ export default function Fencer_Page() {
       setHasSpoken(true);
       setTimeout(() => {
         speak({
-          text: `${instructions[instructionIndex]} Starting in 3, 2, 1`,
+          text: `${instructions[instructionIndex].name} Starting in 3, 2, 1`,
           voice: voice,
           rate: 1,
           pitch: 1,
@@ -78,6 +77,7 @@ export default function Fencer_Page() {
           onend: () => {
             setShowPreInstructionCountdown(false);
             setHasSpoken(false);
+            setInstructionIndex(instructionIndex + 1); // Increment instructionIndex after each instruction is spoken
           },
         });
         setShowPreInstructionCountdown(true);
@@ -86,6 +86,7 @@ export default function Fencer_Page() {
       }, 0);
     }
   }, [instructionIndex, voice, speak, hasSpoken, videoSource, isInstructionBeingSaid]);
+  
 
   const startPreInstructionCountdown = () => {
     setPreInstructionCountdown(3);
@@ -103,7 +104,10 @@ export default function Fencer_Page() {
   };
 
   const startSuccessCountdown = () => {
-    setCountdown(3);
+    if (!videoInput) return; // Don't start the countdown if there's no video input
+  
+    const instructionTime = instructions[instructionIndex].time;
+    setCountdown(instructionTime);
     const interval = setInterval(() => {
       setCountdown((prevCountdown) => {
         if (prevCountdown > 1) {
@@ -122,14 +126,17 @@ export default function Fencer_Page() {
     setInstructionIndex((prevIndex) => {
       if (prevIndex >= instructions.length - 1) {
         setIsStartDisabled(true);
+        return prevIndex;
       }
       setHasSpoken(false);
       return prevIndex + 1;
     });
     setPoseResult("");
     setResetTimer(false);
-    setCountdown(3);
+    setCountdown(instructions[instructionIndex] ? instructions[instructionIndex + 1].time : 3);
+    setIsRunning(true);
   };
+  
 
   const handleReset = () => {
     setInstructionIndex(-1);
@@ -146,6 +153,7 @@ export default function Fencer_Page() {
 
   const handleVideoChange = (newVideoSource) => {
     setVideoSource(newVideoSource);
+    setVideoInput(true); // Set videoInput to true
     if (!height) setIsHeightModalOpen(true);
   };
 
@@ -154,6 +162,7 @@ export default function Fencer_Page() {
       setIsHeightModalOpen(true);
     }
     setIsRecording(!isRecording);
+    setIsRunning(!isRunning); 
   };
 
   const checkPoseDuration = (predictedPose) => {
@@ -171,8 +180,8 @@ export default function Fencer_Page() {
         setPoseStartTime(Date.now());
       } else {
         const elapsedTime = Date.now() - poseStartTime;
-        setCountdown(3 - Math.floor(elapsedTime / 1000));
-        if (elapsedTime >= 3000) {
+        setCountdown((instructions[instructionIndex].time) - Math.floor(elapsedTime / 1000));
+        if (elapsedTime >= instructions[instructionIndex].time * 1000) {
           setPoseResult("Success");
           speak({ text: "Success", voice: voice, rate: 1, pitch: 1, lang: 'en-US' });
           setPoseStartTime(null);
@@ -223,6 +232,7 @@ export default function Fencer_Page() {
   }, [countdownFinished, poseResult]);
 
   return (
+    <InstructionContext.Provider value={{ instructions, setInstructions }}>
     <div className="flex flex-col h-max font-sans bg-gray-900 text-white">
       <div className="flex items-center justify-between p-4 bg-black border-b border-gray-700">
         <Link href="/">
@@ -267,10 +277,10 @@ export default function Fencer_Page() {
                 {preInstructionCountdown}
               </div>
             )}
-            <Timer onTimerStart={handleTimerStart} onReset={handleReset} isStartDisabled={isStartDisabled} resetTimer={resetTimer} />
+          <Timer onTimerStart={handleTimerStart} onReset={handleReset} isStartDisabled={isStartDisabled} resetTimer={resetTimer} data={instructions} instructionIndex={instructionIndex} initialTime={instructions[instructionIndex]?.time}/>
           </div>
           <div className="my-5">
-            <Instruction instructionIndex={instructionIndex} instructions={instructions} performedPose={performedPose} />
+          <Instruction isRunning={isRunning} instructionIndex={instructionIndex} instructions={instructions} performedPose={performedPose} data={data} />
           </div>
           <div className="flex justify-center items-center">
             <div id="poseResult" className="text-2xl font-semibold text-white flex items-center">
@@ -279,7 +289,7 @@ export default function Fencer_Page() {
               {hasSpoken && <div className="countdown-circle">{countdown}</div>}
             </div>
           </div>
-          <div className="flex-grow flex justify-center items-center">
+          <div className="flex-grow flex justify-right items-center ">
             <Fencer_Canvas videoSource={videoSource} isRecording={isRecording} setPose={setPose} />
           </div>
         </div>
@@ -300,5 +310,6 @@ export default function Fencer_Page() {
         }
       `}</style>
     </div>
+    </InstructionContext.Provider>
   );
 }

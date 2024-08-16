@@ -1,37 +1,47 @@
 import React, { useState, useEffect } from 'react';
 
-const Timer = ({ onTimerStart, onReset, isStartDisabled, resetTimer }) => {
+const Timer = ({ onTimerStart, onReset, isStartDisabled, resetTimer, initialTime }) => {
   const [isRunning, setIsRunning] = useState(false);
-  const [time, setTime] = useState(0);
+  const [time, setTime] = useState(initialTime * 1000); // Convert initialTime to milliseconds
 
   useEffect(() => {
     let interval = null;
 
     if (isRunning) {
       interval = setInterval(() => {
-        setTime((prevTime) => prevTime + 10);
-      }, 10);
-    } else if (!isRunning && time !== 0) {
+        setTime((prevTime) => {
+          if (prevTime > 10) {
+            return prevTime - 10; // Decrement by 10ms
+          } else {
+            clearInterval(interval);
+            setIsRunning(false);
+            return 0;
+          }
+        });
+      }, 10); // Change this to 10ms for millisecond countdown
+    } else if (!isRunning && time !== initialTime * 1000) {
       clearInterval(interval);
     }
 
     return () => clearInterval(interval);
-  }, [isRunning]);
+  }, [isRunning, time, initialTime]);
 
   useEffect(() => {
     if (resetTimer) {
-      setTime(0);
+      setTime(initialTime * 1000); // Reset to initial time in milliseconds
       setIsRunning(true);
     }
-  }, [resetTimer]);
+  }, [resetTimer, initialTime]);
+  
 
   const handleStart = () => {
     if (!isRunning && !isStartDisabled) {
-      setTime(0);
+      setTime(initialTime * 1000); // Reset to initial time in milliseconds
       setIsRunning(true);
       onTimerStart();
     }
   };
+  
 
   const handleStop = () => {
     if (isRunning) {
@@ -40,7 +50,7 @@ const Timer = ({ onTimerStart, onReset, isStartDisabled, resetTimer }) => {
   };
 
   const handleReset = () => {
-    setTime(0);
+    setTime(initialTime * 1000); // Reset to initial time in milliseconds
     setIsRunning(false);
     onReset();
   };

@@ -133,3 +133,13 @@
 .circle {
   @apply rounded-full bg-slate-800 hover:bg-slate-600 w-20 h-20 shadow-md overflow-hidden relative
 }
+
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
+
+.hide-scrollbar {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}

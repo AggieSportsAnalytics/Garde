@@ -8,11 +8,9 @@ import "@mediapipe/pose";
 import Plotly from 'plotly.js-dist-min';
 import Modal from 'react-modal';
 import FencerInstructionMenu from './FencerInstructionMenu';
-import {Hammer, HammerIcon} from 'lucide-react';
+import { Hammer, HammerIcon } from 'lucide-react';
 
-
-
-const WebcamPose = ({ onVideoChange, isRecording, videoSource, runtime = 'mediapipe', modelType = 'full', setPose }) => {
+const WebcamPose = ({ onVideoChange, isRecording, videoSource, runtime = 'mediapipe', modelType = 'full', setPose, containerWidth, containerHeight }) => {
   const videoRef = useRef(null);
   const webcamRef = useRef(null);
   const canvasRef = useRef(null);
@@ -153,14 +151,14 @@ const WebcamPose = ({ onVideoChange, isRecording, videoSource, runtime = 'mediap
 
   return (
     <>
-      <div className="flex flex-col items-center space-y-4" style={{ position: "relative", width: '100%', maxWidth: '640px', height: 'auto' }}>
+      <div className="flex flex-col items-center space-y-4" style={{ position: "relative", width: containerWidth, height: containerHeight }}>
         {isRecording || videoSource ? (
           <>
-            <div className="video-container" style={{ position: "fixed", top: '350px', left: '750px', width: "640px", height: "auto" }}>
+            <div className="video-container" style={{ position: "relative", width: "100%", height: "100%" }}>
               {videoSource ? (
-                <video className="rounded-md" ref={videoRef} style={{ width: "100%", height: "auto" }} autoPlay loop muted />
+                <video className="rounded-md" ref={videoRef} style={{ width: "100%", height: "100%" }} autoPlay loop muted />
               ) : (
-                <Webcam className="rounded-md" ref={webcamRef} style={{ width: "100%", height: "auto" }} />
+                <Webcam className="rounded-md" ref={webcamRef} style={{ width: "100%", height: "100%" }} />
               )}
               <canvas className="rounded-md" ref={canvasRef} style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%" }} />
             </div>
@@ -180,7 +178,7 @@ const WebcamPose = ({ onVideoChange, isRecording, videoSource, runtime = 'mediap
         overflow: 'hidden'  
       }}></div>
        
-    <div className="fixed" style={{ position: 'absolute', top: '230px', left: '800px' }}> 
+      <div className="fixed" style={{ position: 'absolute', bottom: '600px', left: '800px' }}>
       <Hammer className="w-10 h-10 hover:bg-slate-700 rounded-md" onClick={ShowInstructionMenu}/> {
         showInstructionMenu && (<FencerInstructionMenu setInstructionMenu={setInstructionMenu}/>)
       }

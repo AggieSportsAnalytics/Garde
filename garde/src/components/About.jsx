@@ -1,36 +1,59 @@
 import React from 'react'
-
+import { CardSpotlight } from "./ui/card-spotlight";
+import { MagicCard } from './ui/MagicCard';
+import { useTheme } from "next-themes";
+import { GlareCard } from './ui/glare-card';
+import {Step} from "./ui/Step";
 const About = () => {
+  const { theme } = useTheme();
   return (
     <div>
-      <div id="about" className="mt-[200px] ml-10 text-left text-white font-bold text-5xl">
-        Minimize costs, Maximize performance. <br />
-        Garde is here to help.
+        <div className="mt-16">
+          <MagicCard className=
+                    "cursor-pointer justify-center shadow-2xl whitespace-nowrap text-4xl h-[300px]"
+                    gradientColor={theme === "dark" ? "#262626" : "#D9D9D955"}
+          >
+            <div className="mt-24">
+              <h1 className="text-8xl font-bold relative mt-2 text-white">
+                Minimize costs, Maximize performance.
+              </h1>
+            </div>
+          </MagicCard>
         </div>
-      <div className="mt-5 ml-10 text-stone-400 font-light"> 
-          Garde employs advanced pose estimation technology to deliver precise angle measurement, <br />
-          movement analysis, offering invaluable insights to enhance performance <br />
-          across various disciplines and sports.
-      </div>
-      <div>
-        <ul role="list" className="">
-          <li className="flex">
-            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="#6ed0dd" stroke="#6ed0dd" className="ml-10 mt-5 w-5 h-5"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <g> <path fill="none" d="M0 0h24v24H0z"></path> <path d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10zm0-2a8 8 0 1 0 0-16 8 8 0 0 0 0 16zm-.997-4L6.76 11.757l1.414-1.414 2.829 2.829 5.656-5.657 1.415 1.414L11.003 16z"></path> </g> </g></svg>
-            <span className="text-white mt-4 ml-3 font-semibold"> Personalized training tailored to individual fencers </span>
-          </li>
 
-          <li className="flex">
-            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="#6ed0dd" stroke="#6ed0dd" className="ml-10 mt-5 w-5 h-5"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <g> <path fill="none" d="M0 0h24v24H0z"></path> <path d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10zm0-2a8 8 0 1 0 0-16 8 8 0 0 0 0 16zm-.997-4L6.76 11.757l1.414-1.414 2.829 2.829 5.656-5.657 1.415 1.414L11.003 16z"></path> </g> </g></svg>
-            <span className="text-white mt-4 ml-3 font-semibold"> Robust pose estimation for accurate angle measurement </span>
-          </li>
+        <div className="mt-16">
+          <CardSpotlight className="h-[500px] w-[1100px] ml-[100px]">
+            <ul className="list-none relative mt-10 font-semibold text-2xl">
+              {/* <Step title="Personalized training tailored to individual fencers" />
+              <Step title="Robust pose estimation for accurate form measurement" />
+              <Step title="Cutting-edge AI/ML technology for advanced skill development" />
+              <Step title="Patent-Pending Algorithm" /> */}
+              <p className="text-white">
+                Personalized training tailored to individual fencers
+                Robust pose estimation for accurate form measurement
+                Cutting-edge AI/ML technology for advanced skill development
+                Patent-Pending Algorithm
+              </p>
+            </ul>
+          </CardSpotlight>
+        </div>
 
-          <li className="flex">
-            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="#6ed0dd" stroke="#6ed0dd" className="ml-10 mt-5 w-5 h-5"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <g> <path fill="none" d="M0 0h24v24H0z"></path> <path d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10zm0-2a8 8 0 1 0 0-16 8 8 0 0 0 0 16zm-.997-4L6.76 11.757l1.414-1.414 2.829 2.829 5.656-5.657 1.415 1.414L11.003 16z"></path> </g> </g></svg>
-            <span className="text-white mt-4 ml-3 font-semibold"> Cutting-edge AI/ML technology for advanced skill development </span>
-          </li>
-
-        </ul>
-      </div>
+        <div className="mt-[-500px]">
+          <CardSpotlight className="h-[500px] w-[1100px] ml-[1300px]">
+            <ul className="list-none relative mt-10 font-semibold text-2xl">
+              {/* <Step title="Personalized training tailored to individual fencers" />
+              <Step title="Robust pose estimation for accurate form measurement" />
+              <Step title="Cutting-edge AI/ML technology for advanced skill development" />
+              <Step title="Patent-Pending Algorithm" /> */}
+              <p className="text-white">
+                Personalized training tailored to individual fencers
+                Robust pose estimation for accurate form measurement
+                Cutting-edge AI/ML technology for advanced skill development
+                Patent-Pending Algorithm
+              </p>
+            </ul>
+          </CardSpotlight>
+        </div>
 
     </div>
   )

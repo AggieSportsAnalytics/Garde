@@ -58,7 +58,7 @@ const tools = [
 const Features = () => {
   return (
   <LampContainer  className="w-full">
-    <div id="features" className="text-white font-bold text-5xl mt-[-350px] flex justify-center">
+    <div id="features" className="text-white font-semibold text-5xl mt-[-450px] flex justify-center font-platypi">
       Built using the industry leading tech stack.
     </div>
     <div className="flex flex-row items-center justify-center mt-10 w-full">

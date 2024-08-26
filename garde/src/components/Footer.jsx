@@ -4,14 +4,14 @@ import Image from 'next/image'
 const Footer = () => {
   return (
     <div>
-      <div className="mt-20">
+      <div className="mt-20 flex justify-center">
         <Image 
             src="/images/logo.png"
             alt="logo"
             width={72}
             height={72}
             quality={100}
-            className="mt-[100px] ml-[800px] rounded-full"
+            className="mt-[100px] rounded-full"
         />
       </div>
 

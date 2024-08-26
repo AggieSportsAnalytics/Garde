@@ -25,19 +25,20 @@ const Contact = () => {
 
   return (
     <>
-    <div className="flex justify-end mr-20">
-    <div className="mt-40">
+    <div className="ml-[1000px]">
+    <div className="mt-96">
       <div className="ml-[-900px]">
-        <h1 className="text-white text-8xl font-extrabold mt-[-150px] ml-[70px]"> Contact Us </h1>
-        <h4 className="text-white mt-5 ml-[70px] text-xl">If you are a coach and want to use Garde, please fill out the form on the right. <br />
+        <h1 className="text-white text-8xl font-extrabold font-platypi mt-[-150px] ml-[70px]"> Contact Us </h1>
+        <h4 className="text-white font-platypi mt-5 ml-[70px] text-xl">If you are a coach and want to use Garde, please fill out the form on the right. <br />
                                                               We will get in touch with you soon.
         </h4>
-        <h4 className="text-white mt-5 ml-[70px] text-xl">If you are a fencer and have inquires/comments/concerns about Garde. <br />
+        <h4 className="text-white mt-5 font-platypi ml-[70px] text-xl">If you are a fencer and have inquires/comments/concerns about Garde. <br />
                                                               Please don't hesitate to reach out! We will respond back as soon as possible.                                       
         </h4>
       </div>
     </div>
-    <div className="bg-gray-700 rounded-xl w-[700px] h-[600px]">
+
+    <div className="bg-gray-700 mt-[-300px] ml-60 rounded-xl w-[700px] h-[600px]">
       <form ref={form} onSubmit={sendEmail}>
           <div className="flex justify-center mt-2">
               <input type="text" name="user_name" className="h-[80px] w-[650px] text-xl rounded-xl block p-2.5 dark:bg-gray-800 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white mt-2" placeholder="Name" required />
@@ -67,10 +68,10 @@ const Contact = () => {
             </div>
           </div>
           <div>
-            
           </div>
       </form>
     </div>
+
     </div>
     </>
   )

@@ -3,6 +3,7 @@ import "../app/globals.css"
 import Image from 'next/image'
 import { LampContainer } from './ui/lamp'
 import { AnimatedTooltip } from './ui/animated-tooltip'
+import { TypewriterEffectSmooth } from './ui/typewriter-effect'
 
 const tools = [
   {
@@ -55,17 +56,47 @@ const tools = [
   }
 ]
 
+const words = [
+  {
+    text: "Built"
+  },
+  {
+    text: "using"
+  },
+  {
+    text: "the"
+  },
+  {
+    text: "industry"
+  },
+  {
+    text: "leading"
+  },
+  {
+    text: "tech"
+  },
+  {
+    text: "stack."
+  },
+]
+
 const Features = () => {
   return (
-  <LampContainer  className="w-full">
-    <div id="features" className="text-white font-semibold text-5xl mt-[-450px] flex justify-center font-platypi">
-      Built using the industry leading tech stack.
-    </div>
-    <div className="flex flex-row items-center justify-center mt-10 w-full">
+  <>
+
+  <TypewriterEffectSmooth words={words} className="font-platypi flex justify-center"/>
+
+  <LampContainer className="w-full">
+
+    <div className="flex flex-row items-center justify-center mt-20 w-full">
       <AnimatedTooltip items={tools}/>
     </div>
+
   </LampContainer>
+
+  </>
   )
+  
 }
 
 export default Features;

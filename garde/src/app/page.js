@@ -16,15 +16,14 @@ export default function Home() {
         return (
         
             <div className="">
-                <Navbar />
+                {/* <Navbar /> */}
                 <Hero />
-                <Features />
                 <About />
                 <Showcase />
+                <Features />
                 <Banner />
                 <Contact />
                 <Footer />
-                {/**/}
             </div>
         )
      

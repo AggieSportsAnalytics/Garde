@@ -9,11 +9,13 @@ const Showcase = () => {
   ));
 
   return (
-    <div className="w-full h-full py-20">
-      <h2 className="flex justify-center max-w-7xl pl-4 mx-auto text-xl md:text-5xl font-bold text-neutral-800 dark:text-neutral-200 font-platypi">
+    <div id="features" className="w-full h-full py-20">
+      <h2 className="flex justify-center text-white text-6xl mt-24 font-platypi font-semibold">
         Get to know Garde.
       </h2>
-      <Carousel items={cards} />
+      <div className="mt-24">
+        <Carousel items={cards} />
+      </div>
     </div>
   );
 }

@@ -1,144 +1,102 @@
 import React from 'react'
 import "../app/globals.css"
 import Image from 'next/image'
+import { LampContainer } from './ui/lamp'
+import { AnimatedTooltip } from './ui/animated-tooltip'
+import { TypewriterEffectSmooth } from './ui/typewriter-effect'
+
+const tools = [
+  {
+    id: 1,
+    name: "TensorflowJS",
+    designation: "AI/ML Library used for Pose Estimation",
+    image: "/images/tensorflowJS.png",
+  },
+  {
+    id: 2, 
+    name: "OpenAI API",
+    designation: "Used for LLM Output",
+    image: "/images/openailogo.png"
+  },
+  {
+    id: 3,
+    name: "MongoDB",
+    designation: "Database",
+    image: "/images/mongoDB.png"
+  },
+  {
+    id: 4,
+    name: "Amazon S3",
+    designation: "Video Storage",
+    image: "/images/amazonS3.png"
+  },
+  {
+    id: 5,
+    name: "Terraform",
+    designation: "Database Management",
+    image: "/images/terraformlogo.png",
+  },
+  {
+    id: 6,
+    name: "Prisma",
+    designation: "MongoDB Communication",
+    image: "/images/prisma.png"
+  },
+  {
+    id: 7,
+    name: "NextJS",
+    designation: "Web Development",
+    image: "/images/nextjs.png",
+  },
+  {
+    id: 8,
+    name: "Tailwind CSS",
+    designation: "Frontend Web Development",
+    image: "/images/tailwindcsslogo.webp"
+  }
+]
+
+const words = [
+  {
+    text: "Built"
+  },
+  {
+    text: "using"
+  },
+  {
+    text: "the"
+  },
+  {
+    text: "industry"
+  },
+  {
+    text: "leading"
+  },
+  {
+    text: "tech"
+  },
+  {
+    text: "stack."
+  },
+]
 
 const Features = () => {
   return (
-    <div>
-      <div id="features" className="text-white font-bold text-5xl mt-[200px] flex justify-center">
-        Garde's Frameworks and Tools
-      </div>  
+  <>
 
-    <div className="flex flex-wrap justify-around p-10 mt-[100px]">
-      <div className="circle">
-        <Image
-            src="/images/tensorflowJS.png"
-            alt="logo"
-            width={100}
-            height={100}
-            quality={100}
-        />
-      </div>
+  <TypewriterEffectSmooth words={words} className="font-platypi flex justify-center"/>
 
-      {/* <div className="mt-[2]">
-        <span className="font-bold text-white text-sm"> Tensorflow.JS </span>
-      </div> */}
+  <LampContainer className="w-full">
 
-      <div className="circle">
-        <Image
-            src="/images/mongoDB.png"
-            alt="logo"
-            width={100}
-            height={100}
-            quality={100}
-        />
-      </div>
-
-      {/* <div className="mt-[2]">
-        <span className="font-bold text-white text-sm"> MongoDB </span>
-      </div> */}
-
-      <div className="circle">
-        <Image
-            src="/images/openCV.png"
-            alt="logo"
-            width={80}
-            height={80}
-            quality={100}
-        />
-      </div>
-
-      {/* <div className="mt-[2]">
-        <span className="font-bold text-white text-sm"> OpenCV.JS </span>
-      </div> */}
-
-      <div className="circle">
-        <Image
-            src="/images/nodeJS.png"
-            alt="logo"
-            width={100}
-            height={100}
-            quality={100}
-        />
-      </div>
-
-      {/* <div className="mt-[2]">
-        <span className="font-bold text-white text-sm"> Node.JS </span>
-      </div> */}
-
-      <div className="circle">
-        <Image
-            src="/images/expressJS.png"
-            alt="logo"
-            width={100}
-            height={100}
-            quality={100}
-        />
-      </div>
-
-      {/* <div className="mt-[2]">
-        <span className="font-bold text-white text-sm"> Express.JS </span>
-      </div> */}
-
-      <div className="circle">
-        <Image
-            src="/images/ReactLogo.png"
-            alt="logo"
-            width={100}
-            height={100}
-            quality={100}
-        />
-      </div>
-
-      {/* <div className="mt-[2]">
-        <span className="font-bold text-white text-sm"> React.JS </span>
-      </div> */}
-
-      <div className="circle">
-        <Image
-            src="/images/nextLogo.png"
-            alt="logo"
-            width={100}
-            height={100}
-            quality={100}
-        />
-      </div>
-
-      {/* <div className="mt-[2]">
-        <span className="font-bold text-white text-sm"> Next.JS </span>
-      </div> */}
-
-      <div className="circle">
-        <Image
-            src="/images/amazonS3.png"
-            alt="logo"
-            width={70}
-            height={70}
-            quality={100}
-        />
-      </div>
-
-      {/* <div className="mt-[2]">
-        <span className="font-bold text-white text-sm"> Amazon S3 </span>
-      </div> */}
-
-      <div className="circle">
-        <Image
-            src="/images/clerkLogo.png"
-            alt="logo"
-            width={100}
-            height={100}
-            quality={100}
-        />
-      </div>
-    
-      {/* <div className="mt-[2]">
-        <span className="font-bold text-white text-sm"> Clerk </span>
-      </div> */}
-
+    <div className="flex flex-row items-center justify-center mt-20 w-full">
+      <AnimatedTooltip items={tools}/>
     </div>
-    </div>
+
+  </LampContainer>
+
+  </>
   )
+  
 }
 
 export default Features;

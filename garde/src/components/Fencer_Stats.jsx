@@ -2,6 +2,7 @@ import React from 'react';
 import { calculateAngle, displayFeetDistance, calculateSpeed } from './Fencer_Canvas';
 import { OpenAIAPIFeedback } from './Fencer_Canvas';
 import "@mediapipe/pose";
+import { CardBody, CardContainer, CardItem } from "./ui/3d-card";
 
 const Fencer_Stats = ({ pose, height, lastCalled, setLastCalled, setAiFeedback }) => {
   let leftElbAngle = "";
@@ -57,49 +58,51 @@ const Fencer_Stats = ({ pose, height, lastCalled, setLastCalled, setAiFeedback }
   }
 
   return (
-    <>
-      <div className="font-bold text-xl flex justify-center">
-        Fencer Statistics
-      </div>
-      <div className="grid grid-rows-6 grid-cols-2 mt-10">
-        <div className="rounded p-3 mb-2 bg-gray-800 bg-opacity-50 border border-gray-700 shadow-lg w-[230px]" style={{ fontSize: '14px', color: 'white' }}>
-          <h4>Predicted Pose (Rough)</h4>
-          <h4>{predictedPose}</h4>
+    <CardContainer className="inter-var" style={{ backgroundColor: 'transparent'}}>
+      <CardBody className="bg-gray-50 relative group/card dark:hover:shadow-2xl dark:hover:shadow-emerald-500/[0.1] dark:bg-black dark:border-white/[0.2] border-black/[0.1] w-auto sm:w-[35rem] h-auto rounded-xl p-8 space-y-4 border"> {/* Reduced space-y */}
+        <CardItem translateZ="50" className="text-xl font-bold text-neutral-600 dark:text-white mb-4">
+          Fencer Statistics
+        </CardItem>
+        <div className="grid grid-rows-4 grid-cols-2 gap-4"> {/* Adjusted grid rows */}
+          <CardItem translateZ="60" className="rounded p-4 bg-gray-800 bg-opacity-50 border border-gray-700 shadow-lg w-[230px] text-white">
+            <h4>Predicted Pose (Rough)</h4>
+            <h4>{predictedPose}</h4>
+          </CardItem>
+          <CardItem translateZ="60" className="rounded p-4 bg-gray-800 bg-opacity-50 border border-gray-700 shadow-lg w-[230px] text-white">
+            <h4>Feet Distance (m):</h4>
+            <h4>{feetDistance || 'N/A'}</h4>
+          </CardItem>
+          <CardItem translateZ="60" className="rounded p-4 bg-gray-800 bg-opacity-50 border border-gray-700 shadow-lg w-[230px] text-white">
+            <h4>Left Elbow Angle:</h4>
+            <h4>{leftElbAngle}</h4>
+          </CardItem>
+          <CardItem translateZ="60" className="rounded p-4 bg-gray-800 bg-opacity-50 border border-gray-700 shadow-lg w-[230px] text-white">
+            <h4>Right Elbow Angle:</h4>
+            <h4>{rightElbAngle}</h4>
+          </CardItem>
+          <CardItem translateZ="60" className="rounded p-4 bg-gray-800 bg-opacity-50 border border-gray-700 shadow-lg w-[230px] text-white">
+            <h4>Right Hip Angle:</h4>
+            <h4>{rightHipAngle}</h4>
+          </CardItem>
+          <CardItem translateZ="60" className="rounded p-4 bg-gray-800 bg-opacity-50 border border-gray-700 shadow-lg w-[230px] text-white">
+            <h4>Left Hip Angle:</h4>
+            <h4>{leftHipAngle}</h4>
+          </CardItem>
+          <CardItem translateZ="60" className="rounded p-4 bg-gray-800 bg-opacity-50 border border-gray-700 shadow-lg w-[230px] text-white">
+            <h4>Left Knee Angle:</h4>
+            <h4>{leftKneeAngle}</h4>
+          </CardItem>
+          <CardItem translateZ="60" className="rounded p-4 bg-gray-800 bg-opacity-50 border border-gray-700 shadow-lg w-[230px] text-white">
+            <h4>Right Knee Angle:</h4>
+            <h4>{rightKneeAngle}</h4>
+          </CardItem>
+          <CardItem translateZ="60" className="rounded p-4 bg-gray-800 bg-opacity-50 border border-gray-700 shadow-lg w-[230px] text-white">
+            <h4>Speed:</h4>
+            <h4>{speed}</h4>
+          </CardItem>
         </div>
-        <div className="rounded p-3 mb-2 bg-gray-800 bg-opacity-50 border border-gray-700 shadow-lg w-[230px]" style={{ fontSize: '14px', color: 'white' }}>
-          <h4>Feet Distance (m):</h4>
-          <h4>{feetDistance || 'N/A'}</h4>
-        </div>
-        <div className="rounded p-6 mb-4 bg-gray-800 bg-opacity-50 border border-gray-700 shadow-lg w-[230px]" style={{ fontSize: '16px', color: 'white' }}>
-          <h4>Left Elbow Angle:</h4>
-          <h4>{leftElbAngle}</h4>
-        </div>
-        <div className="rounded p-6 mb-4 bg-gray-800 bg-opacity-50 border border-gray-700 shadow-lg w-[230px]" style={{ fontSize: '16px', color: 'white' }}>
-          <h4>Right Elbow Angle:</h4>
-          <h4>{rightElbAngle}</h4>
-        </div>
-        <div className="rounded p-6 mb-4 bg-gray-800 bg-opacity-50 border border-gray-700 shadow-lg w-[230px]" style={{ fontSize: '16px', color: 'white' }}>
-          <h4>Right Hip Angle:</h4>
-          <h4>{rightHipAngle}</h4>
-        </div>
-        <div className="rounded p-6 mb-4 bg-gray-800 bg-opacity-50 border border-gray-700 shadow-lg w-[230px]" style={{ fontSize: '16px', color: 'white' }}>
-          <h4>Left Hip Angle:</h4>
-          <h4>{leftHipAngle}</h4>
-        </div>
-        <div className="rounded p-6 mb-4 bg-gray-800 bg-opacity-50 border border-gray-700 shadow-lg w-[230px]" style={{ fontSize: '16px', color: 'white' }}>
-          <h4>Left Knee Angle:</h4>
-          <h4>{leftKneeAngle}</h4>
-        </div>
-        <div className="rounded p-6 mb-4 bg-gray-800 bg-opacity-50 border border-gray-700 shadow-lg w-[230px]" style={{ fontSize: '16px', color: 'white' }}>
-          <h4>Right Knee Angle:</h4>
-          <h4>{rightKneeAngle}</h4>
-        </div>
-        <div className="rounded p-6 mb-4 bg-gray-800 bg-opacity-50 border border-gray-700 shadow-lg w-[230px]" style={{ fontSize: '16px', color: 'white' }}>
-          <h4>Speed:</h4>
-          <h4>{speed}</h4>
-        </div>
-      </div>
-    </>
+      </CardBody>
+    </CardContainer>
   );
 };
 

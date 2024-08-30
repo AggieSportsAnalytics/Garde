@@ -1,28 +1,23 @@
 import React from "react";
 import { CardSpotlight } from "./ui/card-spotlight";
-import { GlareCard } from "./ui/glare-card";
 import Image from "next/image";
-import { Step } from "./ui/Step";
 import { WobbleCard } from "./ui/wobble-card";
+
 const About = () => {
 	return (
-		<div>
-			<div className="flex justify-center mt-36">
+		<div className="flex flex-col items-center justify-center mt-36">
+			<div className="flex justify-center">
 				<h1 className="text-white font-semibold text-6xl font-platypi mt-[-100px]">
 					Features.
 				</h1>
 			</div>
 
-			<div className="flex justify-center mr-20 mt-14">
-				<CardSpotlight className="h-[600px] w-[900px] ml-[100px]">
+			<div className="flex justify-center mt-14">
+				<CardSpotlight className="h-[600px] w-[900px]">
 					<h1 className="flex justify-center text-white relative font-bold text-2xl mt-[-30px] font-platypi">
 						Built for Fencers
 					</h1>
 					<ul className="list-none relative font-semibold text-base mt-5">
-						{/* <Step title="Personalized training tailored to individual fencers" />
-              <Step title="Robust pose estimation for accurate form measurement" />
-              <Step title="Cutting-edge AI/ML technology for advanced skill development" />
-              <Step title="Patent-Pending Algorithm" /> */}
 						<p className="text-white font-platypi">
 							Garde harnesses the power of advanced pose estimation technology
 							to deliver precise analysis of your fencing form. By continuously
@@ -38,7 +33,7 @@ const About = () => {
 									src="/images/FencerPage.png"
 									width={700}
 									height={700}
-									className="flex justify-center rounded-2xl mt-[-60px]"
+									className="rounded-2xl mt-[-60px]"
 								/>
 							</div>
 						</WobbleCard>
@@ -46,16 +41,12 @@ const About = () => {
 				</CardSpotlight>
 			</div>
 
-			<div className="flex justify-center mr-20 mt-36">
-				<CardSpotlight className="h-[600px] w-[900px] ml-[100px]">
+			<div className="flex justify-center mt-14">
+				<CardSpotlight className="h-[600px] w-[900px]">
 					<h1 className="flex justify-center text-white relative font-bold text-2xl mt-[-30px] font-platypi">
 						Built for Coaches
 					</h1>
 					<ul className="list-none relative font-semibold text-base mt-5">
-						{/* <Step title="Personalized training tailored to individual fencers" />
-              <Step title="Robust pose estimation for accurate form measurement" />
-              <Step title="Cutting-edge AI/ML technology for advanced skill development" />
-              <Step title="Patent-Pending Algorithm" /> */}
 						<p className="text-white font-platypi">
 							Garde offers a robust platform where coaches can effortlessly
 							track and manage their students' progress. Our system integrates
@@ -70,7 +61,7 @@ const About = () => {
 									src="/images/CoachPage.png"
 									width={700}
 									height={700}
-									className="flex justify-center rounded-2xl mt-[-60px]"
+									className="rounded-2xl mt-[-60px]"
 								/>
 							</div>
 						</WobbleCard>

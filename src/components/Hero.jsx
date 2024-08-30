@@ -6,21 +6,24 @@ import { TextGenerateEffect } from "./ui/TextGenerateEffect";
 
 const Hero = () => {
 	return (
-		<div className="pb-20 pt-36">
+		<div className="pb-20 pt-36 relative flex justify-center items-center">
 			{/**
 			 *  UI: Spotlights
 			 *  Link: https://ui.aceternity.com/components/spotlight
 			 */}
-			<div>
+			<div className="absolute inset-0">
 				<Spotlight
 					className="-top-40 -left-10 md:-left-32 md:-top-20 h-screen"
 					fill="white"
 				/>
 				<Spotlight
-					className="h-[80vh] w-[50vw] top-10 left-full"
+					className="h-[80vh] w-[50vw] top-10 left-1/2 transform -translate-x-1/2"
 					fill="purple"
 				/>
-				<Spotlight className="left-80 top-28 h-[80vh] w-[50vw]" fill="blue" />
+				<Spotlight
+					className="left-1/2 top-28 h-[80vh] w-[50vw] transform -translate-x-1/2"
+					fill="blue"
+				/>
 			</div>
 
 			{/**
@@ -30,19 +33,18 @@ const Hero = () => {
 			 */}
 			<div
 				className="h-screen w-full dark:bg-black-100 bg-black-100 dark:bg-grid-white/[0.03] bg-grid-black-100/[0.03]
-       absolute top-0 left-0 flex items-center justify-center"
+        absolute top-0 left-0 flex items-center justify-center"
 			>
 				{/* Radial gradient for the container to give a faded look */}
 				<div
-					// change the bg to bg-black-100, so it matches the bg color and will blend in
 					className="absolute pointer-events-none inset-0 flex items-center justify-center dark:bg-black-100
-         bg-black-100 [mask-image:radial-gradient(ellipse_at_center,transparent_20%,black)]"
+          bg-black-100 [mask-image:radial-gradient(ellipse_at_center,transparent_20%,black)]"
 				/>
 			</div>
 
-			<div className="flex justify-center relative my-20 z-10">
-				<div className="max-w-[89vw] md:max-w-2xl lg:max-w-[60vw] flex flex-col items-center justify-center">
-					<p className="uppercase tracking-widest text-8xl font-platypi text-center text-blue-100 max-w-80">
+			<div className="flex flex-col items-center justify-center relative my-20 z-10 text-center">
+				<div className="max-w-[89vw] md:max-w-2xl lg:max-w-[60vw]">
+					<p className="uppercase tracking-widest text-8xl font-platypi text-center text-blue-100">
 						GARDE
 					</p>
 
@@ -51,14 +53,14 @@ const Hero = () => {
 					 *
 					 *  change md:text-6xl, add more responsive code
 					 */}
-					<div className="">
+					<div className="mt-4">
 						<TextGenerateEffect
 							words="Your AI Fencing Companion"
-							className="ml-14 text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-platypi text-center"
+							className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-platypi"
 						/>
 					</div>
 
-					<div className="ml-14">
+					<div className="mt-8">
 						<a href="#features">
 							<MagicButton
 								title="Learn More"

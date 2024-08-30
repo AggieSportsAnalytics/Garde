@@ -20,6 +20,6 @@ resource "aws_s3_bucket_lifecycle_configuration" "fencing_videos_expiration" {
 }
 
 resource "aws_s3_bucket_metric" "s3_put_metrics" {
-  bucket = aws_s3_bucket.fencing_videos
-  name   = "${aws_s3_bucket.fencing_videos}-put-metrics"
+  bucket = aws_s3_bucket.fencing_videos.id
+  name   = "${aws_s3_bucket.fencing_videos.id}-put-metrics"
 }

@@ -30,7 +30,11 @@ export default function Home() {
 			{isMobile ? (
 				<div>
 					<Hero />
+					<About />
 					<Showcase />
+					<Features />
+					<Banner />
+					<Contact />
 					<Footer />
 				</div>
 			) : (

@@ -82,14 +82,19 @@ const words = [
 const Features = () => {
 	return (
 		<>
-			<TypewriterEffectSmooth
-				words={words}
-				className="font-platypi flex justify-center"
-			/>
+			<div className="flex justify-center mt-10">
+				<TypewriterEffectSmooth
+					words={words}
+					className="font-platypi text-2xl md:text-3xl lg:text-4xl text-center"
+				/>
+			</div>
 
-			<LampContainer className="w-full">
-				<div className="flex flex-row items-center justify-center mt-20 w-full">
-					<AnimatedTooltip items={tools} />
+			<LampContainer className="w-full mt-10">
+				<div className="flex flex-wrap justify-center mt-10 md:mt-20 w-full px-4">
+					<AnimatedTooltip
+						items={tools}
+						className="w-full sm:w-1/2 md:w-1/3 lg:w-1/4 max-w-xs mx-2 mb-4"
+					/>
 				</div>
 			</LampContainer>
 		</>

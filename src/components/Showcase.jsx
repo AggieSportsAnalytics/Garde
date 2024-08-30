@@ -9,7 +9,7 @@ const Showcase = () => {
 
 	return (
 		<div id="features" className="w-full h-full py-20">
-			<h2 className="flex justify-center text-white text-6xl mt-24 font-platypi font-semibold">
+			<h2 className="flex justify-center text-white text-4xl sm:text-5xl md:text-6xl mt-24 font-platypi font-semibold">
 				Get to know Garde.
 			</h2>
 			<div className="mt-24">

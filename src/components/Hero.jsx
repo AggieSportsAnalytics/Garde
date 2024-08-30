@@ -34,7 +34,7 @@ const Hero = () => {
 			>
 				{/* Radial gradient for the container to give a faded look */}
 				<div
-					// chnage the bg to bg-black-100, so it matches the bg color and will blend in
+					// change the bg to bg-black-100, so it matches the bg color and will blend in
 					className="absolute pointer-events-none inset-0 flex items-center justify-center dark:bg-black-100
          bg-black-100 [mask-image:radial-gradient(ellipse_at_center,transparent_20%,black)]"
 				/>
@@ -54,7 +54,7 @@ const Hero = () => {
 					<div className="">
 						<TextGenerateEffect
 							words="Your AI Fencing Companion"
-							className="ml-14 text-[40px] md:text-6xl lg:text-6xl font-platypi"
+							className="ml-14 text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-platypi text-center"
 						/>
 					</div>
 

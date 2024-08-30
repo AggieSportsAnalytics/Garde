@@ -16,9 +16,11 @@ const Contact = () => {
 			.then(
 				() => {
 					console.log("SUCCESS!");
+					form.current.reset();
 				},
 				(error) => {
 					console.log("FAILED...", error.text);
+					form.current.reset();
 				},
 			);
 	};
@@ -75,13 +77,25 @@ const Contact = () => {
 					{/* Social Media Icons */}
 					<div className="flex justify-center space-x-4 mt-6">
 						<div className="bg-slate-500 w-12 h-12 rounded-xl hover:bg-slate-400 flex items-center justify-center">
-							<Linkedin className="w-6 h-6 text-white" />
+							<a
+								href="https://www.linkedin.com/company/gardeai/"
+								target="_blank"
+								rel="noreferrer"
+							>
+								<Linkedin className="w-6 h-6 text-white" />
+							</a>
 						</div>
-						<div className="bg-slate-500 w-12 h-12 rounded-xl hover:bg-slate-400 flex items-center justify-center">
+						{/* <div className="bg-slate-500 w-12 h-12 rounded-xl hover:bg-slate-400 flex items-center justify-center">
 							<Instagram className="w-6 h-6 text-white" />
-						</div>
+						</div> */}
 						<div className="bg-slate-500 w-12 h-12 rounded-xl hover:bg-slate-400 flex items-center justify-center">
-							<Youtube className="w-6 h-6 text-white" />
+							<a
+								href="https://www.youtube.com/@gardefencing"
+								target="_blank"
+								rel="noreferrer"
+							>
+								<Youtube className="w-6 h-6 text-white" />
+							</a>
 						</div>
 					</div>
 				</div>

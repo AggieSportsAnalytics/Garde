@@ -27,27 +27,15 @@ export default function Home() {
 
 	return (
 		<div className="">
-			{isMobile ? (
-				<div>
-					<Hero />
-					<About />
-					<Showcase />
-					<Features />
-					<Banner />
-					<Contact />
-					<Footer />
-				</div>
-			) : (
-				<div>
-					<Hero />
-					<About />
-					<Showcase />
-					<Features />
-					<Banner />
-					<Contact />
-					<Footer />
-				</div>
-			)}
+			<div>
+				<Hero />
+				<About />
+				<Showcase />
+				<Features />
+				<Banner />
+				<Contact />
+				<Footer />
+			</div>
 		</div>
 	);
 }

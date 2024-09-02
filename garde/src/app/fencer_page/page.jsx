@@ -53,6 +53,14 @@ export default function Fencer_Page2() {
   const [isRunning, setIsRunning] = useState(false);
   const [videoInput, setVideoInput] = useState(false);
   const [feedback, setFeedback] = useState([]);
+  const [feedbackEnabled, setFeedbackEnabled] = useState(false); 
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const userAgent = typeof window.navigator === 'undefined' ? '' : navigator.userAgent;
+    const mobileDevice = /iPhone|iPad|iPod|Android/i.test(userAgent);
+    setIsMobile(mobileDevice);
+  }, []);
 
   useEffect(() => {
     if (voices.length > 0 && !voice) {
@@ -119,6 +127,7 @@ export default function Fencer_Page2() {
     setResetTimer(false);
     setCountdown(instructions[instructionIndex] ? instructions[instructionIndex + 1]?.time : 3);
     setIsRunning(true);
+    setFeedbackEnabled(true); // Enable feedback when the timer starts
   }, [instructions, instructionIndex]);
 
   const handleReset = useCallback(() => {
@@ -132,6 +141,7 @@ export default function Fencer_Page2() {
     setPreInstructionCountdown(3);
     setShowPreInstructionCountdown(false);
     clearTimeout(failureTimeout);
+    setFeedbackEnabled(false); // Disable feedback on reset
   }, [failureTimeout]);
 
   const handleVideoChange = useCallback((newVideoSource) => {
@@ -149,6 +159,8 @@ export default function Fencer_Page2() {
   }, [height]);
 
   const checkPoseDuration = useCallback((predictedPose) => {
+    if (!feedbackEnabled) return; // Skip feedback if not enabled
+
     const currentInstruction = instructions[instructionIndex];
     const instructionToPose = {
       "Perform an en guarde...": "en guarde",
@@ -184,9 +196,11 @@ export default function Fencer_Page2() {
         setPoseStartTime(null);
       }
     }
-  }, [instructions, instructionIndex, poseStartTime, poseResult, speak, voice, handleTimerStart, failureTimeout]);
+  }, [instructions, instructionIndex, poseStartTime, poseResult, speak, voice, handleTimerStart, failureTimeout, feedbackEnabled]);
 
   const checkAngles = useCallback((pose) => {
+    if (!feedbackEnabled) return; // Skip feedback if not enabled
+
     const feedbackMessages = [];
     const leftKneeAngle = calculateAngle(pose.keypoints[23], pose.keypoints[25], pose.keypoints[27]);
     const rightKneeAngle = calculateAngle(pose.keypoints[24], pose.keypoints[26], pose.keypoints[28]);
@@ -206,11 +220,11 @@ export default function Fencer_Page2() {
       feedbackMessages.push("Hands in position");
     }
 
-    setFeedback(feedbackMessages);
     if (feedbackMessages.length > 0) {
-      speak({ text: feedbackMessages.join(", "), voice: voice, rate: 1, pitch: 1, lang: 'en-US' });
+      setFeedback([feedbackMessages[0]]); // Only set the first feedback message
+      speak({ text: feedbackMessages[0], voice: voice, rate: 1, pitch: 1, lang: 'en-US' });
     }
-  }, [speak, voice]);
+  }, [speak, voice, feedbackEnabled]);
 
   useEffect(() => {
     if (pose) {
@@ -263,6 +277,18 @@ export default function Fencer_Page2() {
 
   return (
     <InstructionContext.Provider value={{ instructions, setInstructions }}>
+        {isMobile ? (
+        <div className="flex flex-col items-center justify-center h-screen bg-black text-white p-4">
+          <p className="text-center text-xl mb-4">
+            For a better viewing experience, please visit this website on a computer.
+          </p>
+          <Link href="/">
+            <button className="bg-white text-black py-2 px-4 rounded text-lg font-semibold hover:bg-gray-300">
+              Go Back
+            </button>
+          </Link>
+        </div>
+      ) : (
       <div className="flex flex-col h-screen font-sans bg-black text-white overflow-hidden">
       <header className="flex items-center justify-between p-4 bg-gray-900 border-b border-gray-800 z-10">
       <Link href="/">
@@ -291,7 +317,7 @@ export default function Fencer_Page2() {
           </div>
         </div>
 
-        <div className="flex-1 flex flex-col items-center justify-center px-2.8 space-y-4 z-10" style={{ transform: 'scale(0.7)', marginTop: '-100px'}}> 
+        <div className="flex-1 flex flex-col items-center justify-center px-2.8 space-y-4 z-10" style={{ transform: 'scale(0.7)', marginTop: '-150px'}}> 
           <div className="w-2/3 mt-10">
             <MemoizedInstruction isRunning={isRunning} instructionIndex={instructionIndex} instructions={instructions} performedPose={performedPose} />
             <div style={{ marginBottom: '20px' }}></div> {/* Added space between the Timer and Instruction */}
@@ -311,22 +337,22 @@ export default function Fencer_Page2() {
             </div>
           </div>
         </div>
-        <CardContainer className="w-[700px] h-[400px] absolute right-[-100px] top-[25%] shadow-2xl" style={{ transform: 'rotateY(-40deg) rotateX(5deg)', transformOrigin: 'right center', scale: '100%' }}>
-  <div className="h-full p-6 overflow-auto hide-scrollbar">
-    <CardBody className="bg-gray-50 relative group/card dark:hover:shadow-2xl dark:hover:shadow-emerald-500/[0.1] dark:bg-black dark:border-white/[0.2] border-black/[0.1] w-full h-full rounded-xl p-8 space-y-4 border">
-      <CardItem translateZ="50" className="text-xl font-bold text-neutral-600 dark:text-white mb-4">
-        AI Feedback
-      </CardItem>
-      <div className="grid grid-rows-1 grid-cols-1 gap-4">
-        <CardItem translateZ="60" className="rounded p-4 bg-gray-800 bg-opacity-50 border border-gray-700 shadow-lg w-auto text-white">
-          {(aiResult ? aiResult.split('\n') : []).map((item, key) => (
-            <span key={key}>{item}<br/></span>
-          ))}
-        </CardItem>
-      </div>
-    </CardBody>
-  </div>
-</CardContainer>
+        <CardContainer className="w-[1000px] h-[400px] absolute right-[-320px] top-[25%] shadow-2xl" style={{ transform: 'rotateY(15deg)', transformOrigin: 'right center', scale: '100%' }}>
+        <div className="h-full p-6 overflow-auto hide-scrollbar">
+          <CardBody className="bg-gray-50 relative group/card dark:hover:shadow-2xl dark:hover:shadow-emerald-500/[0.1] dark:bg-black dark:border-white/[0.2] border-black/[0.1] w-full h-full rounded-xl p-8 space-y-4 border">
+          <CardItem translateZ="50" className="text-xl font-bold text-neutral-600 dark:text-white mb-4">
+              AI Feedback
+            </CardItem>
+            <div className="grid grid-rows-1 grid-cols-1 gap-4">
+              <CardItem translateZ="60" className="rounded p-4 bg-gray-800 bg-opacity-50 border border-gray-700 shadow-lg w-auto text-white" style={{ width: '150px', wordWrap: 'break-word' }}>
+                {(aiResult ? aiResult.split('\n') : []).map((item, key) => (
+                  <span key={key}>{item}<br/></span>
+                ))}
+              </CardItem>
+            </div>
+          </CardBody>
+        </div>
+      </CardContainer>
 
 <div className="absolute top-0 left-0 p-4 bg-gray-800 text-white rounded">
   {feedback.map((msg, index) => (
@@ -358,6 +384,7 @@ export default function Fencer_Page2() {
           }
         `}</style>
       </div>
+      )}
     </InstructionContext.Provider>
   );
 }

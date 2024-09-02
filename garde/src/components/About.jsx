@@ -1,37 +1,79 @@
 import React from 'react'
-
+import { CardSpotlight } from "./ui/card-spotlight";
+import { GlareCard } from './ui/glare-card';
+import Image from "next/image";
+import {Step} from "./ui/Step";
+import { WobbleCard } from './ui/wobble-card';
 const About = () => {
   return (
     <div>
-      <div id="about" className="mt-[200px] ml-10 text-left text-white font-bold text-5xl">
-        Minimize costs, Maximize performance. <br />
-        Garde is here to help.
+
+      <div className="flex justify-center mt-36">
+        <h1 className="text-white font-semibold text-6xl font-platypi mt-[-100px]">Features.</h1>
+      </div>
+
+      <div className="flex justify-center mr-20 mt-14">
+          <CardSpotlight className="h-[600px] w-[900px] ml-[100px]">
+            <h1 className="flex justify-center text-white relative font-bold text-2xl mt-[-30px] font-platypi">
+              Built for Fencers
+            </h1>
+            <ul className="list-none relative font-semibold text-base mt-5">
+              {/* <Step title="Personalized training tailored to individual fencers" />
+              <Step title="Robust pose estimation for accurate form measurement" />
+              <Step title="Cutting-edge AI/ML technology for advanced skill development" />
+              <Step title="Patent-Pending Algorithm" /> */}
+              <p className="text-white font-platypi">
+                Garde harnesses the power of advanced pose estimation technology to deliver precise analysis 
+                of your fencing form. By continuously tracking your body position and movements in real-time, 
+                Garde provides invaluable feedback on your technique, helping you to identify and correct bad form 
+                instantly.
+              </p>
+            </ul>
+            <div className="mt-5">
+            <WobbleCard className="h-96">
+              <div className="flex justify-center">
+                <Image 
+                  src="/images/FencerPage.png"
+                  width={700}
+                  height={700}
+                  className="flex justify-center rounded-2xl mt-[-60px]"
+                />
+              </div>
+            </WobbleCard>
+            </div>
+          </CardSpotlight>
         </div>
-      <div className="mt-5 ml-10 text-stone-400 font-light"> 
-          Garde employs advanced pose estimation technology to deliver precise angle measurement, <br />
-          movement analysis, offering invaluable insights to enhance performance <br />
-          across various disciplines and sports.
-      </div>
-      <div>
-        <ul role="list" className="">
-          <li className="flex">
-            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="#6ed0dd" stroke="#6ed0dd" className="ml-10 mt-5 w-5 h-5"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <g> <path fill="none" d="M0 0h24v24H0z"></path> <path d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10zm0-2a8 8 0 1 0 0-16 8 8 0 0 0 0 16zm-.997-4L6.76 11.757l1.414-1.414 2.829 2.829 5.656-5.657 1.415 1.414L11.003 16z"></path> </g> </g></svg>
-            <span className="text-white mt-4 ml-3 font-semibold"> Personalized training tailored to individual fencers </span>
-          </li>
 
-          <li className="flex">
-            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="#6ed0dd" stroke="#6ed0dd" className="ml-10 mt-5 w-5 h-5"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <g> <path fill="none" d="M0 0h24v24H0z"></path> <path d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10zm0-2a8 8 0 1 0 0-16 8 8 0 0 0 0 16zm-.997-4L6.76 11.757l1.414-1.414 2.829 2.829 5.656-5.657 1.415 1.414L11.003 16z"></path> </g> </g></svg>
-            <span className="text-white mt-4 ml-3 font-semibold"> Robust pose estimation for accurate angle measurement </span>
-          </li>
-
-          <li className="flex">
-            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="#6ed0dd" stroke="#6ed0dd" className="ml-10 mt-5 w-5 h-5"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <g> <path fill="none" d="M0 0h24v24H0z"></path> <path d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10zm0-2a8 8 0 1 0 0-16 8 8 0 0 0 0 16zm-.997-4L6.76 11.757l1.414-1.414 2.829 2.829 5.656-5.657 1.415 1.414L11.003 16z"></path> </g> </g></svg>
-            <span className="text-white mt-4 ml-3 font-semibold"> Cutting-edge AI/ML technology for advanced skill development </span>
-          </li>
-
-        </ul>
-      </div>
-
+        <div className="flex justify-center mr-20 mt-36">
+          <CardSpotlight className="h-[500px] w-[900px] ml-[100px]">
+            <h1 className="flex justify-center text-white relative font-bold text-2xl mt-[-30px] font-platypi">
+              Built for Coaches
+            </h1>
+            <ul className="list-none relative font-semibold text-base mt-5">
+              {/* <Step title="Personalized training tailored to individual fencers" />
+              <Step title="Robust pose estimation for accurate form measurement" />
+              <Step title="Cutting-edge AI/ML technology for advanced skill development" />
+              <Step title="Patent-Pending Algorithm" /> */}
+              <p className="text-white font-platypi">
+                Garde offers a robust platform where coaches can effortlessly track and manage their 
+                students' progress. Our system integrates real-time analytics with a comprehensive database, 
+                allowing you to access detailed performance metrics and insights for each fencer.
+              </p>
+            </ul>
+            <div className="mt-5">
+            <WobbleCard className="h-96">
+              <div className="flex justify-center">
+                <Image 
+                  src="/images/CoachPage.png"
+                  width={700}
+                  height={700}
+                  className="flex justify-center rounded-2xl mt-[-60px]"
+                />
+              </div>
+            </WobbleCard>
+            </div>
+          </CardSpotlight>
+        </div>
     </div>
   )
 }

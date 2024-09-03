@@ -178,11 +178,11 @@ const WebcamPose = ({ onVideoChange, isRecording, videoSource, runtime = 'mediap
         overflow: 'hidden'  
       }}></div>
        
-      <div className="fixed" style={{ position: 'absolute', bottom: '600px', left: '800px' }}>
-      <Hammer className="w-10 h-10 hover:bg-slate-700 rounded-md" onClick={ShowInstructionMenu}/> {
-        showInstructionMenu && (<FencerInstructionMenu setInstructionMenu={setInstructionMenu}/>)
-      }
-    </div>
+       <div style={{ position: 'absolute', top: '-10%', left: '90%', zIndex: 20 }}>
+        <Hammer className="w-10 h-10 hover:bg-slate-700 rounded-md" onClick={ShowInstructionMenu}/> {
+          showInstructionMenu && (<FencerInstructionMenu setInstructionMenu={setInstructionMenu}/>)
+        }
+      </div>
     </> 
   );
 };
@@ -298,8 +298,8 @@ function radiansToDegrees(radianAngles) {
 }
 
 export function displayFeetDistance(keypoints) {
-  const kp1 = keypoints[16];
-  const kp2 = keypoints[15];
+  const kp1 = keypoints[28];
+  const kp2 = keypoints[27];
 
   const feetDistance = Math.abs(kp1.x - kp2.x);
 

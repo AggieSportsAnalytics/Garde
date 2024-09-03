@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback, memo } from 'react';
+import React, { useState, useEffect, useCallback, memo, useRef } from 'react';
 import * as posedetection from '@tensorflow-models/pose-detection';
 import * as tf from '@tensorflow/tfjs-core';
 import '@tensorflow/tfjs-backend-webgl';
@@ -12,13 +12,12 @@ import Fencer_Canvas from '../../components/Fencer_Canvas';
 import Fencer_Stats from '../../components/Fencer_Stats';
 import Instruction from '../../components/Instruction';
 import { useSpeechSynthesis } from 'react-speech-kit';
-import { displayFeetDistance } from '../../components/Fencer_Canvas';
+import { calculateAngle, displayFeetDistance, calculateSpeed } from '../../components/Fencer_Canvas';
 import { FaCheckCircle, FaTimesCircle } from 'react-icons/fa';
 import HeightInputModal from '../../components/HeightInputModal';
 import { getFencerInstructions } from '../../../prisma/fencer_instructions';
 import InstructionContext from '../../components/InstructionContext';
 import PropTypes from 'prop-types';
-import { calculateAngle } from '../../components/Fencer_Canvas';
 import { CardBody, CardContainer, CardItem } from "../../components/ui/3d-card.tsx";
 
 const MemoizedFencerStats = memo(Fencer_Stats);
@@ -55,6 +54,9 @@ export default function Fencer_Page2() {
   const [feedback, setFeedback] = useState([]);
   const [feedbackEnabled, setFeedbackEnabled] = useState(false); 
   const [isMobile, setIsMobile] = useState(false);
+  const [feetDistance, setFeetDistance] = useState(null);
+  const previousInstructionIndex = useRef(-1);
+  const previousFeedback = useRef("");
 
   useEffect(() => {
     const userAgent = typeof window.navigator === 'undefined' ? '' : navigator.userAgent;
@@ -72,12 +74,6 @@ export default function Fencer_Page2() {
     setHeight(heightInMeters);
     setIsHeightModalOpen(false);
   }, []);
-
-  const convertPixelsToMeters = useCallback((pixels) => {
-    if (!height) return null;
-    const pixelToMeterRatio = height / 100;
-    return pixels * pixelToMeterRatio;
-  }, [height]);
 
   const startPreInstructionCountdown = useCallback(() => {
     setPreInstructionCountdown(3);
@@ -198,33 +194,99 @@ export default function Fencer_Page2() {
     }
   }, [instructions, instructionIndex, poseStartTime, poseResult, speak, voice, handleTimerStart, failureTimeout, feedbackEnabled]);
 
+
+  // Start of Selection
+  const convertPixelsToMeters = (pixels, fencerHeightMeters, fencerHeightPixels) => {
+    if (!fencerHeightMeters || !fencerHeightPixels) return null;
+    const pixelToMeterRatio = fencerHeightMeters / fencerHeightPixels;
+    return pixels * pixelToMeterRatio;
+  };
+
   const checkAngles = useCallback((pose) => {
     if (!feedbackEnabled) return; // Skip feedback if not enabled
-
+  
     const feedbackMessages = [];
-    const leftKneeAngle = calculateAngle(pose.keypoints[23], pose.keypoints[25], pose.keypoints[27]);
-    const rightKneeAngle = calculateAngle(pose.keypoints[24], pose.keypoints[26], pose.keypoints[28]);
-    const leftElbowAngle = calculateAngle(pose.keypoints[11], pose.keypoints[13], pose.keypoints[15]);
-    const rightElbowAngle = calculateAngle(pose.keypoints[12], pose.keypoints[14], pose.keypoints[16]);
-
-    if (leftKneeAngle < 160 || rightKneeAngle < 160) {
-      feedbackMessages.push("Bend your knees");
+    
+    const leftKneeAngle = calculateAngle(pose.keypoints[23], pose.keypoints[25], pose.keypoints[27]); // left_hip, left_knee, left_ankle
+    const rightKneeAngle = calculateAngle(pose.keypoints[24], pose.keypoints[26], pose.keypoints[28]); // right_hip, right_knee, right_ankle
+    const leftElbowAngle = calculateAngle(pose.keypoints[11], pose.keypoints[13], pose.keypoints[15]); // left_shoulder, left_elbow, left_wrist
+    const rightElbowAngle = calculateAngle(pose.keypoints[12], pose.keypoints[14], pose.keypoints[16]); // right_shoulder, right_elbow, right_wrist
+    
+    // Keypoints for checking foot positions during advance
+    const frontToeY = pose.keypoints[31].y; // left_foot_index
+    const backToeY = pose.keypoints[32].y; // right_foot_index
+    const frontKneeX = pose.keypoints[27].x; // left_ankle
+    const backKneeX = pose.keypoints[28].x; // right_ankle
+    const frontFootX = pose.keypoints[29].x; // left_heel
+    const backFootX = pose.keypoints[30].x; // right_heel
+  
+    const optimalAngles = {
+      leftKnee: 150, 
+      rightKnee: 150, 
+      leftElbow: 100, 
+      rightElbow: 100, 
+      feetDistanceMin: 0.5, // Meters
+      feetDistanceMax: 1.0, // Meters
+      speedMin: 1, // Adjust these based on your specific requirements
+      speedMax: 4
+    };
+  
+    if (instructions[instructionIndex]?.name === "Advance") {
+      // Step 1: Raise front toe (use left_foot_index for front toe and right_foot_index for back toe)
+      if (frontToeY >= backToeY) {
+        feedbackMessages.push("Raise your front toe slightly to initiate the advance.");
+      }
+  
+      // Step 2: Step forward with the front foot (use left_heel for front foot)
+      if (frontFootX <= frontKneeX) {
+        feedbackMessages.push("Ensure your front foot steps forward enough.");
+      }
+  
+      // Step 3: Back leg follows (check distance between right_heel and right_ankle)
+      if (Math.abs(backFootX - backKneeX) < 20) {
+        feedbackMessages.push("Move your back leg forward to maintain the proper distance.");
+      }
+  
+      // Step 4: Return to en garde position
+      if (leftKneeAngle < optimalAngles.leftKnee) {
+        feedbackMessages.push(`Bend your left knee more to reach at least ${optimalAngles.leftKnee} degrees.`);
+      }
+      if (rightKneeAngle < optimalAngles.rightKnee) {
+        feedbackMessages.push(`Bend your right knee more to reach at least ${optimalAngles.rightKnee} degrees.`);
+      }
+      if (Math.abs(pose.keypoints[28].x - pose.keypoints[27].x) < 1) {
+        feedbackMessages.push("Bring your feet closer together for better balance.");
+      }
+      if (Math.abs(pose.keypoints[27].x - pose.keypoints[29].x) > 40) {
+        feedbackMessages.push("Ensure your front knee and toe are aligned and pointing forward.");
+      }
+      if (leftElbowAngle < optimalAngles.leftElbow) {
+        feedbackMessages.push(`Raise your left elbow to reach about ${optimalAngles.leftElbow} degrees for better defense.`);
+      }
+      if (rightElbowAngle < optimalAngles.rightElbow) {
+        feedbackMessages.push(`Raise your right elbow to around ${optimalAngles.rightElbow} degrees.`);
+      }
     }
-    if (Math.abs(pose.keypoints[15].x - pose.keypoints[16].x) > 50) {
-      feedbackMessages.push("Feet lined up");
-    }
-    if (Math.abs(pose.keypoints[27].x - pose.keypoints[29].x) > 50) {
-      feedbackMessages.push("Front knee and toe forward");
-    }
-    if (leftElbowAngle < 90 || rightElbowAngle < 90) {
-      feedbackMessages.push("Hands in position");
-    }
-
+  
     if (feedbackMessages.length > 0) {
-      setFeedback([feedbackMessages[0]]); // Only set the first feedback message
-      speak({ text: feedbackMessages[0], voice: voice, rate: 1, pitch: 1, lang: 'en-US' });
+      const currentFeedback = feedbackMessages[feedbackMessages.length - 1];
+  
+      // Check if the current instruction has changed; if it has, reset the spoken feedback
+      if (instructionIndex !== previousInstructionIndex.current) {
+        previousInstructionIndex.current = instructionIndex;
+        previousFeedback.current = ""; // Reset previous feedback when instruction changes
+      }
+  
+      // Only speak the feedback if it has changed
+      if (currentFeedback !== previousFeedback.current) {
+        setFeedback([currentFeedback]); // Set the current feedback message on the screen
+        speak({ text: currentFeedback, voice: voice, rate: 1, pitch: 1, lang: 'en-US' });
+        previousFeedback.current = currentFeedback; // Update the last spoken feedback
+      }
     }
-  }, [speak, voice, feedbackEnabled]);
+  }, [speak, voice, feedbackEnabled, instructions, instructionIndex]);
+  
+  
 
   useEffect(() => {
     if (pose) {
@@ -307,13 +369,14 @@ export default function Fencer_Page2() {
         <main className="flex flex-grow relative" style={{ perspective: '1000px' }}>
         <div className="w-1/8 absolute left-0 top-0 bottom-0 shadow-2xl" style={{ transform: 'rotateY(15deg)', transformOrigin: 'left center', height: '100%', scale: '60%', top: '0px' }}>
           <div className="h-full p-6 overflow-auto hide-scrollbar">
-            <MemoizedFencerStats
-              pose={pose}
-              lastCalled={lastCalled}
-              setLastCalled={setLastCalled}
-              setAiFeedback={setAiResult}
-              height={height}
-            />
+          <MemoizedFencerStats
+            pose={pose}
+            lastCalled={lastCalled}
+            setLastCalled={setLastCalled}
+            setAiFeedback={setAiResult}
+            height={height}
+            setFeetDistance={setFeetDistance} 
+          />
           </div>
         </div>
 

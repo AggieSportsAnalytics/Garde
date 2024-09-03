@@ -1,10 +1,10 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { calculateAngle, displayFeetDistance, calculateSpeed } from './Fencer_Canvas';
 import { OpenAIAPIFeedback } from './Fencer_Canvas';
 import "@mediapipe/pose";
 import { CardBody, CardContainer, CardItem } from "./ui/3d-card";
 
-const Fencer_Stats = ({ pose, height, lastCalled, setLastCalled, setAiFeedback }) => {
+const Fencer_Stats = ({ pose, height, lastCalled, setLastCalled, setAiFeedback, setFeetDistance }) => {
   let leftElbAngle = "";
   let rightElbAngle = "";
   let leftKneeAngle = "";
@@ -39,6 +39,12 @@ const Fencer_Stats = ({ pose, height, lastCalled, setLastCalled, setAiFeedback }
     predictedPose = displayFeetDistance(pose.keypoints).predictedPose;
     speed = Math.round(calculateSpeed(pose.keypoints).currentSpeed);
   }
+
+  useEffect(() => {
+    if (feetDistance) {
+      setFeetDistance(feetDistance);
+    }
+  }, [feetDistance, setFeetDistance]);
 
   if (pose && Date.now() - lastCalled >= 30000) {
     setLastCalled(Date.now());

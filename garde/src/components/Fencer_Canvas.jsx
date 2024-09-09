@@ -8,9 +8,10 @@ import "@mediapipe/pose";
 import Plotly from 'plotly.js-dist-min';
 import Modal from 'react-modal';
 import FencerInstructionMenu from './FencerInstructionMenu';
+import { CardBody, CardContainer, CardItem } from "./ui/3d-card.tsx";
 import { Hammer } from 'lucide-react';
 
-const WebcamPose = ({ onVideoChange, isRecording, videoSource, runtime = 'mediapipe', modelType = 'full', setPose, containerWidth, containerHeight }) => {
+const WebcamPose = ({ onVideoChange, isRecording, videoSource, runtime = 'mediapipe', modelType = 'full', setPose, containerWidth, containerHeight, darkMode }) => {
   const videoRef = useRef(null);
   const webcamRef = useRef(null);
   const canvasRef = useRef(null);
@@ -149,7 +150,7 @@ const WebcamPose = ({ onVideoChange, isRecording, videoSource, runtime = 'mediap
       <div className="flex flex-col items-center space-y-4" style={{ position: "relative", width: containerWidth, height: containerHeight }}>
         {isRecording || videoSource ? (
           <>
-            <div className="video-container" style={{ position: "relative", width: "100%", height: "100%" }}>
+            <div className="video-container" style={{ position: "relative", width: "100%", height: "100%", backgroundColor: darkMode ? 'black' : 'white' }}>
               {videoSource ? (
                 <video className="rounded-md" ref={videoRef} style={{ width: "100%", height: "100%" }} autoPlay loop muted />
               ) : (
@@ -173,7 +174,7 @@ const WebcamPose = ({ onVideoChange, isRecording, videoSource, runtime = 'mediap
         overflow: 'hidden'  
       }}></div>
        
-       <div style={{ position: 'absolute', top: '-10%', left: '90%', zIndex: 20 }}>
+      <div style={{ position: 'absolute', top: '-10%', left: '90%', zIndex: 20 }}>
         <Hammer className="w-10 h-10 hover:bg-slate-700 rounded-md" onClick={ShowInstructionMenu}/> {
           showInstructionMenu && (<FencerInstructionMenu setInstructionMenu={setInstructionMenu}/>)
         }
@@ -416,7 +417,7 @@ export async function OpenAIAPIFeedback(props) {
         content: query
       }
     ],
-    model: 'gpt-4',
+    model: 'gpt-4o-mini',
   });
   console.log(chatCompletion.choices[0].message.content);
   return chatCompletion.choices[0].message.content;

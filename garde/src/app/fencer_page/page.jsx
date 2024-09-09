@@ -13,7 +13,7 @@ import Fencer_Stats from '../../components/Fencer_Stats';
 import Instruction from '../../components/Instruction';
 import { useSpeechSynthesis } from 'react-speech-kit';
 import { calculateAngle, displayFeetDistance, calculateSpeed } from '../../components/Fencer_Canvas';
-import { FaCheckCircle, FaTimesCircle } from 'react-icons/fa';
+import { FaCheckCircle, FaTimesCircle, FaSun, FaMoon } from 'react-icons/fa';
 import HeightInputModal from '../../components/HeightInputModal';
 import { getFencerInstructions } from '../../../prisma/fencer_instructions';
 import InstructionContext from '../../components/InstructionContext';
@@ -62,6 +62,7 @@ export default function Fencer_Page2() {
   const [isTimerRunning, setIsTimerRunning] = useState(false);
   const [lastSpokenFeedbackTime, setLastSpokenFeedbackTime] = useState(0);
   const spokenFeedbackCooldown = 3500; // 3.5 seconds cooldown
+  const [darkMode, setDarkMode] = useState(false);
 
   useEffect(() => {
     const userAgent = typeof window.navigator === 'undefined' ? '' : navigator.userAgent;
@@ -368,9 +369,14 @@ export default function Fencer_Page2() {
     }
 
     if (feedbackGiven) {
-      setFeedback([feedbackMessage]);
-      speak({ text: feedbackMessage, voice: voice, rate: 1.2, pitch: 1.1, lang: 'en-US' });
-      setLastSpokenFeedbackTime(now);
+      if (feedbackMessage !== previousFeedback.current.message || now - previousFeedback.current.timestamp > spokenFeedbackCooldown * 2) {
+        setFeedback([feedbackMessage]);
+        speak({ text: feedbackMessage, voice: voice, rate: 1.2, pitch: 1.1, lang: 'en-US' });
+        setLastSpokenFeedbackTime(now);
+        previousFeedback.current = { message: feedbackMessage, timestamp: now };
+      } else {
+        console.log('Repeated feedback omitted');
+      }
     } else {
       console.log('No matching instruction for feedback');
     }
@@ -468,31 +474,49 @@ export default function Fencer_Page2() {
     }
   }, [isTimerRunning]);
 
+  useEffect(() => {
+    const userPrefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    setDarkMode(userPrefersDark);
+  }, []);
+
+  const toggleDarkMode = () => {
+    setDarkMode(prevMode => !prevMode);
+  };
+
   return (
     <InstructionContext.Provider value={{ instructions, setInstructions }}>
       {isMobile ? (
-        <div className="flex flex-col items-center justify-center h-screen bg-black text-white p-4">
+        <div className={`flex flex-col items-center justify-center h-screen ${darkMode ? 'bg-black text-white' : 'bg-white text-black'} p-4`}>
           <p className="text-center text-xl mb-4">
             For a better viewing experience, please visit this website on a computer.
           </p>
           <Link href="/">
-            <button className="bg-white text-black py-2 px-4 rounded text-lg font-semibold hover:bg-gray-300">
+            <button className={`${darkMode ? 'bg-white text-black' : 'bg-black text-white'} py-2 px-4 rounded text-lg font-semibold hover:bg-gray-300`}>
               Go Back
             </button>
           </Link>
         </div>
       ) : (
-        <div className="flex flex-col h-screen font-sans bg-black text-white overflow-hidden">
-          <header className="flex items-center justify-between p-4 bg-gray-900 border-b border-gray-800 z-10">
+        <div className={`flex flex-col h-screen font-sans ${darkMode ? 'bg-black text-white' : 'bg-white text-black'} overflow-hidden`}>
+          <header className={`flex items-center justify-between p-4 ${darkMode ? 'bg-gray-900 border-b border-gray-800' : 'bg-gray-100 border-b border-gray-300'} z-10`}>
             <Link href="/">
-              <button className="bg-white text-black py-2 px-4 rounded text-lg font-semibold hover:bg-gray-300" aria-label="Go back">
+              <button className={`${darkMode ? 'bg-white text-black' : 'bg-black text-white'} py-2 px-4 rounded text-lg font-semibold hover:bg-gray-300`} aria-label="Go back">
                 &#8592;
               </button>
             </Link>
             <div className="flex-grow flex justify-center">
               <Stream_Vid onVideoChange={handleVideoChange} isRecording={isRecording} toggleRecording={toggleRecording} videoSource={videoSource} />
             </div>
-            <UserButton />
+            <div className="flex items-center space-x-4">
+              <button
+                className={`${darkMode ? 'bg-white text-black' : 'bg-black text-white'} p-2 rounded-full text-lg font-semibold hover:bg-gray-300`}
+                onClick={toggleDarkMode}
+                aria-label={darkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+              >
+                {darkMode ? <FaSun /> : <FaMoon />}
+              </button>
+              <UserButton />
+            </div>
           </header>
 
           <main className="flex flex-grow relative" style={{ perspective: '1000px' }}>
@@ -506,6 +530,7 @@ export default function Fencer_Page2() {
                   height={height}
                   setFeetDistance={setFeetDistance}
                   setShoulderWidth={setShoulderWidth}
+                  darkMode={darkMode}
                 />
               </div>
             </div>
@@ -514,7 +539,7 @@ export default function Fencer_Page2() {
               <div className="w-2/3 mt-10">
                 <MemoizedInstruction isRunning={isRunning} instructionIndex={instructionIndex} instructions={instructions} performedPose={performedPose} />
                 <div style={{ marginBottom: '20px' }}></div> {/* Added space between the Timer and Instruction */}
-                <MemoizedTimer onTimerStart={handleTimerStart} onReset={handleReset} isStartDisabled={isStartDisabled} resetTimer={resetTimer} data={instructions} instructionIndex={instructionIndex} initialTime={instructions[instructionIndex]?.time} onRunningChange={setIsTimerRunning} />
+                <MemoizedTimer onTimerStart={handleTimerStart} onReset={handleReset} isStartDisabled={isStartDisabled} resetTimer={resetTimer} data={instructions} instructionIndex={instructionIndex} initialTime={instructions[instructionIndex]?.time} onRunningChange={setIsTimerRunning} darkMode={darkMode} />
               </div>
 
               {/* Fencer Canvas Component */}
@@ -529,33 +554,27 @@ export default function Fencer_Page2() {
                   {hasSpoken && <div className="countdown-circle">{countdown}</div>}
                 </div>
               </div>
-              <div className="mt-4">
+              {/* <div className="mt-4">
                 <h3 className="text-xl font-semibold mb-2">Feedback</h3>
                 <ul className="list-disc pl-5">
                   {feedback.map((item, index) => (
                     <li key={index} className="text-white">{item}</li>
                   ))}
                 </ul>
+              </div> */}
+            </div>
+            <div className={`left-[1050px] absolute top-[25%] left-0 ml-8 shadow-2xl ${darkMode ? 'bg-black' : 'bg-gray-50'} dark:border-white/[0.2] border-black/[0.1] w-auto sm:w-[35rem] h-[50%] rounded-xl p-8 space-y-4 border hover:shadow-2xl hover:shadow-emerald-500/[0.1] transition-transform duration-300 ease-in-out transform-gpu hover:rotateY-5deg`} style={{ transform: 'rotateY(-15deg)', transformOrigin: 'left center', width: '20%' }}>
+              <div className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-neutral-600'} mb-4`}>
+                AI Feedback
+              </div>
+              <div className={`rounded p-4 ${darkMode ? 'bg-gray-800 bg-opacity-50 border-gray-700' : 'bg-gray-100 border-gray-300'} border shadow-lg w-auto ${darkMode ? 'text-white' : 'text-black'}`} style={{ wordWrap: 'break-word' }}>
+                {(aiResult ? aiResult.split('\n') : []).map((item, key) => (
+                  <span key={key}>{item}<br/></span>
+                ))}
               </div>
             </div>
-            <CardContainer className="w-[1000px] h-[400px] absolute right-[-320px] top-[25%] shadow-2xl" style={{ transform: 'rotateY(15deg)', transformOrigin: 'right center', scale: '100%' }}>
-              <div className="h-full p-6 overflow-auto hide-scrollbar">
-                <CardBody className="bg-gray-50 relative group/card dark:hover:shadow-2xl dark:hover:shadow-emerald-500/[0.1] dark:bg-black dark:border-white/[0.2] border-black/[0.1] w-full h-full rounded-xl p-8 space-y-4 border">
-                  <CardItem translateZ="50" className="text-xl font-bold text-neutral-600 dark:text-white mb-4">
-                    AI Feedback
-                  </CardItem>
-                  <div className="grid grid-rows-1 grid-cols-1 gap-4">
-                    <CardItem translateZ="60" className="rounded p-4 bg-gray-800 bg-opacity-50 border border-gray-700 shadow-lg w-auto text-white" style={{ width: '150px', wordWrap: 'break-word' }}>
-                      {(aiResult ? aiResult.split('\n') : []).map((item, key) => (
-                        <span key={key}>{item}<br/></span>
-                      ))}
-                    </CardItem>
-                  </div>
-                </CardBody>
-              </div>
-            </CardContainer>
 
-            <div className="absolute top-0 left-0 p-4 bg-gray-800 text-white rounded">
+            <div className={`absolute top-0 left-0 p-4 ${darkMode ? 'bg-gray-800 text-white' : 'bg-gray-200 text-black'} rounded`}>
               {feedback.map((msg, index) => (
                 <div key={index}>{msg}</div>
               ))}

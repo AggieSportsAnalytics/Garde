@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-const Timer = ({ onTimerStart, onReset, isStartDisabled, resetTimer, initialTime }) => {
+const Timer = ({ onTimerStart, onReset, isStartDisabled, resetTimer, initialTime, onRunningChange }) => {
   const [isRunning, setIsRunning] = useState(false);
   const [time, setTime] = useState(initialTime * 1000); // Convert initialTime to milliseconds
 
@@ -10,15 +10,15 @@ const Timer = ({ onTimerStart, onReset, isStartDisabled, resetTimer, initialTime
     if (isRunning) {
       interval = setInterval(() => {
         setTime((prevTime) => {
-          if (prevTime > 10) {
-            return prevTime - 10; // Decrement by 10ms
+          if (prevTime > 1000) {
+            return prevTime - 1000; // Decrement by 1 second
           } else {
             clearInterval(interval);
             setIsRunning(false);
             return 0;
           }
         });
-      }, 10); // Change this to 10ms for millisecond countdown
+      }, 1000); // Change this to 1000ms for second countdown
     } else if (!isRunning && time !== initialTime * 1000) {
       clearInterval(interval);
     }
@@ -32,7 +32,11 @@ const Timer = ({ onTimerStart, onReset, isStartDisabled, resetTimer, initialTime
       setIsRunning(true);
     }
   }, [resetTimer, initialTime]);
-  
+
+  useEffect(() => {
+    console.log('Timer component: isRunning changed to', isRunning);
+    onRunningChange(isRunning);
+  }, [isRunning, onRunningChange]);
 
   const handleStart = () => {
     if (!isRunning && !isStartDisabled) {

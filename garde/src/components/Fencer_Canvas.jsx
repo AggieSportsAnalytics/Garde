@@ -8,14 +8,13 @@ import "@mediapipe/pose";
 import Plotly from 'plotly.js-dist-min';
 import Modal from 'react-modal';
 import FencerInstructionMenu from './FencerInstructionMenu';
-import { Hammer, HammerIcon } from 'lucide-react';
+import { Hammer } from 'lucide-react';
 
 const WebcamPose = ({ onVideoChange, isRecording, videoSource, runtime = 'mediapipe', modelType = 'full', setPose, containerWidth, containerHeight }) => {
   const videoRef = useRef(null);
   const webcamRef = useRef(null);
   const canvasRef = useRef(null);
   let intervalId = useRef(null);
-  let openAICallIntervalId = useRef(null);
   const minConfidence = 0.5;
 
   const [latestPose, setLatestPose] = useState(null);
@@ -53,9 +52,9 @@ const WebcamPose = ({ onVideoChange, isRecording, videoSource, runtime = 'mediap
         canvasRef.current.width = videoWidth;
         canvasRef.current.height = videoHeight;
         const poses = await detector.estimatePoses(video);
-        setPose(poses[0]);
-        setLatestPose(poses[0]);
-        if (canvasRef.current && poses.length > 0) {
+        if (poses.length > 0) {
+          setPose(poses[0]);
+          setLatestPose(poses[0]);
           drawCanvas(poses[0], videoWidth, videoHeight, canvasRef.current, minConfidence);
           draw3DModel(poses[0]);
         }
@@ -142,11 +141,7 @@ const WebcamPose = ({ onVideoChange, isRecording, videoSource, runtime = 'mediap
   }, [isRecording, videoSource, runtime, modelType]);
 
   const ShowInstructionMenu = () => {
-    if (showInstructionMenu == true) {
-      setInstructionMenu(false);
-    } else {
-      setInstructionMenu(true);
-    }
+    setInstructionMenu(prev => !prev);
   }
 
   return (
@@ -298,38 +293,43 @@ function radiansToDegrees(radianAngles) {
 }
 
 export function displayFeetDistance(keypoints) {
-  const kp1 = keypoints[28];
-  const kp2 = keypoints[27];
+  const kp1 = keypoints[28]; // left_ankle
+  const kp2 = keypoints[27]; // right_ankle
 
   const feetDistance = Math.abs(kp1.x - kp2.x);
 
   let predictedPose = "";
-  let absSpeed = Math.abs(currentSpeed)
-  if (feetDistance > 275) {
-    predictedPose = "lunge";
-  } else if (feetDistance > 200) {
-    if (currentSpeed < -20) {
-      predictedPose = "retreat";
-    } else {
-      predictedPose = "advance";
+  let absSpeed = Math.abs(currentSpeed);
+
+  // Enhanced pose prediction logic
+  const leftKneeAngle = calculateAngle(keypoints[23], keypoints[25], keypoints[27]); // left_hip, left_knee, left_ankle
+  const rightKneeAngle = calculateAngle(keypoints[24], keypoints[26], keypoints[28]); // right_hip, right_knee, right_ankle
+
+  if (feetDistance > 200 && absSpeed < 20 && leftKneeAngle > 90 && rightKneeAngle > 150) {
+    predictedPose = "advance";
+  } else if (feetDistance > 200 && absSpeed < 20 && leftKneeAngle > 90 && rightKneeAngle > 150 && currentSpeed < 0) {
+    predictedPose = "retreat";
+  } else if (absSpeed > 20) {
+    if (currentSpeed < -20 && leftKneeAngle > 120 && rightKneeAngle > 120) {
+      predictedPose = "doubleQuickRetreat";
+    } else if (currentSpeed > 20 && leftKneeAngle > 80 && rightKneeAngle > 160) {
+      predictedPose = "doubleQuickAdvance";
     }
-  } else {
-    if (absSpeed > 20) {
-      if (currentSpeed < -20) {
-        predictedPose = "retreat";
-      } else {
-        predictedPose = "advance";
-      }
+  } else if (feetDistance > 150 && leftKneeAngle > 110 && rightKneeAngle > 110) {
+    if (currentSpeed > 20) {
+      predictedPose = "pullingDoubleAdvance";
     } else {
-      predictedPose = "en guarde"
+      predictedPose = "pullingDoubleRetreat";
     }
+  } else if (leftKneeAngle > 85 && rightKneeAngle > 140 && feetDistance < 200) {
+    predictedPose = "en guarde";
   }
 
   return { feetDistance, predictedPose };
 }
 
+
 export async function OpenAIAPIFeedback(props) {
-  //const sleep = ms => new Promise(r => setTimeout(r, ms));
   const pose = props.pose || {};
   const userAngles = {
     "name": props.pose,
@@ -382,28 +382,24 @@ export async function OpenAIAPIFeedback(props) {
 
   let comparison;
   
-  if(pose == "en guarde") {
+  if(pose === "en guarde") {
     comparison = idealAngles[0];
   }
-  else if(pose == "advance") {
+  else if(pose === "advance") {
     comparison = idealAngles[1];
   }
-  else if(pose == "retreat") {
+  else if(pose === "retreat") {
     comparison = idealAngles[2];
   }
-  else if(pose == "lunge") {
+  else if(pose === "lunge") {
     comparison = idealAngles[3];
-  } 
+  }
 
-
-    let query = `Please compare the user's angles ${JSON.stringify(userAngles)} with the ideal angles ${JSON.stringify(comparison)} for the ${userAngles.pose} position and provide a detailed analysis.`;
-    const openai = new OpenAI({
+  let query = `Please compare the user's angles ${JSON.stringify(userAngles)} with the ideal angles ${JSON.stringify(comparison)} for the ${userAngles.pose} position and provide a detailed analysis.`;
+  const openai = new OpenAI({
     apiKey: process.env.NEXT_PUBLIC_OPENAI_KEY,
     dangerouslyAllowBrowser: true
   });
-  // console.log('Test');
-  // return ("success");
-
 
   const chatCompletion = await openai.chat.completions.create({
     messages: [
@@ -426,6 +422,11 @@ export async function OpenAIAPIFeedback(props) {
   return chatCompletion.choices[0].message.content;
 
 }
+
+export const convertPixelsToMeters = (pixels, height, fencerHeightPixels) => {
+  const pixelToMeterRatio = height / fencerHeightPixels;
+  return pixels * pixelToMeterRatio;
+};
 
 // const url = process.env.MONGODB_URL
 // const client = new MongoClient(url, {

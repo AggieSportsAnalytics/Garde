@@ -15,6 +15,33 @@ const Fencer_Stats = ({ pose, lastCalled, setLastCalled, setAiFeedback, height, 
   const [predictedPose, setPredictedPose] = useState(null);
   const [speed, setSpeed] = useState(null);
 
+  const predictPose = (pose) => {
+    if (!pose || !pose.keypoints) return null;
+
+    const rightKneeAngle = calculateAngle(pose.keypoints[24], pose.keypoints[26], pose.keypoints[28]);
+    const leftKneeAngle = calculateAngle(pose.keypoints[23], pose.keypoints[25], pose.keypoints[27]);
+    const swordArmAngle = calculateAngle(pose.keypoints[11], pose.keypoints[13], pose.keypoints[15]);
+    const nonSwordArmAngle = calculateAngle(pose.keypoints[12], pose.keypoints[14], pose.keypoints[16]);
+    const speed = calculateSpeed(pose.keypoints).currentSpeed;
+
+    if (
+      (rightKneeAngle >= 90 && rightKneeAngle <= 140 && leftKneeAngle > 160) ||
+      (leftKneeAngle >= 90 && leftKneeAngle <= 140 && rightKneeAngle > 160)
+    ) {
+      if (swordArmAngle > 150 && nonSwordArmAngle > 150) {
+        return 'lunge';
+      }
+    }
+
+    if (speed > 0.5) { // Adjust speed threshold as needed
+      return 'advance';
+    } else if (speed < -0.5) {
+      return 'retreat';
+    }
+
+    return 'onguard';
+  };
+
   useEffect(() => {
     if (pose && pose.keypoints) {
       const rightAnkle = pose.keypoints[32];
@@ -46,7 +73,8 @@ const Fencer_Stats = ({ pose, lastCalled, setLastCalled, setAiFeedback, height, 
           const feetDistanceMeters = convertPixelsToMeters(feetDistancePixels, height, fencerHeightPixels).toFixed(2);
           setFeetDistanceState(feetDistanceMeters);
 
-          setPredictedPose(displayFeetDistance(pose.keypoints).predictedPose);
+          const predictedPose = predictPose(pose);
+          setPredictedPose(predictedPose);
           setSpeed(Math.round(calculateSpeed(pose.keypoints).currentSpeed));
         }
       }

@@ -70,6 +70,12 @@ const WebcamPose = ({ onVideoChange, isRecording, videoSource, runtime = 'mediap
     const y = pose.keypoints3D.map(k => -k.y);  // Invert y-axis
     const z = pose.keypoints3D.map(k => k.z);
 
+    // Apply moving average filter to smoothen the coordinates
+    const smoothingFactor = 0.99; 
+    const smoothX = smoothCoordinates(x, smoothingFactor);
+    const smoothY = smoothCoordinates(y, smoothingFactor);
+    const smoothZ = smoothCoordinates(z, smoothingFactor);
+
     const connections = {
       'orange': [[11, 13], [13, 15], [23, 25], [25, 27]],
       'aqua': [[12, 14], [14, 16], [24, 26], [26, 28]],
@@ -78,15 +84,15 @@ const WebcamPose = ({ onVideoChange, isRecording, videoSource, runtime = 'mediap
 
     const colors = {
       points: 'black',
-      lines: ['blue', 'orange', 'blue', 'orange', 'white', 'white', 'orange', 'aqua', 'orange', 'aqua', 'white', 'white']
+      lines: ['blue', 'orange', 'blue', 'orange', 'black', 'black', 'orange', 'aqua', 'orange', 'aqua', 'black', 'black']
     };
 
     const tracePoints = {
-      x: x,  // Use x for the horizontal axis
-      y: z,  // Use z for the vertical axis
-      z: y,  // Use y for the depth axis
+      x: smoothX,
+      y: smoothZ,
+      z: smoothY,
       mode: 'markers',
-      marker: { size: 3, color: colors.points, opacity: 0.8 }, // Less translucent points
+      marker: { size: 3, color: colors.points, opacity: 0.8 },
       type: 'scatter3d',
       showlegend: false,
       hovermode: false, 
@@ -97,11 +103,11 @@ const WebcamPose = ({ onVideoChange, isRecording, videoSource, runtime = 'mediap
     Object.entries(connections).forEach(([color, pairs]) => {
       pairs.forEach(pair => {
         traceLines.push({
-          x: [x[pair[0]], x[pair[1]]],  // Use x for the horizontal axis
-          y: [z[pair[0]], z[pair[1]]],  // Use z for the vertical axis
-          z: [y[pair[0]], y[pair[1]]],  // Use inverted y for the depth axis
+          x: [smoothX[pair[0]], smoothX[pair[1]]],
+          y: [smoothZ[pair[0]], smoothZ[pair[1]]],
+          z: [smoothY[pair[0]], smoothY[pair[1]]],
           mode: 'lines',
-          line: { color: color, width: 2, opacity: 0.6 }, // More translucent lines
+          line: { color: color, width: 2, opacity: 0.6 },
           type: 'scatter3d',
           showlegend: false,
           hovermode: false, 
@@ -115,12 +121,14 @@ const WebcamPose = ({ onVideoChange, isRecording, videoSource, runtime = 'mediap
       plot_bgcolor: 'rgba(255,255,255, 0.7)',  // Transparent plot background
       paper_bgcolor: 'rgba(255,255,255, 0.7)',  // Transparent paper background
       scene: {
-        xaxis: { title: 'X' },  // X-axis is horizontal
-        yaxis: { title: 'Z' },  // Z-axis is vertical
-        zaxis: { title: '-Y' },  // Y-axis is depth and inverted
+        xaxis: { title: 'X' },
+        yaxis: { title: 'Z' },
+        zaxis: { title: '-Y' },
         aspectmode: 'cube',
         camera: {
-          eye: { x: 1.25, y: 1.25, z: 1.25},  // Adjusted to view the plot upright
+          eye: { x: -1.25, y: 2, z: 0.8 },  // Adjust the z-coordinate to lower the viewpoint
+          up: { x: 0, y: 0, z: 1 },
+          center: { x: 0, y: 0, z: 0 }
         },
         dragmode: 'turntable',
         hovermode: !1,  // Disable hover interactions
@@ -128,7 +136,36 @@ const WebcamPose = ({ onVideoChange, isRecording, videoSource, runtime = 'mediap
       }
     };
 
+    // Calculate the rotation angle based on the fencer's movement direction
+    const leftHipIndex = 23;
+    const rightHipIndex = 24;
+    const hipDiffX = x[rightHipIndex] - x[leftHipIndex];
+    const hipDiffZ = z[rightHipIndex] - z[leftHipIndex];
+    const rotationAngle = Math.atan2(hipDiffZ, hipDiffX);
+
+    // Apply the rotation to the 3D model
+    layout.scene.camera.eye = {
+      x: -1.5 * Math.cos(rotationAngle),  
+      y: -1.5 * Math.sin(rotationAngle),  
+      z: 1.5  // Maintain the z-coordinate for the desired viewpoint
+    };
+
     Plotly.react('3d-plot', [tracePoints, ...traceLines], layout, { displayModeBar: false });
+  };
+
+  // Function to apply moving average filter to coordinates
+  const smoothCoordinates = (coordinates, smoothingFactor) => {
+    const smoothedCoordinates = [];
+    let prevCoordinate = coordinates[0];
+
+    for (let i = 0; i < coordinates.length; i++) {
+      const currentCoordinate = coordinates[i];
+      const smoothedCoordinate = smoothingFactor * currentCoordinate + (1 - smoothingFactor) * prevCoordinate;
+      smoothedCoordinates.push(smoothedCoordinate);
+      prevCoordinate = smoothedCoordinate;
+    }
+
+    return smoothedCoordinates;
   };
 
   useEffect(() => {
@@ -147,10 +184,10 @@ const WebcamPose = ({ onVideoChange, isRecording, videoSource, runtime = 'mediap
 
   return (
     <>
-      <div className="flex flex-col items-center space-y-4" style={{ position: "relative", width: containerWidth, height: containerHeight }}>
+      <div className={`flex flex-col items-center space-y-4 ${darkMode ? 'bg-black' : 'bg-white'}`} style={{ position: "relative", width: containerWidth, height: containerHeight }}>
         {isRecording || videoSource ? (
           <>
-            <div className="video-container" style={{ position: "relative", width: "100%", height: "100%", backgroundColor: darkMode ? 'black' : 'white' }}>
+            <div className={`video-container ${darkMode ? 'bg-black' : 'bg-white'}`} style={{ position: "relative", width: "100%", height: "100%" }}>
               {videoSource ? (
                 <video className="rounded-md" ref={videoRef} style={{ width: "100%", height: "100%" }} autoPlay loop muted />
               ) : (

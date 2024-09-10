@@ -614,9 +614,9 @@ export default function Fencer_Page2() {
             </div>
           </header>
 
-          <main className="flex flex-grow relative" style={{ perspective: '1000px' }}>
-            <div className="w-1/8 absolute left-0 top-0 bottom-0 shadow-2xl" style={{ transform: 'rotateY(15deg)', transformOrigin: 'left center', height: '100%', scale: '60%', top: '0px' }}>
-              <div className="h-full p-6 overflow-auto hide-scrollbar">
+          <main className="flex flex-grow relative " style={{ perspective: '1000px' }}>
+            <div className="w-1/8 absolute left-0 top-0 bottom-0" style={{ transform: 'rotateY(15deg)', transformOrigin: 'left center', height: '100%', scale: '65%', top: '-60px' }}>
+              <div className="h-[full] p-6 flex flex-col justify-center items-center">
                 <MemoizedFencerStats
                   pose={pose}
                   lastCalled={lastCalled}
@@ -639,7 +639,7 @@ export default function Fencer_Page2() {
 
               {/* Fencer Canvas Component */}
               <div className="w-2/3 aspect-video bg-black flex items-center justify-center rounded-lg relative border border-gray-600" style={{marginTop:'50px'}}>
-                <Fencer_Canvas videoSource={videoSource} isRecording={isRecording} setPose={setPose} containerWidth="100%" containerHeight="100%" />
+                <Fencer_Canvas videoSource={videoSource} isRecording={isRecording} setPose={setPose} containerWidth="100%" containerHeight="100%" darkMode={darkMode} />
               </div>
 
               <div className="flex justify-center items-center">
@@ -660,12 +660,12 @@ export default function Fencer_Page2() {
             </div>
 
             <div className="absolute left-[1070px] top-[10%]" style={{ transform: 'rotateY(-20deg)', transformOrigin: 'left center' }}>
-              <CardContainer className="inter-var w-96 h-[23rem]"> 
+              <CardContainer className="inter-var w-96 h-[24rem]"> 
                 <CardBody className={`[transform-style:preserve-3d] [&>*]:[transform-style:preserve-3d] relative group/card ${darkMode ? 'bg-gray-900 text-white' : 'bg-white text-black'} h-full rounded-xl p-4 space-y-4 border ${darkMode ? 'border-gray-700' : 'border-gray-300'}`}>
-                  <CardItem translateZ="50" className="text-xl font-bold mb-4 w-full text-center">
+                  <CardItem translateZ="50" className="text-m font-bold mb-4 w-full text-left">
                     AI Feedback
                   </CardItem>
-                  <div className="rounded p-4 border shadow-lg w-full h-[calc(100%-4rem)] overflow-y-auto" style={{ wordWrap: 'break-word' }}> 
+                  <div className="rounded p-4 border shadow-lg w-[85%] h-[calc(100%-4rem)] overflow-y-auto" style={{ wordWrap: 'break-word' }}> 
                     {/* uncomment to generate AI feedback */}
                     {/* {(aiResult ? aiResult.split('\n') : []).map((item, key) => (
                       <CardItem key={key} translateZ="60" className={`rounded p-2 ${darkMode ? 'bg-gray-800 text-white' : 'bg-gray-100 text-black'} border ${darkMode ? 'border-gray-700' : 'border-gray-300'} shadow-lg`}>

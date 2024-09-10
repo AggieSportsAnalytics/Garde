@@ -147,8 +147,8 @@ const Fencer_Stats = ({ pose, lastCalled, setLastCalled, setAiFeedback, height, 
   }
 
   return (
-    <CardContainer className="inter-var">
-      <CardBody className={`relative group/card ${darkMode ? 'bg-gray-900 text-white' : 'bg-white text-black'} w-auto sm:w-[35rem] h-auto rounded-xl p-8 space-y-4 border ${darkMode ? 'border-gray-700' : 'border-gray-300'}`}>
+    <CardContainer className="inter-var w-full h-full bg-none">
+      <CardBody className={`relative group/card ${darkMode ? 'bg-none text-white' : 'bg-none text-black'} w-full h-full rounded-xl p-8 space-y-4 border ${darkMode ? 'border-gray-700' : 'border-gray-300'} flex flex-col justify-center items-center`} >
         <CardItem translateZ="50" className="text-xl font-bold mb-4">
           Fencer Statistics
         </CardItem>
@@ -164,7 +164,7 @@ const Fencer_Stats = ({ pose, lastCalled, setLastCalled, setAiFeedback, height, 
             { label: "Right Knee Angle:", value: rightKneeAngle },
             { label: "Speed:", value: speed }
           ].map((item, index) => (
-            <CardItem key={index} translateZ="60" className={`rounded p-4 ${darkMode ? 'bg-gray-800 text-white' : 'bg-gray-100 text-black'} border ${darkMode ? 'border-gray-700' : 'border-gray-300'} shadow-lg w-[230px]`}>
+            <CardItem key={index} translateZ="60" className={`rounded p-4 ${darkMode ? 'bg-gray-800 text-white' : 'bg-gray-100 text-black'} border ${darkMode ? 'border-gray-700' : 'border-gray-300'} shadow-lg w-[230px]`} style={{ paddingBottom: '35px' }}>
               <h4>{item.label}</h4>
               <h4>{item.value}</h4>
             </CardItem>

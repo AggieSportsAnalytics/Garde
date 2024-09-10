@@ -15,32 +15,74 @@ const Fencer_Stats = ({ pose, lastCalled, setLastCalled, setAiFeedback, height, 
   const [predictedPose, setPredictedPose] = useState(null);
   const [speed, setSpeed] = useState(null);
 
-  const predictPose = (pose) => {
+  let speedHistory = [];
+
+  const smoothSpeed = (currentSpeed) => {
+    const smoothingFactor = 0.7;
+    if (speedHistory.length > 0) {
+      const smoothedSpeed = smoothingFactor * currentSpeed + (1 - smoothingFactor) * speedHistory[speedHistory.length - 1];
+      speedHistory.push(smoothedSpeed);
+      if (speedHistory.length > 5) speedHistory.shift(); // Limit history length
+      return smoothedSpeed;
+    } else {
+      speedHistory.push(currentSpeed);
+      return currentSpeed;
+    }
+  };
+
+  const predictPose = (pose, feetDistance, shoulderWidth) => {
     if (!pose || !pose.keypoints) return null;
 
+    
+  
     const rightKneeAngle = calculateAngle(pose.keypoints[24], pose.keypoints[26], pose.keypoints[28]);
     const leftKneeAngle = calculateAngle(pose.keypoints[23], pose.keypoints[25], pose.keypoints[27]);
     const swordArmAngle = calculateAngle(pose.keypoints[11], pose.keypoints[13], pose.keypoints[15]);
     const nonSwordArmAngle = calculateAngle(pose.keypoints[12], pose.keypoints[14], pose.keypoints[16]);
-    const speed = calculateSpeed(pose.keypoints).currentSpeed;
-
+    const speed = smoothSpeed(calculateSpeed(pose.keypoints).currentSpeed);
+  
+    // Improved Lunge Detection
+    const lungeKneeAngleThreshold = 120; // more stringent for deep bend
+    const lungeArmAngleThreshold = 140; // adjusted for extension
+    const lungeDistanceThreshold = shoulderWidth * 1.8; // slightly reduced threshold
+  
     if (
-      (rightKneeAngle >= 90 && rightKneeAngle <= 140 && leftKneeAngle > 160) ||
-      (leftKneeAngle >= 90 && leftKneeAngle <= 140 && rightKneeAngle > 160)
+      ((rightKneeAngle >= 80 && rightKneeAngle <= lungeKneeAngleThreshold && leftKneeAngle > 160) ||
+      (leftKneeAngle >= 80 && leftKneeAngle <= lungeKneeAngleThreshold && rightKneeAngle > 160)) &&
+      swordArmAngle > lungeArmAngleThreshold &&
+      nonSwordArmAngle > lungeArmAngleThreshold &&
+      feetDistance > lungeDistanceThreshold
     ) {
-      if (swordArmAngle > 150 && nonSwordArmAngle > 150) {
-        return 'lunge';
-      }
+      return 'lunge';
     }
-
-    if (speed > 0.5) { // Adjust speed threshold as needed
+  
+    // Improved En Garde Detection
+    const enGardeKneeAngleThreshold = 150; // both knees moderately bent
+    const enGardeFeetDistanceThreshold = shoulderWidth * 1.2;
+  
+    if (
+      rightKneeAngle <= enGardeKneeAngleThreshold &&
+      leftKneeAngle <= enGardeKneeAngleThreshold &&
+      feetDistance <= enGardeFeetDistanceThreshold &&
+      swordArmAngle < lungeArmAngleThreshold &&
+      nonSwordArmAngle < lungeArmAngleThreshold
+    ) {
+      return 'onguard';
+    }
+  
+    // Check for advance and retreat poses
+    const advanceRetreatSpeedThreshold = 0.2; // Lower threshold for detecting movement
+    const advanceRetreatDistanceThreshold = shoulderWidth * 1.3;
+  
+    if (speed > advanceRetreatSpeedThreshold && feetDistance > advanceRetreatDistanceThreshold) {
       return 'advance';
-    } else if (speed < -0.5) {
+    } else if (speed < -advanceRetreatSpeedThreshold && feetDistance > advanceRetreatDistanceThreshold) {
       return 'retreat';
     }
-
-    return 'onguard';
+  
+    return 'onguard'; // Default to onguard if no other condition is met
   };
+  
 
   useEffect(() => {
     if (pose && pose.keypoints) {
@@ -73,7 +115,7 @@ const Fencer_Stats = ({ pose, lastCalled, setLastCalled, setAiFeedback, height, 
           const feetDistanceMeters = convertPixelsToMeters(feetDistancePixels, height, fencerHeightPixels).toFixed(2);
           setFeetDistanceState(feetDistanceMeters);
 
-          const predictedPose = predictPose(pose);
+          const predictedPose = predictPose(pose, feetDistance, shoulderWidth);
           setPredictedPose(predictedPose);
           setSpeed(Math.round(calculateSpeed(pose.keypoints).currentSpeed));
         }

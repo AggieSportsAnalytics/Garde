@@ -68,9 +68,9 @@ const WebcamPose = ({ onVideoChange, isRecording, videoSource, runtime = 'mediap
   };
 
   const draw3DModel = (pose) => {
-    const x = pose.keypoints3D.map(k => -k.y);
-    const y = pose.keypoints3D.map(k => k.x); // Negate y to flip vertically
-    const z = pose.keypoints3D.map(k => -k.z); // Negate z to maintain right-handedness
+    const x = pose.keypoints3D.slice(11).map(k => -k.y);
+    const y = pose.keypoints3D.slice(11).map(k => k.x); // Negate y to flip vertically
+    const z = pose.keypoints3D.slice(11).map(k => -k.z); // Negate z to maintain right-handedness
 
     const smoothingFactor = 0.99; 
     const smoothX = smoothCoordinates(x, smoothingFactor);
@@ -82,9 +82,9 @@ const WebcamPose = ({ onVideoChange, isRecording, videoSource, runtime = 'mediap
     const adjustedZ = smoothZ.map(value => value);
 
     const connections = {
-        'orange': [[11, 13], [13, 15], [23, 25], [25, 27]],
-        'aqua': [[12, 14], [14, 16], [24, 26], [26, 28]],
-        'white': [[11, 12], [11, 23], [24, 23], [12, 24]]
+        'orange': [[0, 2], [2, 4], [12, 14], [14, 16]],
+        'aqua': [[1, 3], [3, 5], [13, 15], [15, 17]],
+        'white': [[0, 1], [0, 12], [13, 12], [1, 13]]
     };
 
     const colors = {

@@ -75,16 +75,33 @@ class FencingStateMachine {
   }
 
   checkCurrentState(pose, feetDistance, shoulderWidth, predictedPose) {
-    switch (predictedPose) {
-      case 'lunge':
-        return this.checkLunge(pose, feetDistance, shoulderWidth);
-      case 'advance':
-        return this.checkAdvance(pose, feetDistance, shoulderWidth);
-      case 'retreat':
-        return this.checkRetreat(pose, feetDistance, shoulderWidth);
+    const currentState = this.getCurrentState();
+    let result;
+
+    switch (currentState) {
+      case 'onGuard':
+        result = this.checkOnGuard(pose, feetDistance, shoulderWidth);
+        break;
+      case 'advancing':
+        result = this.checkAdvance(pose, feetDistance, shoulderWidth);
+        break;
+      case 'retreating':
+        result = this.checkRetreat(pose, feetDistance, shoulderWidth);
+        break;
+      case 'lunging':
+        result = this.checkLunge(pose, feetDistance, shoulderWidth);
+        break;
       default:
-        return this.checkOnGuard(pose, feetDistance, shoulderWidth);
+        result = { success: false, feedback: '', nextState: currentState };
     }
+
+    if (result.success) {
+      this.transition(result.nextState);
+    } else if (predictedPose && predictedPose !== currentState) {
+      this.transition(predictedPose);
+    }
+
+    return result;
   }
 
   checkOnGuard(pose, feetDistance, shoulderWidth) {
@@ -103,9 +120,9 @@ class FencingStateMachine {
       feedback.push('Straighten your left leg more.');
     }
 
-    if (feetDistance < shoulderWidth * 0.8) {
+    if (feetDistance < shoulderWidth) {
       feedback.push('Widen your stance to shoulder distance.');
-    } else if (feetDistance > shoulderWidth * 1.2) {
+    } else if (feetDistance > shoulderWidth) {
       feedback.push('Narrow your stance to shoulder distance.');
     }
 
@@ -114,9 +131,18 @@ class FencingStateMachine {
     }
 
     // Check if the right heel is off the ground
-    const heelThreshold = 10; // Adjust this value based on your preference
+    const heelThreshold = 1; // Adjust this value based on your preference
     if (rightHeelY - rightFootY < heelThreshold) {
       feedback.push('Keep your right heel off the ground.');
+    }
+
+    // Add more checks for balance, arm positioning, etc.
+    const hipY = (pose.keypoints[23].y + pose.keypoints[24].y) / 2; // Average hip height
+    const shoulderY = (pose.keypoints[11].y + pose.keypoints[12].y) / 2; // Average shoulder height
+
+    // Check for balance
+    if (Math.abs(hipY - shoulderY) > 30) {
+      feedback.push('Maintain your balance while in the on-guard position.');
     }
 
     if (feedback.length === 0) {
@@ -156,9 +182,6 @@ class FencingStateMachine {
       feedback.push('Maintain a consistent distance between your feet, about 1.5 times your shoulder width.');
     }
 
-    // Check balance
-    const hipY = (pose.keypoints[23].y + pose.keypoints[24].y) / 2;
-    const shoulderY = (pose.keypoints[11].y + pose.keypoints[12].y) / 2;
     if (Math.abs(hipY - shoulderY) > 30) {
       feedback.push('Keep your upper body upright and balanced during the advance.');
     }
@@ -206,6 +229,20 @@ class FencingStateMachine {
       feedback.push('Keep your torso upright.');
     }
 
+    // Check for foot movement
+    const frontFootY = pose.keypoints[31].y;
+    const backFootY = pose.keypoints[32].y;
+    if (frontFootY < backFootY) {
+      feedback.push('Ensure your front foot is pushing off properly during the retreat.');
+    }
+
+    // Check for balance
+    const hipY = (pose.keypoints[23].y + pose.keypoints[24].y) / 2;
+    const shoulderY = (pose.keypoints[11].y + pose.keypoints[12].y) / 2;
+    if (Math.abs(hipY - shoulderY) > 30) {
+      feedback.push('Maintain your balance and keep your torso upright while retreating.');
+    }
+
     if (feedback.length === 0) {
       feedback.push('Good retreat movement.');
     }
@@ -245,6 +282,18 @@ class FencingStateMachine {
 
     if (nonSwordArmAngle <= 150) {
       feedback.push('Raise your non-sword arm for better counterbalance.');
+    }
+
+    // Check for foot placement
+    const frontFootY = pose.keypoints[30].y; // Assuming point 30 is the front foot
+    const backFootY = pose.keypoints[32].y; // Assuming point 32 is the back foot
+    if (frontFootY < backFootY) {
+      feedback.push('Ensure your front foot is firmly planted and your back leg is extended during the lunge.');
+    }
+
+    // Check for arm extension
+    if (swordArmAngle <= 150) {
+      feedback.push('Fully extend your sword arm and maintain a straight line from your shoulder to your sword tip.');
     }
 
     if (feedback.length === 0) {
@@ -302,6 +351,9 @@ export default function Fencer_Page2() {
   const [darkMode, setDarkMode] = useState(false);
   const feedbackHistory = useRef([]);
   const heelCountRef = useRef(0);
+  const [lastFeedbackTime, setLastFeedbackTime] = useState(0);
+  const [isFeedbackBeingDelivered, setIsFeedbackBeingDelivered] = useState(false);
+  const feedbackDelay = 10000; // 10 seconds delay
 
   useEffect(() => {
     const userAgent = typeof window.navigator === 'undefined' ? '' : navigator.userAgent;
@@ -370,6 +422,7 @@ export default function Fencer_Page2() {
     setCountdown(instructions[instructionIndex] ? instructions[instructionIndex + 1]?.time : 3);
     setIsRunning(true);
     setFeedbackEnabled(true); // Enable feedback when the timer starts
+    setLastFeedbackTime(Date.now()); // Set initial feedback time when timer starts
   }, [instructions, instructionIndex]);
 
   const handleReset = useCallback(() => {
@@ -407,15 +460,15 @@ export default function Fencer_Page2() {
   };
 
   const checkPoseAndProvideFeedback = (pose, feetDistance, shoulderWidth) => {
-    const currentState = fencingStateMachine.getCurrentState();
-    const predictedPose = displayFeetDistance(pose.keypoints).predictedPose;
-    const result = fencingStateMachine.checkCurrentState(pose, feetDistance, shoulderWidth, predictedPose);
+    const result = fencingStateMachine.checkCurrentState(pose, feetDistance, shoulderWidth);
+    const { success, feedback } = result;
 
-    if (result.success) {
-      fencingStateMachine.transition(result.nextState);
+    if (!success) {
+      const criticalFeedback = feedback.split('.')[0] + '.'; // Extract the first sentence as critical feedback
+      return criticalFeedback;
     }
 
-    return result.feedback;
+    return '';
   };
 
   const checkAngles = useCallback((pose) => {
@@ -423,64 +476,38 @@ export default function Fencer_Page2() {
       return;
     }
 
-    const currentInstruction = instructions[instructionIndex]?.name.toLowerCase().replace(/\s+/g, '');
+    const currentTime = Date.now();
+    const elapsedTime = currentTime - lastFeedbackTime;
 
-    const feedbackMessage = checkPoseAndProvideFeedback(pose, feetDistance, shoulderWidth);
+    if (elapsedTime >= feedbackDelay && !isFeedbackBeingDelivered) {
+      const feedbackMessage = checkPoseAndProvideFeedback(pose, feetDistance, shoulderWidth);
 
-    // Add the current feedback message to the history
-    feedbackHistory.current.push(feedbackMessage);
+      // Simplify and shorten the feedback message
+      const simplifiedFeedback = simplifyFeedback(feedbackMessage);
 
-    // Check feedback every 10 seconds
-    const feedbackInterval = 10000;
-    const elapsedTime = Date.now() - lastSpokenFeedbackTime;
-
-    if (elapsedTime > feedbackInterval && feedbackHistory.current.length >= 10) {
-      // Count the occurrences of each feedback message
-      const feedbackCounts = {};
-      feedbackHistory.current.forEach((message) => {
-        if (feedbackCounts[message]) {
-          feedbackCounts[message]++;
-        } else {
-          feedbackCounts[message] = 1;
-        }
-      });
-
-      // Find the most repeated feedback message
-      let mostRepeatedFeedback = '';
-      let maxCount = 0;
-      for (const message in feedbackCounts) {
-        if (feedbackCounts[message] > maxCount) {
-          mostRepeatedFeedback = message;
-          maxCount = feedbackCounts[message];
-        }
-      }
-
-      // Calculate the percentage of occurrences for the most repeated feedback
-      const percentage = (maxCount / feedbackHistory.current.length) * 100;
-
-      // Provide feedback only if the percentage is above 80%
-      if (percentage > 80) {
-        setFeedback([mostRepeatedFeedback]);
-        speak({ text: mostRepeatedFeedback, voice: voice, rate: 1.2, pitch: 1.1, lang: 'en-US' });
-        setLastSpokenFeedbackTime(Date.now());
-        previousFeedback.current = { message: mostRepeatedFeedback, timestamp: Date.now() };
-      }
-
-      // Clear the feedback history after providing feedback
-      feedbackHistory.current = [];
-    }
-
-    // Track the heel count during lunges
-    if (currentInstruction === 'lunge') {
-      const rightHeelY = pose.keypoints[32].y;
-      const rightFootY = pose.keypoints[30].y;
-      const heelThreshold = 10;
-
-      if (rightHeelY - rightFootY >= heelThreshold) {
-        heelCountRef.current++;
+      if (simplifiedFeedback && !feedbackHistory.current.includes(simplifiedFeedback)) {
+        setIsFeedbackBeingDelivered(true);
+        setFeedback([simplifiedFeedback]);
+        speak({
+          text: simplifiedFeedback,
+          voice: voice,
+          rate: 1.2,
+          pitch: 1.1,
+          lang: 'en-US',
+          onend: () => {
+            setIsFeedbackBeingDelivered(false);
+            setLastFeedbackTime(Date.now());
+            feedbackHistory.current = [...feedbackHistory.current, simplifiedFeedback];
+          }
+        });
       }
     }
-  }, [speak, voice, feedbackEnabled, instructions, instructionIndex, isTimerRunning, feetDistance, shoulderWidth, lastSpokenFeedbackTime]);
+  }, [feedbackEnabled, isTimerRunning, lastFeedbackTime, isFeedbackBeingDelivered, feetDistance, shoulderWidth, speak, voice]);
+
+  // Function to simplify and shorten feedback messages
+  const simplifyFeedback = (feedback) => {
+    return feedback.split('.')[0] + '.';
+  };
 
   const checkPoseDuration = useCallback((predictedPose) => {
     if (!feedbackEnabled || !isTimerRunning) return;
@@ -517,8 +544,14 @@ export default function Fencer_Page2() {
   useEffect(() => {
     if (pose) {
       const { predictedPose, feetDistance } = displayFeetDistance(pose.keypoints);
-      checkPoseDuration(predictedPose);
-      checkAngles(pose);
+
+      // Only start checking angles after 10 seconds
+      const movementDuration = Date.now() - poseStartTime;
+      if (movementDuration >= 10000) {
+        checkPoseDuration(predictedPose);
+        checkAngles(pose);
+      }
+
       const distanceInMeters = convertPixelsToMeters(feetDistance, height, feetDistance);
     }
   }, [pose, checkPoseDuration, checkAngles, convertPixelsToMeters, height]);

@@ -38,6 +38,7 @@ const WebcamPose = ({ onVideoChange, isRecording, videoSource, runtime = 'mediap
       runtime: 'mediapipe',
       modelType: 'full',
       solutionPath: 'https://cdn.jsdelivr.net/npm/@mediapipe/pose',
+      flipHorizontal: false,
     };
 
     const detector = await poseDetection.createDetector(model, detectorConfig);
@@ -52,7 +53,8 @@ const WebcamPose = ({ onVideoChange, isRecording, videoSource, runtime = 'mediap
         video.height = videoHeight;
         canvasRef.current.width = videoWidth;
         canvasRef.current.height = videoHeight;
-        const poses = await detector.estimatePoses(video);
+        const poses = await detector.estimatePoses(video, { flipHorizontal: true });
+        //const poses = await detector.estimatePoses(video);
         if (poses.length > 0) {
           setPose(poses[0]);
           setLatestPose(poses[0]);
@@ -66,92 +68,82 @@ const WebcamPose = ({ onVideoChange, isRecording, videoSource, runtime = 'mediap
   };
 
   const draw3DModel = (pose) => {
-    const x = pose.keypoints3D.map(k => k.x);
-    const y = pose.keypoints3D.map(k => -k.y);  // Invert y-axis
-    const z = pose.keypoints3D.map(k => k.z);
+    const x = pose.keypoints3D.map(k => -k.y);
+    const y = pose.keypoints3D.map(k => k.x); // Negate y to flip vertically
+    const z = pose.keypoints3D.map(k => -k.z); // Negate z to maintain right-handedness
 
-    // Apply moving average filter to smoothen the coordinates
     const smoothingFactor = 0.99; 
     const smoothX = smoothCoordinates(x, smoothingFactor);
     const smoothY = smoothCoordinates(y, smoothingFactor);
     const smoothZ = smoothCoordinates(z, smoothingFactor);
 
+    const adjustedX = smoothX.map(value => value);
+    const adjustedY = smoothY.map(value => value);
+    const adjustedZ = smoothZ.map(value => value);
+
     const connections = {
-      'orange': [[11, 13], [13, 15], [23, 25], [25, 27]],
-      'aqua': [[12, 14], [14, 16], [24, 26], [26, 28]],
-      'white': [[11, 12], [11, 23], [24, 23], [12, 24]]
+        'orange': [[11, 13], [13, 15], [23, 25], [25, 27]],
+        'aqua': [[12, 14], [14, 16], [24, 26], [26, 28]],
+        'white': [[11, 12], [11, 23], [24, 23], [12, 24]]
     };
 
     const colors = {
-      points: 'black',
-      lines: ['blue', 'orange', 'blue', 'orange', 'black', 'black', 'orange', 'aqua', 'orange', 'aqua', 'black', 'black']
+        points: 'black',
+        lines: ['blue', 'orange', 'blue', 'orange', 'black', 'black', 'orange', 'aqua', 'orange', 'aqua', 'black', 'black']
     };
 
     const tracePoints = {
-      x: smoothX,
-      y: smoothZ,
-      z: smoothY,
-      mode: 'markers',
-      marker: { size: 3, color: colors.points, opacity: 0.8 },
-      type: 'scatter3d',
-      showlegend: false,
-      hovermode: false, 
-      displayModeBar: false
+        x: adjustedX,
+        y: adjustedY,
+        z: adjustedZ,
+        mode: 'markers',
+        marker: { size: 4, color: colors.points, opacity: 0.8 }, 
+        type: 'scatter3d',
+        showlegend: false,
+        hovermode: false, 
+        displayModeBar: false
     };
 
     const traceLines = [];
     Object.entries(connections).forEach(([color, pairs]) => {
-      pairs.forEach(pair => {
-        traceLines.push({
-          x: [smoothX[pair[0]], smoothX[pair[1]]],
-          y: [smoothZ[pair[0]], smoothZ[pair[1]]],
-          z: [smoothY[pair[0]], smoothY[pair[1]]],
-          mode: 'lines',
-          line: { color: color, width: 2, opacity: 0.6 },
-          type: 'scatter3d',
-          showlegend: false,
-          hovermode: false, 
-          displayModeBar: false
+        pairs.forEach(pair => {
+            traceLines.push({
+                x: [adjustedX[pair[0]], adjustedX[pair[1]]],
+                y: [adjustedY[pair[0]], adjustedY[pair[1]]],
+                z: [adjustedZ[pair[0]], adjustedZ[pair[1]]],
+                mode: 'lines',
+                line: { color: color, width: 4, opacity: 0.6 }, 
+                type: 'scatter3d',
+                showlegend: false,
+                hovermode: false, 
+                displayModeBar: false
+            });
         });
-      });
     });
 
     const layout = {
-      margin: { l: 0, r: 0, b: 0, t: 0 },
-      plot_bgcolor: 'rgba(255,255,255, 0.7)',  // Transparent plot background
-      paper_bgcolor: 'rgba(255,255,255, 0.7)',  // Transparent paper background
-      scene: {
-        xaxis: { title: 'X' },
-        yaxis: { title: 'Z' },
-        zaxis: { title: '-Y' },
-        aspectmode: 'cube',
-        camera: {
-          eye: { x: -1.25, y: 2, z: 0.8 },  // Adjust the z-coordinate to lower the viewpoint
-          up: { x: 0, y: 0, z: 1 },
-          center: { x: 0, y: 0, z: 0 }
-        },
-        dragmode: 'turntable',
-        hovermode: !1,  // Disable hover interactions
-        displayModeBar: false
-      }
-    };
-
-    // Calculate the rotation angle based on the fencer's movement direction
-    const leftHipIndex = 23;
-    const rightHipIndex = 24;
-    const hipDiffX = x[rightHipIndex] - x[leftHipIndex];
-    const hipDiffZ = z[rightHipIndex] - z[leftHipIndex];
-    const rotationAngle = Math.atan2(hipDiffZ, hipDiffX);
-
-    // Apply the rotation to the 3D model
-    layout.scene.camera.eye = {
-      x: -1.5 * Math.cos(rotationAngle),  
-      y: -1.5 * Math.sin(rotationAngle),  
-      z: 1.5  // Maintain the z-coordinate for the desired viewpoint
+        margin: { l: 0, r: 0, b: 0, t: 0 },
+        plot_bgcolor: 'rgba(255,255,255, 0)', 
+        paper_bgcolor: 'rgba(255,255,255, 0)',  
+        scene: {
+            xaxis: { visible: false }, 
+            yaxis: { visible: false }, 
+            zaxis: { visible: false }, 
+            aspectmode: 'cube',
+            camera: {
+                eye: { x: 0, y: 0, z: 2 }, 
+                up: { x: 0, y: 0, z: 1 },
+                center: { x: 0, y: 0, z: 0 }
+            },
+            dragmode: 'turntable',
+            hovermode: false,  
+            displayModeBar: false
+        }
     };
 
     Plotly.react('3d-plot', [tracePoints, ...traceLines], layout, { displayModeBar: false });
   };
+
 
   // Function to apply moving average filter to coordinates
   const smoothCoordinates = (coordinates, smoothingFactor) => {
@@ -232,6 +224,9 @@ export function drawCanvas(pose, videoWidth, videoHeight, canvas, minConfidence)
     if (selectedKeypoints.includes(index) && keypoint.score >= minConfidence) {
       let { x, y } = keypoint;
 
+      // Flip the x-coordinate horizontally
+      x = videoWidth - x;
+
       // Ensure the keypoints stay within the canvas boundaries
       x = Math.max(0, Math.min(videoWidth, x));
       y = Math.max(0, Math.min(videoHeight, y));
@@ -287,12 +282,13 @@ function drawSkeleton(keypoints, minConfidence, ctx, videoWidth, videoHeight) {
       const kp2 = keypoints[pair[1]];
       if (kp1 && kp2 && kp1.score >= minConfidence && kp2.score >= minConfidence) {
         ctx.beginPath();
+        //if flipHorizontal is true flip the x-coordinates below
         ctx.moveTo(
-          Math.max(0, Math.min(videoWidth, kp1.x)),
+          Math.max(0, Math.min(videoWidth, videoWidth - kp1.x)),
           Math.max(0, Math.min(videoHeight, kp1.y))
         );
         ctx.lineTo(
-          Math.max(0, Math.min(videoWidth, kp2.x)),
+          Math.max(0, Math.min(videoWidth, videoWidth - kp2.x)),
           Math.max(0, Math.min(videoHeight, kp2.y))
         );
         ctx.strokeStyle = color;

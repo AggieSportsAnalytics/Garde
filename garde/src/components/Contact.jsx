@@ -1,7 +1,7 @@
 "use client";
 import React, { useRef } from "react";
 import emailjs from "@emailjs/browser";
-import { Instagram, Linkedin, Youtube } from "lucide-react";
+import { Instagram, Linkedin, Youtube } from "lucide-react"; // bro this's genuinely not needed, just use an SVG or image
 
 const Contact = () => {
 	const form = useRef();

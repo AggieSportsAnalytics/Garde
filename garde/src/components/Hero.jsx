@@ -1,10 +1,27 @@
 import { FaLocationArrow } from "react-icons/fa6";
-
+import {Environment, OrbitControls, useTexture} from "@react-three/drei";
+import {Canvas} from "@react-three/fiber";
+import {FencerHelmet} from "./fencer-helmet";
+import {FencerSword} from "./fencer-sword";
 import MagicButton from "./MagicButton";
 import { Spotlight } from "./ui/Spotlight";
 import { TextGenerateEffect } from "./ui/TextGenerateEffect";
 
+function FencerAttire() {
+	const leatherTexture = useTexture('/images/leather-fabric.jpg');
+	return (
+	<>
+		<FencerHelmet scale={[0.3, 0.3, 0.3]} position={[0,-0.7,-1]} rotation={[Math.PI / 2, Math.PI, Math.PI]}>
+			<meshStandardMaterial map={leatherTexture} />
+		</FencerHelmet>
+		<FencerSword scale={[0.1, 0.1, 0.1]} position={[0.5,-0.7,-1]} rotation={[-(Math.PI / 13), -(Math.PI / 7), Math.PI / 4]} />
+		<FencerSword scale={[0.1, 0.1, 0.1]} position={[0,-0.7,-1]} rotation={[-(Math.PI / 5), -(Math.PI / 7), -(Math.PI / 4)]} />
+	</>
+	)
+}
+
 const Hero = () => {
+	
 	return (
 		<div className="pb-20 pt-36 relative flex justify-center items-center">
 			{/**
@@ -70,6 +87,13 @@ const Hero = () => {
 						</a>
 					</div>
 				</div>
+			</div>
+			<div>
+				<Canvas>
+					<Environment preset="studio" />
+					<OrbitControls enableZoom={false} autoRotate={true} />
+					<FencerAttire />
+				</Canvas>
 			</div>
 		</div>
 	);

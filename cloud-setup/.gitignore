@@ -1,4 +1,3 @@
-.terraform*
-.venv
-.env
-terraform.tfvars
+wrangler.toml
+.mypy_cache
+.wrangler

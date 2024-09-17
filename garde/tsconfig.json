@@ -21,11 +21,9 @@
         "name": "next"
       }
     ],
-    "paths": [
-        {
+    "paths": {
             "@/*": ["./*"]
-        }
-    ],
+    },
     "strictNullChecks": true
   },
   "include": [

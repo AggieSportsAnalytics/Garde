@@ -8,16 +8,14 @@ import "@mediapipe/pose";
 import Plotly from 'plotly.js-dist-min';
 import Modal from 'react-modal';
 import FencerInstructionMenu from './FencerInstructionMenu';
-import {Hammer, HammerIcon} from 'lucide-react';
+import { CardBody, CardContainer, CardItem } from "./ui/3d-card.tsx";
+import { Hammer } from 'lucide-react';
 
-
-
-const WebcamPose = ({ onVideoChange, isRecording, videoSource, runtime = 'mediapipe', modelType = 'full', setPose }) => {
+const WebcamPose = ({ onVideoChange, isRecording, videoSource, runtime = 'mediapipe', modelType = 'full', setPose, containerWidth, containerHeight, darkMode }) => {
   const videoRef = useRef(null);
   const webcamRef = useRef(null);
   const canvasRef = useRef(null);
   let intervalId = useRef(null);
-  let openAICallIntervalId = useRef(null);
   const minConfidence = 0.5;
 
   const [latestPose, setLatestPose] = useState(null);
@@ -40,6 +38,7 @@ const WebcamPose = ({ onVideoChange, isRecording, videoSource, runtime = 'mediap
       runtime: 'mediapipe',
       modelType: 'full',
       solutionPath: 'https://cdn.jsdelivr.net/npm/@mediapipe/pose',
+      flipHorizontal: false,
     };
 
     const detector = await poseDetection.createDetector(model, detectorConfig);
@@ -54,10 +53,11 @@ const WebcamPose = ({ onVideoChange, isRecording, videoSource, runtime = 'mediap
         video.height = videoHeight;
         canvasRef.current.width = videoWidth;
         canvasRef.current.height = videoHeight;
-        const poses = await detector.estimatePoses(video);
-        setPose(poses[0]);
-        setLatestPose(poses[0]);
-        if (canvasRef.current && poses.length > 0) {
+        const poses = await detector.estimatePoses(video, { flipHorizontal: true });
+        //const poses = await detector.estimatePoses(video);
+        if (poses.length > 0) {
+          setPose(poses[0]);
+          setLatestPose(poses[0]);
           drawCanvas(poses[0], videoWidth, videoHeight, canvasRef.current, minConfidence);
           draw3DModel(poses[0]);
         }
@@ -68,69 +68,96 @@ const WebcamPose = ({ onVideoChange, isRecording, videoSource, runtime = 'mediap
   };
 
   const draw3DModel = (pose) => {
-    const x = pose.keypoints3D.map(k => k.x);
-    const y = pose.keypoints3D.map(k => -k.y);  // Invert y-axis
-    const z = pose.keypoints3D.map(k => k.z);
+    const x = pose.keypoints3D.slice(11).map(k => -k.y);
+    const y = pose.keypoints3D.slice(11).map(k => k.x); // Negate y to flip vertically
+    const z = pose.keypoints3D.slice(11).map(k => -k.z); // Negate z to maintain right-handedness
+
+    const smoothingFactor = 0.99; 
+    const smoothX = smoothCoordinates(x, smoothingFactor);
+    const smoothY = smoothCoordinates(y, smoothingFactor);
+    const smoothZ = smoothCoordinates(z, smoothingFactor);
+
+    const adjustedX = smoothX.map(value => value);
+    const adjustedY = smoothY.map(value => value);
+    const adjustedZ = smoothZ.map(value => value);
 
     const connections = {
-      'orange': [[11, 13], [13, 15], [23, 25], [25, 27]],
-      'aqua': [[12, 14], [14, 16], [24, 26], [26, 28]],
-      'white': [[11, 12], [11, 23], [24, 23], [12, 24]]
+        'orange': [[0, 2], [2, 4], [12, 14], [14, 16]],
+        'aqua': [[1, 3], [3, 5], [13, 15], [15, 17]],
+        'white': [[0, 1], [0, 12], [13, 12], [1, 13]]
     };
 
     const colors = {
-      points: 'black',
-      lines: ['blue', 'orange', 'blue', 'orange', 'white', 'white', 'orange', 'aqua', 'orange', 'aqua', 'white', 'white']
+        points: 'black',
+        lines: ['blue', 'orange', 'blue', 'orange', 'black', 'black', 'orange', 'aqua', 'orange', 'aqua', 'black', 'black']
     };
 
     const tracePoints = {
-      x: x,  // Use x for the horizontal axis
-      y: z,  // Use z for the vertical axis
-      z: y,  // Use y for the depth axis
-      mode: 'markers',
-      marker: { size: 3, color: colors.points, opacity: 0.8 }, // Less translucent points
-      type: 'scatter3d',
-      showlegend: false,
-      hovermode: false, 
-      displayModeBar: false
+        x: adjustedX,
+        y: adjustedY,
+        z: adjustedZ,
+        mode: 'markers',
+        marker: { size: 4, color: colors.points, opacity: 0.8 }, 
+        type: 'scatter3d',
+        showlegend: false,
+        hovermode: false, 
+        displayModeBar: false
     };
 
     const traceLines = [];
     Object.entries(connections).forEach(([color, pairs]) => {
-      pairs.forEach(pair => {
-        traceLines.push({
-          x: [x[pair[0]], x[pair[1]]],  // Use x for the horizontal axis
-          y: [z[pair[0]], z[pair[1]]],  // Use z for the vertical axis
-          z: [y[pair[0]], y[pair[1]]],  // Use inverted y for the depth axis
-          mode: 'lines',
-          line: { color: color, width: 2, opacity: 0.6 }, // More translucent lines
-          type: 'scatter3d',
-          showlegend: false,
-          hovermode: false, 
-          displayModeBar: false
+        pairs.forEach(pair => {
+            traceLines.push({
+                x: [adjustedX[pair[0]], adjustedX[pair[1]]],
+                y: [adjustedY[pair[0]], adjustedY[pair[1]]],
+                z: [adjustedZ[pair[0]], adjustedZ[pair[1]]],
+                mode: 'lines',
+                line: { color: color, width: 4, opacity: 0.6 }, 
+                type: 'scatter3d',
+                showlegend: false,
+                hovermode: false, 
+                displayModeBar: false
+            });
         });
-      });
     });
 
     const layout = {
-      margin: { l: 0, r: 0, b: 0, t: 0 },
-      plot_bgcolor: 'rgba(255,255,255, 0.7)',  // Transparent plot background
-      paper_bgcolor: 'rgba(255,255,255, 0.7)',  // Transparent paper background
-      scene: {
-        xaxis: { title: 'X' },  // X-axis is horizontal
-        yaxis: { title: 'Z' },  // Z-axis is vertical
-        zaxis: { title: '-Y' },  // Y-axis is depth and inverted
-        aspectmode: 'cube',
-        camera: {
-          eye: { x: 1.25, y: 1.25, z: 1.25},  // Adjusted to view the plot upright
-        },
-        dragmode: 'turntable',
-        hovermode: !1,  // Disable hover interactions
-        displayModeBar: false
-      }
+        margin: { l: 0, r: 0, b: 0, t: 0 },
+        plot_bgcolor: 'rgba(255,255,255, 0)', 
+        paper_bgcolor: 'rgba(255,255,255, 0)',  
+        scene: {
+            xaxis: { visible: false }, 
+            yaxis: { visible: false }, 
+            zaxis: { visible: false }, 
+            aspectmode: 'cube',
+            camera: {
+                eye: { x: 0, y: 0, z: 2 }, 
+                up: { x: 0, y: 0, z: 1 },
+                center: { x: 0, y: 0, z: 0 }
+            },
+            dragmode: 'turntable',
+            hovermode: false,  
+            displayModeBar: false
+        }
     };
 
     Plotly.react('3d-plot', [tracePoints, ...traceLines], layout, { displayModeBar: false });
+  };
+
+
+  // Function to apply moving average filter to coordinates
+  const smoothCoordinates = (coordinates, smoothingFactor) => {
+    const smoothedCoordinates = [];
+    let prevCoordinate = coordinates[0];
+
+    for (let i = 0; i < coordinates.length; i++) {
+      const currentCoordinate = coordinates[i];
+      const smoothedCoordinate = smoothingFactor * currentCoordinate + (1 - smoothingFactor) * prevCoordinate;
+      smoothedCoordinates.push(smoothedCoordinate);
+      prevCoordinate = smoothedCoordinate;
+    }
+
+    return smoothedCoordinates;
   };
 
   useEffect(() => {
@@ -144,23 +171,19 @@ const WebcamPose = ({ onVideoChange, isRecording, videoSource, runtime = 'mediap
   }, [isRecording, videoSource, runtime, modelType]);
 
   const ShowInstructionMenu = () => {
-    if (showInstructionMenu == true) {
-      setInstructionMenu(false);
-    } else {
-      setInstructionMenu(true);
-    }
+    setInstructionMenu(prev => !prev);
   }
 
   return (
     <>
-      <div className="flex flex-col items-center space-y-4" style={{ position: "relative", width: '100%', maxWidth: '640px', height: 'auto' }}>
+      <div className={`flex flex-col items-center space-y-4 ${darkMode ? 'bg-black' : 'bg-white'}`} style={{ position: "relative", width: containerWidth, height: containerHeight }}>
         {isRecording || videoSource ? (
           <>
-            <div className="video-container" style={{ position: "fixed", top: '350px', left: '750px', width: "640px", height: "auto" }}>
+            <div className={`video-container ${darkMode ? 'bg-black' : 'bg-white'}`} style={{ position: "relative", width: "100%", height: "100%" }}>
               {videoSource ? (
-                <video className="rounded-md" ref={videoRef} style={{ width: "100%", height: "auto" }} autoPlay loop muted />
+                <video className="rounded-md" ref={videoRef} style={{ width: "100%", height: "100%" }} autoPlay loop muted />
               ) : (
-                <Webcam className="rounded-md" ref={webcamRef} style={{ width: "100%", height: "auto" }} />
+                <Webcam className="rounded-md" ref={webcamRef} style={{ width: "100%", height: "100%" }} />
               )}
               <canvas className="rounded-md" ref={canvasRef} style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%" }} />
             </div>
@@ -180,11 +203,11 @@ const WebcamPose = ({ onVideoChange, isRecording, videoSource, runtime = 'mediap
         overflow: 'hidden'  
       }}></div>
        
-    <div className="fixed" style={{ position: 'absolute', top: '230px', left: '800px' }}> 
-      <Hammer className="w-10 h-10 hover:bg-slate-700 rounded-md" onClick={ShowInstructionMenu}/> {
-        showInstructionMenu && (<FencerInstructionMenu setInstructionMenu={setInstructionMenu}/>)
-      }
-    </div>
+      <div style={{ position: 'absolute', top: '-10%', left: '90%', zIndex: 20 }}>
+        <Hammer className="w-10 h-10 hover:bg-slate-700 rounded-md" onClick={ShowInstructionMenu}/> {
+          showInstructionMenu && (<FencerInstructionMenu setInstructionMenu={setInstructionMenu}/>)
+        }
+      </div>
     </> 
   );
 };
@@ -200,6 +223,9 @@ export function drawCanvas(pose, videoWidth, videoHeight, canvas, minConfidence)
   pose.keypoints.forEach((keypoint, index) => {
     if (selectedKeypoints.includes(index) && keypoint.score >= minConfidence) {
       let { x, y } = keypoint;
+
+      // Flip the x-coordinate horizontally
+      x = videoWidth - x;
 
       // Ensure the keypoints stay within the canvas boundaries
       x = Math.max(0, Math.min(videoWidth, x));
@@ -256,12 +282,13 @@ function drawSkeleton(keypoints, minConfidence, ctx, videoWidth, videoHeight) {
       const kp2 = keypoints[pair[1]];
       if (kp1 && kp2 && kp1.score >= minConfidence && kp2.score >= minConfidence) {
         ctx.beginPath();
+        //if flipHorizontal is true flip the x-coordinates below
         ctx.moveTo(
-          Math.max(0, Math.min(videoWidth, kp1.x)),
+          Math.max(0, Math.min(videoWidth, videoWidth - kp1.x)),
           Math.max(0, Math.min(videoHeight, kp1.y))
         );
         ctx.lineTo(
-          Math.max(0, Math.min(videoWidth, kp2.x)),
+          Math.max(0, Math.min(videoWidth, videoWidth - kp2.x)),
           Math.max(0, Math.min(videoHeight, kp2.y))
         );
         ctx.strokeStyle = color;
@@ -300,38 +327,43 @@ function radiansToDegrees(radianAngles) {
 }
 
 export function displayFeetDistance(keypoints) {
-  const kp1 = keypoints[16];
-  const kp2 = keypoints[15];
+  const kp1 = keypoints[28]; // left_ankle
+  const kp2 = keypoints[27]; // right_ankle
 
   const feetDistance = Math.abs(kp1.x - kp2.x);
 
   let predictedPose = "";
-  let absSpeed = Math.abs(currentSpeed)
-  if (feetDistance > 275) {
-    predictedPose = "lunge";
-  } else if (feetDistance > 200) {
-    if (currentSpeed < -20) {
-      predictedPose = "retreat";
-    } else {
-      predictedPose = "advance";
+  let absSpeed = Math.abs(currentSpeed);
+
+  // Enhanced pose prediction logic
+  const leftKneeAngle = calculateAngle(keypoints[23], keypoints[25], keypoints[27]); // left_hip, left_knee, left_ankle
+  const rightKneeAngle = calculateAngle(keypoints[24], keypoints[26], keypoints[28]); // right_hip, right_knee, right_ankle
+
+  if (feetDistance > 200 && absSpeed < 20 && leftKneeAngle > 90 && rightKneeAngle > 150) {
+    predictedPose = "advance";
+  } else if (feetDistance > 200 && absSpeed < 20 && leftKneeAngle > 90 && rightKneeAngle > 150 && currentSpeed < 0) {
+    predictedPose = "retreat";
+  } else if (absSpeed > 20) {
+    if (currentSpeed < -20 && leftKneeAngle > 120 && rightKneeAngle > 120) {
+      predictedPose = "doubleQuickRetreat";
+    } else if (currentSpeed > 20 && leftKneeAngle > 80 && rightKneeAngle > 160) {
+      predictedPose = "doubleQuickAdvance";
     }
-  } else {
-    if (absSpeed > 20) {
-      if (currentSpeed < -20) {
-        predictedPose = "retreat";
-      } else {
-        predictedPose = "advance";
-      }
+  } else if (feetDistance > 150 && leftKneeAngle > 110 && rightKneeAngle > 110) {
+    if (currentSpeed > 20) {
+      predictedPose = "pullingDoubleAdvance";
     } else {
-      predictedPose = "en guarde"
+      predictedPose = "pullingDoubleRetreat";
     }
+  } else if (leftKneeAngle > 85 && rightKneeAngle > 140 && feetDistance < 200) {
+    predictedPose = "en guarde";
   }
 
   return { feetDistance, predictedPose };
 }
 
+
 export async function OpenAIAPIFeedback(props) {
-  //const sleep = ms => new Promise(r => setTimeout(r, ms));
   const pose = props.pose || {};
   const userAngles = {
     "name": props.pose,
@@ -384,28 +416,24 @@ export async function OpenAIAPIFeedback(props) {
 
   let comparison;
   
-  if(pose == "en guarde") {
+  if(pose === "en guarde") {
     comparison = idealAngles[0];
   }
-  else if(pose == "advance") {
+  else if(pose === "advance") {
     comparison = idealAngles[1];
   }
-  else if(pose == "retreat") {
+  else if(pose === "retreat") {
     comparison = idealAngles[2];
   }
-  else if(pose == "lunge") {
+  else if(pose === "lunge") {
     comparison = idealAngles[3];
-  } 
+  }
 
-
-    let query = `Please compare the user's angles ${JSON.stringify(userAngles)} with the ideal angles ${JSON.stringify(comparison)} for the ${userAngles.pose} position and provide a detailed analysis.`;
-    const openai = new OpenAI({
+  let query = `Please compare the user's angles ${JSON.stringify(userAngles)} with the ideal angles ${JSON.stringify(comparison)} for the ${userAngles.pose} position and provide a detailed analysis.`;
+  const openai = new OpenAI({
     apiKey: process.env.NEXT_PUBLIC_OPENAI_KEY,
     dangerouslyAllowBrowser: true
   });
-  // console.log('Test');
-  // return ("success");
-
 
   const chatCompletion = await openai.chat.completions.create({
     messages: [
@@ -422,12 +450,17 @@ export async function OpenAIAPIFeedback(props) {
         content: query
       }
     ],
-    model: 'gpt-4',
+    model: 'gpt-4o-mini',
   });
   console.log(chatCompletion.choices[0].message.content);
   return chatCompletion.choices[0].message.content;
 
 }
+
+export const convertPixelsToMeters = (pixels, height, fencerHeightPixels) => {
+  const pixelToMeterRatio = height / fencerHeightPixels;
+  return pixels * pixelToMeterRatio;
+};
 
 // const url = process.env.MONGODB_URL
 // const client = new MongoClient(url, {

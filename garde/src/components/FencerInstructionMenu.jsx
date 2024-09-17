@@ -96,38 +96,54 @@ const FencerInstructionMenu = ({ setInstructionMenu, onSave }) => {
   const { setInstructions } = useContext(InstructionContext);
 
   return (
-    <div>
-      <div className="absolute bottom-[-1/16] left-[1/4] mt-[-85px] ml-[-300px] bg-gray-500 w-[750px] h-[500px] rounded-md z-10">
-        <Space>
-            <Select id="fencerDropdown" placeholder="Choose Instruction" className="mt-[-15px] ml-10 w-80" onChange={changeFencerInstructionValue}
-                options={fencerInstructions.map((instruction) => ({ //For each loop
-                  label: instruction, 
-                  value: instruction
-                }))} 
-            />
-        </Space>
-        <div className="mt-[-25px] ml-96">
-            <Input name="time" placeholder="Time" className="w-20" value={timeValue} onChange={changeTimeValue}/>
+    <div className="fixed inset-0 flex items-center justify-center z-50">
+      <div className="bg-white rounded-lg shadow-lg p-8 w-[800px] max-w-[90%] mx-auto">
+        <h2 className="text-2xl font-semibold mb-6" style={{ color: 'black' }}>Fencer Instructions</h2>
+        <div className="flex items-center mb-6">
+          <Select
+            id="fencerDropdown"
+            placeholder="Choose Instruction"
+            className="flex-1 mr-4"
+            onChange={changeFencerInstructionValue}
+            options={fencerInstructions.map((instruction) => ({
+              label: instruction,
+              value: instruction,
+            }))}
+          />
+          <Input
+            name="time"
+            placeholder="Time (s)"
+            className="w-20 mr-4"
+            value={timeValue}
+            onChange={changeTimeValue}
+          />
+          <Button type="primary" onClick={addDataValues}>
+            Add
+          </Button>
         </div>
-        <div className="mt-[-25px] ml-[500px]">
-            <Button type="primary" onClick={() => addDataValues()}>Add</Button>
-        </div>
-        <div className="mt-10">
-            <Table dataSource={data} columns={columns} className="h-80"/>
-        </div>
-        <div className="flex justify-end mt-10 mr-5">
-
-        <Button type="primary" onClick={() => {
-          const newData = [...data];
-          setData(newData);
-          console.log(newData);
-          setInstructions(newData); 
-          setInstructionMenu(false);
-        }}>Save & Exit</Button>
+        <Table
+          dataSource={data}
+          columns={columns}
+          pagination={false}
+          className="mb-6"
+        />
+        <div className="flex justify-end">
+          <Button
+            type="primary"
+            onClick={() => {
+              const newData = [...data];
+              setData(newData);
+              console.log(newData);
+              setInstructions(newData);
+              setInstructionMenu(false);
+            }}
+          >
+            Save & Exit
+          </Button>
         </div>
       </div>
     </div>
   )
 }
 
-export default FencerInstructionMenu    
+export default FencerInstructionMenu

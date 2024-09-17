@@ -1,23 +1,397 @@
 "use client";
-import React, { useState, useEffect } from "react";
-// import * as posedetection from "@tensorflow-models/pose-detection";
-// import * as tf from "@tensorflow/tfjs-core";
-import "@tensorflow/tfjs-backend-webgl";
-import Stream_Vid from "../../components/Stream_Vid.jsx";
-import Link from "next/link.js";
-import Timer from "../../components/Timer.jsx";
-// import AI_Feedback from "../../components/AI_Feedback.jsx";
-import Fencer_Canvas from "../../components/Fencer_Canvas.jsx";
-import Fencer_Stats from "../../components/Fencer_Stats.jsx";
-import Instruction from "../../components/Instruction.jsx";
-import { useSpeechSynthesis } from "react-speech-kit";
-import { displayFeetDistance } from "../../components/Fencer_Canvas.jsx";
-import { FaCheckCircle, FaTimesCircle } from "react-icons/fa";
-import HeightInputModal from "../../components/HeightInputModal.jsx";
-// import { getFencerInstructions } from '../../../prisma/fencer_instructions.js';
-import InstructionContext from "../../components/InstructionContext.js";
 
-export default function Fencer_Page() {
+import React, { useState, useEffect, useCallback, memo, useRef } from "react";
+import * as posedetection from "@tensorflow-models/pose-detection";
+import * as tf from "@tensorflow/tfjs-core";
+import "@tensorflow/tfjs-backend-webgl";
+import Stream_Vid from "../../components/Stream_Vid";
+import Link from "next/link";
+import Timer from "../../components/Timer";
+import { UserButton } from "@clerk/nextjs";
+import Fencer_Canvas from "../../components/Fencer_Canvas";
+import Fencer_Stats from "../../components/Fencer_Stats";
+import Instruction from "../../components/Instruction";
+import { useSpeechSynthesis } from "react-speech-kit";
+import {
+	calculateAngle,
+	displayFeetDistance,
+	calculateSpeed,
+} from "../../components/Fencer_Canvas";
+import { FaCheckCircle, FaTimesCircle, FaSun, FaMoon } from "react-icons/fa";
+import HeightInputModal from "../../components/HeightInputModal";
+import { getFencerInstructions } from "../../../prisma/fencer_instructions";
+import InstructionContext from "../../components/InstructionContext";
+import PropTypes from "prop-types";
+import {
+	CardBody,
+	CardContainer,
+	CardItem,
+} from "../../components/ui/3d-card.tsx";
+
+const MemoizedFencerStats = memo(Fencer_Stats);
+const MemoizedInstruction = memo(Instruction);
+const MemoizedTimer = memo(Timer);
+
+class FencingStateMachine {
+	constructor() {
+		this.currentState = "onGuard";
+		this.states = {
+			onGuard: {
+				check: this.checkOnGuard,
+				transitions: {
+					advance: "advancing",
+					retreat: "retreating",
+					lunge: "lunging",
+				},
+			},
+			advancing: {
+				check: this.checkAdvance,
+				transitions: {
+					onGuard: "onGuard",
+					lunge: "lunging",
+				},
+			},
+			retreating: {
+				check: this.checkRetreat,
+				transitions: {
+					onGuard: "onGuard",
+				},
+			},
+			lunging: {
+				check: this.checkLunge,
+				transitions: {
+					onGuard: "onGuard",
+				},
+			},
+		};
+		this.stateChangeDelay = 500; // Adjust the delay as needed (in milliseconds)
+		this.lastStateChangeTime = 0;
+	}
+
+	transition(newState) {
+		const currentTime = Date.now();
+		if (currentTime - this.lastStateChangeTime >= this.stateChangeDelay) {
+			if (this.states[this.currentState].transitions[newState]) {
+				this.currentState =
+					this.states[this.currentState].transitions[newState];
+				this.lastStateChangeTime = currentTime;
+			}
+		}
+	}
+
+	getCurrentState() {
+		return this.currentState;
+	}
+
+	checkCurrentState(pose, feetDistance, shoulderWidth, predictedPose) {
+		const currentState = this.getCurrentState();
+		let result;
+
+		switch (currentState) {
+			case "onGuard":
+				result = this.checkOnGuard(pose, feetDistance, shoulderWidth);
+				break;
+			case "advancing":
+				result = this.checkAdvance(pose, feetDistance, shoulderWidth);
+				break;
+			case "retreating":
+				result = this.checkRetreat(pose, feetDistance, shoulderWidth);
+				break;
+			case "lunging":
+				result = this.checkLunge(pose, feetDistance, shoulderWidth);
+				break;
+			default:
+				result = { success: false, feedback: "", nextState: currentState };
+		}
+
+		if (result.success) {
+			this.transition(result.nextState);
+		} else if (predictedPose && predictedPose !== currentState) {
+			this.transition(predictedPose);
+		}
+
+		return result;
+	}
+
+	checkOnGuard(pose, feetDistance, shoulderWidth) {
+		const feedback = [];
+		const rightKneeAngle = calculateAngle(
+			pose.keypoints[24],
+			pose.keypoints[26],
+			pose.keypoints[28],
+		);
+		const leftKneeAngle = calculateAngle(
+			pose.keypoints[23],
+			pose.keypoints[25],
+			pose.keypoints[27],
+		);
+		const swordArmAngle = calculateAngle(
+			pose.keypoints[11],
+			pose.keypoints[13],
+			pose.keypoints[15],
+		);
+		const rightHeelY = pose.keypoints[32].y;
+		const rightFootY = pose.keypoints[30].y; // Using the right foot (point 30) as a reference
+
+		if (rightKneeAngle < 100) {
+			feedback.push("Bend your right knee more.");
+		}
+
+		if (leftKneeAngle < 100 || leftKneeAngle > 200) {
+			feedback.push("Straighten your left leg more.");
+		}
+
+		if (feetDistance < shoulderWidth) {
+			feedback.push("Widen your stance to shoulder distance.");
+		} else if (feetDistance > shoulderWidth) {
+			feedback.push("Narrow your stance to shoulder distance.");
+		}
+
+		if (swordArmAngle < 140) {
+			feedback.push("Extend your sword arm more.");
+		}
+
+		// Check if the right heel is off the ground
+		const heelThreshold = 1; // Adjust this value based on your preference
+		if (rightHeelY - rightFootY < heelThreshold) {
+			feedback.push("Keep your right heel off the ground.");
+		}
+
+		// Add more checks for balance, arm positioning, etc.
+		const hipY = (pose.keypoints[23].y + pose.keypoints[24].y) / 2; // Average hip height
+		const shoulderY = (pose.keypoints[11].y + pose.keypoints[12].y) / 2; // Average shoulder height
+
+		// Check for balance
+		if (Math.abs(hipY - shoulderY) > 30) {
+			feedback.push("Maintain your balance while in the on-guard position.");
+		}
+
+		if (feedback.length === 0) {
+			feedback.push(
+				"Excellent on-guard position! Maintain your balance and stay ready to react.",
+			);
+		}
+
+		return {
+			success:
+				feedback.length === 1 &&
+				feedback[0].startsWith("Excellent on-guard position"),
+			feedback: feedback.join(" "),
+			nextState: "onGuard",
+		};
+	}
+
+	checkAdvance(pose, feetDistance, shoulderWidth) {
+		const feedback = [];
+		const rightKneeAngle = calculateAngle(
+			pose.keypoints[24],
+			pose.keypoints[26],
+			pose.keypoints[28],
+		);
+		const leftKneeAngle = calculateAngle(
+			pose.keypoints[23],
+			pose.keypoints[25],
+			pose.keypoints[27],
+		);
+		const frontFootY = pose.keypoints[31].y;
+		const backFootY = pose.keypoints[32].y;
+		const frontFootAnkleY = pose.keypoints[27].y;
+		const backFootAnkleY = pose.keypoints[28].y;
+
+		// Check knee angles
+		if (rightKneeAngle > 160 || leftKneeAngle > 160) {
+			feedback.push("Keep both knees slightly bent during the advance.");
+		}
+
+		// Check foot positioning
+		if (Math.abs(frontFootY - backFootY) > 50) {
+			feedback.push(
+				"Ensure your feet are at the same level after completing the advance.",
+			);
+		}
+
+		// Check feet distance consistency
+		const idealDistance = shoulderWidth * 1.5;
+		const tolerance = shoulderWidth * 0.3;
+		if (Math.abs(feetDistance - idealDistance) > tolerance) {
+			feedback.push(
+				"Maintain a consistent distance between your feet, about 1.5 times your shoulder width.",
+			);
+		}
+
+		if (Math.abs(hipY - shoulderY) > 30) {
+			feedback.push(
+				"Keep your upper body upright and balanced during the advance.",
+			);
+		}
+
+		// Check heel landing and foot flatness
+		if (frontFootAnkleY < frontFootY) {
+			feedback.push(
+				"Land on your front heel first, then place the foot flat on the ground.",
+			);
+		}
+		if (backFootAnkleY < backFootY) {
+			feedback.push("Set your back foot down flat after bringing it forward.");
+		}
+
+		// Check feet alignment
+		const frontFootX = pose.keypoints[31].x;
+		const backFootX = pose.keypoints[32].x;
+		if (Math.abs(frontFootX - backFootX) > 50) {
+			feedback.push(
+				"Maintain a right-angle alignment between your feet during the advance.",
+			);
+		}
+
+		if (feedback.length === 0) {
+			feedback.push(
+				"Excellent advance! Your movement is smooth and controlled. Remember to maintain your balance and consistency.",
+			);
+		}
+
+		return {
+			success:
+				feedback.length === 1 && feedback[0].startsWith("Excellent advance"),
+			feedback: feedback.join(" "),
+			nextState: "onGuard",
+		};
+	}
+
+	checkRetreat(pose, feetDistance, shoulderWidth) {
+		const feedback = [];
+		const backKneeAngle = calculateAngle(
+			pose.keypoints[24],
+			pose.keypoints[26],
+			pose.keypoints[28],
+		);
+		const frontLegAngle = calculateAngle(
+			pose.keypoints[23],
+			pose.keypoints[25],
+			pose.keypoints[27],
+		);
+
+		if (backKneeAngle < 110 || backKneeAngle > 170) {
+			feedback.push("Bend your back knee slightly more.");
+		}
+
+		if (frontLegAngle <= 110) {
+			feedback.push("Keep your front leg straighter.");
+		}
+
+		if (Math.abs(pose.keypoints[23].y - pose.keypoints[24].y) >= 40) {
+			feedback.push("Keep your torso upright.");
+		}
+
+		// Check for foot movement
+		const frontFootY = pose.keypoints[31].y;
+		const backFootY = pose.keypoints[32].y;
+		if (frontFootY < backFootY) {
+			feedback.push(
+				"Ensure your front foot is pushing off properly during the retreat.",
+			);
+		}
+
+		// Check for balance
+		const hipY = (pose.keypoints[23].y + pose.keypoints[24].y) / 2;
+		const shoulderY = (pose.keypoints[11].y + pose.keypoints[12].y) / 2;
+		if (Math.abs(hipY - shoulderY) > 30) {
+			feedback.push(
+				"Maintain your balance and keep your torso upright while retreating.",
+			);
+		}
+
+		if (feedback.length === 0) {
+			feedback.push("Good retreat movement.");
+		}
+
+		return {
+			success:
+				feedback.length === 1 && feedback[0] === "Good retreat movement.",
+			feedback: feedback.join(" "),
+			nextState: "onGuard",
+		};
+	}
+
+	checkLunge(pose, feetDistance, shoulderWidth) {
+		const feedback = [];
+		const frontKneeAngle = calculateAngle(
+			pose.keypoints[23],
+			pose.keypoints[25],
+			pose.keypoints[27],
+		);
+		const backLegAngle = calculateAngle(
+			pose.keypoints[24],
+			pose.keypoints[26],
+			pose.keypoints[28],
+		);
+		const torsoUpright =
+			Math.abs(pose.keypoints[23].y - pose.keypoints[24].y) < 20;
+		const swordArmAngle = calculateAngle(
+			pose.keypoints[11],
+			pose.keypoints[13],
+			pose.keypoints[15],
+		);
+		const nonSwordArmAngle = calculateAngle(
+			pose.keypoints[12],
+			pose.keypoints[14],
+			pose.keypoints[16],
+		);
+
+		if (frontKneeAngle <= 110) {
+			feedback.push("Bend your front knee more to achieve better form.");
+		} else if (frontKneeAngle > 140) {
+			feedback.push("Avoid overextending your front knee.");
+		}
+
+		if (backLegAngle <= 150) {
+			feedback.push("Straighten your back leg for better stability.");
+		}
+
+		if (!torsoUpright) {
+			feedback.push("Keep your torso upright for better balance.");
+		}
+
+		if (swordArmAngle <= 150) {
+			feedback.push("Extend your sword arm further.");
+		}
+
+		if (nonSwordArmAngle <= 150) {
+			feedback.push("Raise your non-sword arm for better counterbalance.");
+		}
+
+		// Check for foot placement
+		const frontFootY = pose.keypoints[30].y; // Assuming point 30 is the front foot
+		const backFootY = pose.keypoints[32].y; // Assuming point 32 is the back foot
+		if (frontFootY < backFootY) {
+			feedback.push(
+				"Ensure your front foot is firmly planted and your back leg is extended during the lunge.",
+			);
+		}
+
+		// Check for arm extension
+		if (swordArmAngle <= 150) {
+			feedback.push(
+				"Fully extend your sword arm and maintain a straight line from your shoulder to your sword tip.",
+			);
+		}
+
+		if (feedback.length === 0) {
+			feedback.push("Excellent lunge posture!");
+		}
+
+		return {
+			success:
+				feedback.length === 1 && feedback[0] === "Excellent lunge posture!",
+			feedback: feedback.join(" "),
+			nextState: "onGuard",
+		};
+	}
+}
+
+const fencingStateMachine = new FencingStateMachine();
+
+export default function Fencer_Page2() {
 	const [videoSource, setVideoSource] = useState("");
 	const [isRecording, setIsRecording] = useState(false);
 	const [pose, setPose] = useState(null);
@@ -44,19 +418,32 @@ export default function Fencer_Page() {
 	const [voice, setVoice] = useState(null);
 	const [instructions, setInstructions] = useState([]);
 	const [isRunning, setIsRunning] = useState(false);
-	const [data, setData] = useState();
 	const [videoInput, setVideoInput] = useState(false);
+	const [feedback, setFeedback] = useState([]);
+	const [feedbackEnabled, setFeedbackEnabled] = useState(false);
+	const [isMobile, setIsMobile] = useState(false);
+	const [feetDistance, setFeetDistance] = useState(null);
+	const [shoulderWidth, setShoulderWidth] = useState(null);
+	const previousInstructionIndex = useRef(-1);
+	const previousFeedback = useRef({ message: "", timestamp: 0 });
+	const [previousPose, setPreviousPose] = useState(null);
+	const [isTimerRunning, setIsTimerRunning] = useState(false);
+	const [lastSpokenFeedbackTime, setLastSpokenFeedbackTime] = useState(0);
+	const spokenFeedbackCooldown = 5000; // Increased cooldown to 5 seconds
+	const [darkMode, setDarkMode] = useState(false);
+	const feedbackHistory = useRef([]);
+	const heelCountRef = useRef(0);
+	const [lastFeedbackTime, setLastFeedbackTime] = useState(0);
+	const [isFeedbackBeingDelivered, setIsFeedbackBeingDelivered] =
+		useState(false);
+	const feedbackDelay = 10000; // 10 seconds delay
 
-	const handleHeightSave = (heightInMeters) => {
-		setHeight(heightInMeters);
-		setIsHeightModalOpen(false);
-	};
-
-	const convertPixelsToMeters = (pixels) => {
-		if (!height) return null;
-		const pixelToMeterRatio = height / 100; // Adjust this ratio based on calibration
-		return pixels * pixelToMeterRatio;
-	};
+	useEffect(() => {
+		const userAgent =
+			typeof window.navigator === "undefined" ? "" : navigator.userAgent;
+		const mobileDevice = /iPhone|iPad|iPod|Android/i.test(userAgent);
+		setIsMobile(mobileDevice);
+	}, []);
 
 	useEffect(() => {
 		if (voices.length > 0 && !voice) {
@@ -64,40 +451,10 @@ export default function Fencer_Page() {
 		}
 	}, [voices, voice]);
 
-	useEffect(() => {
-		if (
-			instructionIndex >= 0 &&
-			instructionIndex < instructions.length &&
-			!hasSpoken &&
-			!isInstructionBeingSaid
-		) {
-			setHasSpoken(true);
-			setTimeout(() => {
-				speak({
-					text: `${instructions[instructionIndex].name} Starting in 3, 2, 1`,
-					voice: voice,
-					rate: 1,
-					pitch: 1,
-					lang: "en-US",
-					onend: () => {
-						setShowPreInstructionCountdown(false);
-						setHasSpoken(false);
-						setInstructionIndex(instructionIndex + 1); // Increment instructionIndex after each instruction is spoken
-					},
-				});
-				setShowPreInstructionCountdown(true);
-				startPreInstructionCountdown();
-				setResetTimer(true);
-			}, 0);
-		}
-	}, [
-		instructionIndex,
-		voice,
-		speak,
-		hasSpoken,
-		videoSource,
-		isInstructionBeingSaid,
-	]);
+	const handleHeightSave = useCallback((heightInMeters) => {
+		setHeight(heightInMeters);
+		setIsHeightModalOpen(false);
+	}, []);
 
 	const startPreInstructionCountdown = () => {
 		setPreInstructionCountdown(3);
@@ -244,11 +601,21 @@ export default function Fencer_Page() {
 			const { predictedPose, feetDistance } = displayFeetDistance(
 				pose.keypoints,
 			);
-			checkPoseDuration(predictedPose);
-			const distanceInMeters = convertPixelsToMeters(feetDistance);
-			// Use distanceInMeters for further processing
+
+			// Only start checking angles after 10 seconds
+			const movementDuration = Date.now() - poseStartTime;
+			if (movementDuration >= 10000) {
+				checkPoseDuration(predictedPose);
+				checkAngles(pose);
+			}
+
+			const distanceInMeters = convertPixelsToMeters(
+				feetDistance,
+				height,
+				feetDistance,
+			);
 		}
-	}, [pose]);
+	}, [pose, checkPoseDuration, checkAngles, convertPixelsToMeters, height]);
 
 	useEffect(() => {
 		if (countdownFinished && poseResult === "Success") {
@@ -271,12 +638,12 @@ export default function Fencer_Page() {
 		<InstructionContext.Provider value={{ instructions, setInstructions }}>
 			<div className="flex flex-col h-max font-sans bg-gray-900 text-white">
 				<div className="flex items-center justify-between p-4 bg-black border-b border-gray-700">
-					<Link href="api/auth/signout?callbackUrl=/">
+					<Link href="/">
 						<button className="bg-gray-700 text-white py-2 px-4 rounded text-lg font-semibold hover:bg-gray-600">
 							&#8592;
 						</button>
 					</Link>
-					{/* <UserButton /> */}
+					<UserButton />
 
 					<div className="absolute right-4 top-10">
 						<Stream_Vid
@@ -386,3 +753,5 @@ export default function Fencer_Page() {
 		</InstructionContext.Provider>
 	);
 }
+
+Fencer_Page2.propTypes = {};

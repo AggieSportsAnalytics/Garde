@@ -9,26 +9,24 @@ import Footer from "../components/Footer";
 import { SessionProvider } from "next-auth/react";
 // import Fencer_Page from "./fencer_page/page";
 // import CoachPage from "./coach_page/page";
+import Showcase from "../components/Showcase";
+import Banner from "../components/Banner";
+import Fencer_Page from "./fencer_page/page";
+import CoachPage from "./coach_page/page";
 
 export default function Home({ session }) {
 	return (
 		<SessionProvider session={session}>
 			<div className="">
-				<Navbar />
 				<Hero />
 				<About />
+				<Showcase />
 				<Features />
+				<Banner />
 				<Contact />
 				<Footer />
 				{/**/}
 			</div>
 		</SessionProvider>
 	);
-
-	//   return (
-	//      <div className="">
-	//          <Fencer_Page />
-
-	//       </div>
-	//   )
 }

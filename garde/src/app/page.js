@@ -11,6 +11,7 @@ import { SessionProvider } from "next-auth/react";
 import Showcase from "../components/Showcase";
 import Banner from "../components/Banner";
 import { useState, useEffect } from "react";
+import Navbar from "../components/Navbar";
 
 export default function Home({ session }) {
 	const [isMobile, setIsMobile] = useState(false);
@@ -31,6 +32,7 @@ export default function Home({ session }) {
 	return (
 		<SessionProvider session={session}>
 			<div className="">
+				<Navbar />
 				<Hero />
 				<About />
 				<Showcase />

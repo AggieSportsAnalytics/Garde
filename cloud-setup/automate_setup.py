@@ -39,8 +39,6 @@ CREATE TABLE IF NOT EXISTS fencers (
     average_time_lunge REAL DEFAULT 0,     
     average_time_enGuard REAL DEFAULT 0,   
     cumulative_accuracy REAL DEFAULT 0
-    FOREIGN KEY (unique_id) REFERENCES users(unique_id)
-    FOREIGN KEY (name) REFERENCES users(name)
 );
 """
 
@@ -57,7 +55,7 @@ CREATE TABLE IF NOT EXISTS fencer_sessions (
     right_knee REAL,                               
     feet_distance REAL,                            
     accuracy REAL,                                 
-    FOREIGN KEY (fencer_id) REFERENCES fencers(unique_id)
+    FOREIGN KEY (fencer_id) REFERENCES fencers(unique_id) ON DELETE CASCADE
 );
 """
 
@@ -76,9 +74,9 @@ CREATE TABLE IF NOT EXISTS coach_fencers (
     fencer_id TEXT,
     fencer_name TEXT,
     PRIMARY KEY (coach_id, fencer_id),
-    FOREIGN KEY (coach_id) REFERENCES coaches(unique_id),
-    FOREIGN KEY (fencer_id) REFERENCES fencers(unique_id)
-    FOREIGN KEY (fencer_name) REFERENCES fencers(name)
+    FOREIGN KEY (coach_id) REFERENCES coaches(unique_id) ON DELETE CASCADE,
+    FOREIGN KEY (fencer_id) REFERENCES fencers(unique_id) ON DELETE CASCADE,
+    FOREIGN KEY (fencer_name) REFERENCES fencers(name) ON DELETE CASCADE
 );
 """
 
@@ -125,7 +123,7 @@ VALUES
 
 # Insert or replace for ideal_angles table
 insert_or_replace_ideal_angles = """
-INSERT OR REPLACE INTO ideal_angles (name, elbow_left, hip_left, knee_left, elbow_right, hip_right, knee_right)
+INSERT OR IGNORE INTO ideal_angles (name, elbow_left, hip_left, knee_left, elbow_right, hip_right, knee_right)
 VALUES 
     ('En-Guarde', 96, 117, 121, 2, 170, 160),
     ('Advance', 87, 126, 132, 36, 170, 160),

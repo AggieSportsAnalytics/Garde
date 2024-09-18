@@ -12,7 +12,9 @@ export default {
 			return await handlePostRequest(request, env);
 		}
 
-		// else if request.method === "GET" {}
+		if (request.method === "GET") {
+			return handleGetRequest();
+		}
 
 		if (request.method === "PUT") {
 			// fencer page: SEND (fencer id, angle data) ## fencer_sessions table
@@ -31,6 +33,10 @@ export default {
 	},
 };
 
+function handleGetRequest() {
+	return new Response(JSON.stringify({ message: "success" }));
+}
+
 // Function to handle preflight OPTIONS requests (CORS)
 function handleOptionsRequest() {
 	return new Response(null, {
@@ -45,14 +51,7 @@ function handleOptionsRequest() {
 async function handleDeleteRequest(request, env) {
 	const { DB } = env;
 
-	try {
-		const body = await request.json();
-		const { fencerId, coachId } = body; // Expecting fencer_id and coach_id in the body
-
-		if (!fencerId || !coachId) {
-			throw new Error("Both fencer_id and coach_id must be provided.");
-		}
-
+	const deleteCoachFencers = async (fencerId, coachId) => {
 		// SQL query to delete the row where fencer_id and coach_id match
 		const query = `
             DELETE FROM coach_fencers
@@ -62,6 +61,44 @@ async function handleDeleteRequest(request, env) {
 		// Execute the query with the bound fencer_id and coach_id
 		const result = await DB.prepare(query).bind(fencerId, coachId).run();
 		return result;
+	};
+
+	const deleteFencers = async (fencerId) => {
+		const query = `
+            DELETE FROM fencers
+            WHERE fencer_id = ?;
+        `;
+
+		// Execute the query with the bound fencer_id and coach_id
+		const result = await DB.prepare(query).bind(fencerId).run();
+		return result;
+	};
+
+	const deleteCoaches = async (coachId) => {
+		const query = `
+            DELETE FROM coaches
+            WHERE coach_id = ?;
+        `;
+
+		// Execute the query with the bound fencer_id and coach_id
+		const result = await DB.prepare(query).bind(coachId).run();
+		return result;
+	};
+
+	try {
+		const body = await request.json();
+
+		if (body.queryType === "fencer_coach" && body.fencerId && body.coachId) {
+			return deleteCoachFencers(body.fencerId, body.coachId);
+		}
+
+		if (body.queryType === "fencer") {
+			return deleteFencers(body.fencerId);
+		}
+
+		if (body.queryType === "coach") {
+			return deleteCoaches(body.coachId);
+		}
 	} catch (error) {
 		console.log(`Error: ${error.message}`);
 		return { error: error.message };
@@ -71,66 +108,44 @@ async function handleDeleteRequest(request, env) {
 async function handlePutRequest(request, env) {
 	const { DB } = env;
 
-	try {
-		const body = await request.json();
-
-		if (
-			body.queryType === "addFencer" &&
-			body.unique_id &&
-			body.name &&
-			body.email
-		) {
-			await env.DB.prepare(`
-            INSERT OR IGNORE INTO fencers (unique_id, name, email)
-            VALUES (?, ?, ?);
-          `)
-				.bind(unique_id, name, email)
-				.run();
-		}
-		if (
-			body.queryType === "addCoach" &&
-			body.unique_id &&
-			body.name &&
-			body.email
-		) {
-			await env.DB.prepare(`
-            INSERT OR IGNORE INTO coaches (unique_id, name, email)
-            VALUES (?, ?, ?);
-          `)
-				.bind(unique_id, name, email)
-				.run();
-		}
-
-		if (body.queryType === "instruction" && body.fencerInstruction) {
-			const { fencerInstruction } = body;
-			const query = `
+	const putInstruction = async (fencerInstruction) => {
+		const query = `
                 INSERT OR IGNORE INTO fencer_instructions (name)
                 VALUES (?);
             `;
-			const result = await DB.prepare(query).bind(fencerInstruction).run();
-			return result;
+		const result = await DB.prepare(query).bind(fencerInstruction).run();
+		return result;
+	};
+
+	const putAngleData = async (fencerId, angleData) => {
+		const query =
+			"INSERT OR REPLACE INTO fencer_sessions (fencer_id, speed, left_elbow, right_elbow, left_hip, right_hip, left_knee, right_knee, feet_distance, accuracy) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
+
+		const result = await DB.prepare(query)
+			.bind(
+				fencerId,
+				angleData.speed,
+				angleData.left_elbow,
+				angleData.right_elbow,
+				angleData.left_hip,
+				angleData.right_hip,
+				angleData.left_knee,
+				angleData.right_knee,
+				angleData.feet_distance,
+				angleData.accuracy,
+			)
+			.run();
+		return result;
+	};
+
+	try {
+		const body = await request.json();
+
+		if (body.queryType === "instruction" && body.fencerInstruction) {
+			return putInstruction(body.fencerInstruction);
 		}
 		if (body.queryType === "angleData" && body.fencerId && body.angleData) {
-			const { fencerId, angleData } = body;
-
-			const query =
-				"INSERT OR REPLACE INTO fencer_sessions (fencer_id, speed, left_elbow, right_elbow, left_hip, right_hip, left_knee, right_knee, feet_distance, accuracy) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
-
-			const result = await DB.prepare(query)
-				.bind(
-					fencerId,
-					angleData.speed,
-					angleData.left_elbow,
-					angleData.right_elbow,
-					angleData.left_hip,
-					angleData.right_hip,
-					angleData.left_knee,
-					angleData.right_knee,
-					angleData.feet_distance,
-					angleData.accuracy,
-				)
-				.run();
-			return result;
+			return putAngleData(body.fencerId, body.angleData);
 		}
 	} catch (error) {
 		console.log(`Error: ${error}`);
@@ -140,43 +155,154 @@ async function handlePutRequest(request, env) {
 async function handlePostRequest(request, env) {
 	const { DB } = env;
 
+	const auth = async (type, name, email, password, id) => {
+		// Check if the user already exists in the database
+		const fetched = await DB.prepare(`SELECT * FROM ${type} WHERE email = ?`)
+			.bind(email)
+			.all();
+
+		if (fetched.results.length > 0) {
+			// User already exists, return an error
+			return false;
+		}
+
+		// User does not exist, create a new user
+		const result = await env.DB.prepare(`
+        INSERT OR IGNORE INTO ${type} (unique_id, name, email, password)
+        VALUES (?, ?, ?, ?);
+    `)
+			.bind(id, name, email, password)
+			.run();
+
+		// Return the result of the insertion, or an error if something went wrong
+		return result.success ? true : false;
+	};
+
+	const getFencer = async (id) => {
+		const result = await DB.prepare(
+			"SELECT * FROM fencer_sessions WHERE fencer_id = ?",
+		)
+			.bind(id)
+			.all();
+
+		return result;
+	};
+
+	const getCoach = async (id) => {
+		const result = await DB.prepare(
+			"SELECT * FROM coach_fencers WHERE coach_id = ?",
+		)
+			.bind(id)
+			.all();
+
+		return result;
+	};
+
+	const verify = async (type, email) => {
+		// Query the user by email
+		const fetched = await DB.prepare(`SELECT * FROM ${type} WHERE email = ?`)
+			.bind(email)
+			.all();
+
+		if (fetched.results.length === 0) {
+			// User does not exist, return an error
+			return null;
+		}
+
+		const user = fetched.results[0];
+
+		return user;
+	};
+
 	try {
 		const body = await request.json();
 
 		let result;
 
-		if (body.queryType === "auth" && body.name && body.email && body.password) {
-			const auth = true; // salting, hashing, querying, etc
-			const id = "1"; // query db for this
-
-			if (!auth) {
-				return new Response(
-					JSON.stringify({ error: "Failed to authenticate" }),
-					{
-						headers: { "Content-Type": "application/json" },
-						status: 500,
-					},
+		if (
+			(body.queryType === "auth-fencer" || body.queryType === "auth-coach") &&
+			body.name &&
+			body.email &&
+			body.password &&
+			body.id
+		) {
+			let status;
+			if (body.queryType === "auth-fencer") {
+				status = await auth(
+					"fencers",
+					body.name,
+					body.email,
+					body.password,
+					body.id,
+				);
+			}
+			if (body.queryType === "auth-coach") {
+				status = await auth(
+					"coaches",
+					body.name,
+					body.email,
+					body.password,
+					body.id,
 				);
 			}
 
-			return new Response(JSON.stringify({ id: id, name: body.name }), {
+			if (!status) {
+				return new Response(JSON.stringify({ error: "failed to signup" }), {
+					headers: {
+						"Content-Type": "application/json",
+						"Access-Control-Allow-Origin": "*", // Allow requests from any origin
+					},
+				});
+			}
+
+			return new Response(JSON.stringify({ id: body.id, name: body.name }), {
 				headers: {
 					"Content-Type": "application/json",
 					"Access-Control-Allow-Origin": "*", // Allow requests from any origin
 				},
 			});
-		} else if (body.queryType === "getFencer" && body.id) {
-			result = await DB.prepare(
-				"SELECT * FROM fencer_sessions WHERE fencer_id = ?",
-			)
-				.bind(body.id)
-				.all();
+		}
+
+		if (
+			(body.queryType === "verify-fencer" ||
+				body.queryType === "verify-coach") &&
+			body.email
+		) {
+			let user;
+			if (body.queryType === "verify-fencer") {
+				user = await verify("fencers", body.email);
+			} else if (body.queryType === "verify-coach") {
+				user = await verify("coaches", body.email);
+			}
+
+			if (!user) {
+				return new Response(JSON.stringify({ error: "failed to login" }), {
+					headers: {
+						"Content-Type": "application/json",
+						"Access-Control-Allow-Origin": "*", // Allow requests from any origin
+					},
+				});
+			}
+
+			return new Response(
+				JSON.stringify({
+					id: user.unique_id,
+					name: user.name,
+					password: user.password,
+				}),
+				{
+					headers: {
+						"Content-Type": "application/json",
+						"Access-Control-Allow-Origin": "*", // Allow requests from any origin
+					},
+				},
+			);
+		}
+
+		if (body.queryType === "getFencer" && body.id) {
+			result = await getFencer(body.id);
 		} else if (body.queryType === "getCoach" && body.id) {
-			result = await DB.prepare(
-				"SELECT * FROM coach_fencers WHERE coach_id = ?",
-			)
-				.bind(body.name)
-				.all();
+			result = await getCoach(body.id);
 		} else {
 			// Default case if no queryType or valid data is provided
 			return new Response(

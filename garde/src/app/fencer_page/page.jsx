@@ -7,7 +7,7 @@ import "@tensorflow/tfjs-backend-webgl";
 import Stream_Vid from "../../components/Stream_Vid";
 import Link from "next/link";
 import Timer from "../../components/Timer";
-import { UserButton } from "@clerk/nextjs";
+// import { UserButton } from "@clerk/nextjs";
 import Fencer_Canvas from "../../components/Fencer_Canvas";
 import Fencer_Stats from "../../components/Fencer_Stats";
 import Instruction from "../../components/Instruction";
@@ -19,7 +19,7 @@ import {
 } from "../../components/Fencer_Canvas";
 import { FaCheckCircle, FaTimesCircle, FaSun, FaMoon } from "react-icons/fa";
 import HeightInputModal from "../../components/HeightInputModal";
-import { getFencerInstructions } from "../../../prisma/fencer_instructions";
+// import { getFencerInstructions } from "../../../prisma/fencer_instructions";
 import InstructionContext from "../../components/InstructionContext";
 import PropTypes from "prop-types";
 import {
@@ -456,7 +456,7 @@ export default function Fencer_Page2() {
 		setIsHeightModalOpen(false);
 	}, []);
 
-	const startPreInstructionCountdown = () => {
+	const startPreInstructionCountdown = useCallback(() => {
 		setPreInstructionCountdown(3);
 		const interval = setInterval(() => {
 			setPreInstructionCountdown((prevCountdown) => {
@@ -464,17 +464,18 @@ export default function Fencer_Page2() {
 					return prevCountdown - 1;
 				} else {
 					clearInterval(interval);
-					startSuccessCountdown();
+					setCountdownFinished(true);
+					setFeedbackEnabled(true); // Enable feedback after countdown
 					return 0;
 				}
 			});
 		}, 1000);
-	};
+	}, []);
 
-	const startSuccessCountdown = () => {
-		if (!videoInput) return; // Don't start the countdown if there's no video input
+	const startSuccessCountdown = useCallback(() => {
+		if (!videoInput) return;
 
-		const instructionTime = instructions[instructionIndex].time;
+		const instructionTime = instructions[instructionIndex]?.time || 3;
 		setCountdown(instructionTime);
 		const interval = setInterval(() => {
 			setCountdown((prevCountdown) => {
@@ -482,13 +483,14 @@ export default function Fencer_Page2() {
 					return prevCountdown - 1;
 				} else {
 					clearInterval(interval);
+					setCountdownFinished(true);
 					return 0;
 				}
 			});
 		}, 1000);
-	};
+	}, [videoInput, instructions, instructionIndex]);
 
-	const handleTimerStart = () => {
+	const handleTimerStart = useCallback(() => {
 		setHasStarted(true);
 		setShowPreInstructionCountdown(false);
 		setInstructionIndex((prevIndex) => {
@@ -503,13 +505,15 @@ export default function Fencer_Page2() {
 		setResetTimer(false);
 		setCountdown(
 			instructions[instructionIndex]
-				? instructions[instructionIndex + 1].time
+				? instructions[instructionIndex + 1]?.time
 				: 3,
 		);
 		setIsRunning(true);
-	};
+		setFeedbackEnabled(true); // Enable feedback when the timer starts
+		setLastFeedbackTime(Date.now()); // Set initial feedback time when timer starts
+	}, [instructions, instructionIndex]);
 
-	const handleReset = () => {
+	const handleReset = useCallback(() => {
 		setInstructionIndex(-1);
 		setIsStartDisabled(false);
 		setPoseStartTime(null);
@@ -520,81 +524,187 @@ export default function Fencer_Page2() {
 		setPreInstructionCountdown(3);
 		setShowPreInstructionCountdown(false);
 		clearTimeout(failureTimeout);
-	};
+		setFeedbackEnabled(false); // Disable feedback on reset
+	}, [failureTimeout]);
 
-	const handleVideoChange = (newVideoSource) => {
-		setVideoSource(newVideoSource);
-		setVideoInput(true); // Set videoInput to true
-		if (!height) setIsHeightModalOpen(true);
-	};
+	const handleVideoChange = useCallback(
+		(newVideoSource) => {
+			setVideoSource(newVideoSource);
+			setVideoInput(true);
+			if (!height) setIsHeightModalOpen(true);
+		},
+		[height],
+	);
 
-	const toggleRecording = () => {
+	const toggleRecording = useCallback(() => {
 		if (!height) {
 			setIsHeightModalOpen(true);
 		}
-		setIsRecording(!isRecording);
-		setIsRunning(!isRunning);
+		setIsRecording((prev) => !prev);
+		setIsRunning((prev) => !prev);
+	}, [height]);
+
+	const convertPixelsToMeters = (
+		pixels,
+		fencerHeightMeters,
+		fencerHeightPixels,
+	) => {
+		if (!fencerHeightMeters || !fencerHeightPixels) return null;
+		const pixelToMeterRatio = fencerHeightMeters / fencerHeightPixels;
+		return pixels * pixelToMeterRatio;
 	};
 
-	const checkPoseDuration = (predictedPose) => {
-		const currentInstruction = instructions[instructionIndex];
-		const instructionToPose = {
-			"Perform an en guarde...": "en guarde",
-			"Perform an advance...": "advance",
-			"Perform a lunge...": "lunge",
-		};
-		const expectedPose = instructionToPose[currentInstruction];
-		setPerformedPose(predictedPose);
+	const checkPoseAndProvideFeedback = (pose, feetDistance, shoulderWidth) => {
+		const result = fencingStateMachine.checkCurrentState(
+			pose,
+			feetDistance,
+			shoulderWidth,
+		);
+		const { success, feedback } = result;
 
-		if (predictedPose && expectedPose && predictedPose === expectedPose) {
-			if (!poseStartTime) {
-				setPoseStartTime(Date.now());
-			} else {
-				const elapsedTime = Date.now() - poseStartTime;
-				setCountdown(
-					instructions[instructionIndex].time - Math.floor(elapsedTime / 1000),
-				);
-				if (elapsedTime >= instructions[instructionIndex].time * 1000) {
-					setPoseResult("Success");
-					speak({
-						text: "Success",
-						voice: voice,
-						rate: 1,
-						pitch: 1,
-						lang: "en-US",
-					});
-					setPoseStartTime(null);
-					setTimeout(() => {
-						handleTimerStart();
-					}, 3000);
-				}
-			}
-		} else {
-			if (
-				poseStartTime &&
-				!(
-					instructionIndex === instructions.length - 1 &&
-					poseResult === "Success"
-				)
-			) {
-				setPoseResult("Failure");
-				if (!failureTimeout) {
-					speak({
-						text: "Failure",
-						voice: voice,
-						rate: 1,
-						pitch: 1,
-						lang: "en-US",
-					});
-					const timeout = setTimeout(() => {
-						setFailureTimeout(null);
-					}, 20000);
-					setFailureTimeout(timeout);
-				}
-				setPoseStartTime(null);
-			}
+		if (!success) {
+			const criticalFeedback = feedback.split(".")[0] + "."; // Extract the first sentence as critical feedback
+			return criticalFeedback;
 		}
+
+		return "";
 	};
+
+	const checkAngles = useCallback(
+		(pose) => {
+			if (!feedbackEnabled || !isTimerRunning) {
+				return;
+			}
+
+			const currentTime = Date.now();
+			const elapsedTime = currentTime - lastFeedbackTime;
+
+			if (elapsedTime >= feedbackDelay && !isFeedbackBeingDelivered) {
+				const feedbackMessage = checkPoseAndProvideFeedback(
+					pose,
+					feetDistance,
+					shoulderWidth,
+				);
+
+				// Simplify and shorten the feedback message
+				const simplifiedFeedback = simplifyFeedback(feedbackMessage);
+
+				if (
+					simplifiedFeedback &&
+					!feedbackHistory.current.includes(simplifiedFeedback)
+				) {
+					setIsFeedbackBeingDelivered(true);
+					setFeedback([simplifiedFeedback]);
+					speak({
+						text: simplifiedFeedback,
+						voice: voice,
+						rate: 1.2,
+						pitch: 1.1,
+						lang: "en-US",
+						onend: () => {
+							setIsFeedbackBeingDelivered(false);
+							setLastFeedbackTime(Date.now());
+							feedbackHistory.current = [
+								...feedbackHistory.current,
+								simplifiedFeedback,
+							];
+						},
+					});
+				}
+			}
+		},
+		[
+			feedbackEnabled,
+			isTimerRunning,
+			lastFeedbackTime,
+			isFeedbackBeingDelivered,
+			feetDistance,
+			shoulderWidth,
+			speak,
+			voice,
+		],
+	);
+
+	// Function to simplify and shorten feedback messages
+	const simplifyFeedback = (feedback) => {
+		return feedback.split(".")[0] + ".";
+	};
+
+	const checkPoseDuration = useCallback(
+		(predictedPose) => {
+			if (!feedbackEnabled || !isTimerRunning) return;
+
+			const currentInstruction = instructions[instructionIndex]?.name
+				.toLowerCase()
+				.replace(/\s+/g, "");
+			if (
+				predictedPose &&
+				currentInstruction &&
+				predictedPose === currentInstruction
+			) {
+				if (!poseStartTime) {
+					setPoseStartTime(Date.now());
+				} else {
+					const elapsedTime = Date.now() - poseStartTime;
+					setCountdown(
+						(instructions[instructionIndex]?.time || 3) -
+							Math.floor(elapsedTime / 1000),
+					);
+					if (
+						elapsedTime >=
+						(instructions[instructionIndex]?.time || 3) * 1000
+					) {
+						setPoseResult("Success");
+						speak({
+							text: "Success",
+							voice: voice,
+							rate: 1.2,
+							pitch: 1.1,
+							lang: "en-US",
+						});
+						setPoseStartTime(null);
+						setTimeout(handleTimerStart, 3000);
+					}
+				}
+			} else {
+				if (
+					poseStartTime &&
+					!(
+						instructionIndex === instructions.length - 1 &&
+						poseResult === "Success"
+					)
+				) {
+					setPoseResult("Failure");
+					if (!failureTimeout) {
+						speak({
+							text: "Failure",
+							voice: voice,
+							rate: 1.2,
+							pitch: 1.1,
+							lang: "en-US",
+						});
+						const timeout = setTimeout(() => {
+							setFailureTimeout(null);
+						}, 20000);
+						setFailureTimeout(timeout);
+					}
+					setPoseStartTime(null);
+				}
+			}
+		},
+		[
+			instructions,
+			instructionIndex,
+			poseStartTime,
+			poseResult,
+			speak,
+			voice,
+			handleTimerStart,
+			failureTimeout,
+			feedbackEnabled,
+			isTimerRunning,
+		],
+	);
 
 	useEffect(() => {
 		if (pose) {
@@ -625,7 +735,7 @@ export default function Fencer_Page2() {
 						return prevCountdown - 1;
 					} else {
 						clearInterval(interval);
-						setCountdownFinished(true);
+						setCountdownFinished(false);
 						return 3;
 					}
 				});
@@ -634,122 +744,273 @@ export default function Fencer_Page2() {
 		}
 	}, [countdownFinished, poseResult]);
 
+	useEffect(() => {
+		if (
+			instructionIndex >= 0 &&
+			instructionIndex < instructions.length &&
+			!hasSpoken &&
+			!isInstructionBeingSaid
+		) {
+			setHasSpoken(true);
+			setIsInstructionBeingSaid(true);
+			speak({
+				text: `${instructions[instructionIndex].name} Starting in 3, 2, 1`,
+				voice: voice,
+				rate: 1,
+				pitch: 1,
+				lang: "en-US",
+				onend: () => {
+					setShowPreInstructionCountdown(false);
+					setHasSpoken(false);
+					setIsInstructionBeingSaid(false);
+					startPreInstructionCountdown();
+				},
+			});
+			setShowPreInstructionCountdown(true);
+			setResetTimer(true);
+		}
+	}, [
+		instructionIndex,
+		voice,
+		speak,
+		hasSpoken,
+		instructions,
+		isInstructionBeingSaid,
+		startPreInstructionCountdown,
+	]);
+
+	useEffect(() => {
+		if (!isTimerRunning) {
+			setFeedback([]);
+			previousFeedback.current = { message: "", timestamp: 0 };
+		}
+	}, [isTimerRunning]);
+
+	useEffect(() => {
+		const userPrefersDark =
+			window.matchMedia &&
+			window.matchMedia("(prefers-color-scheme: dark)").matches;
+		setDarkMode(userPrefersDark);
+	}, []);
+
+	const toggleDarkMode = () => {
+		setDarkMode((prevMode) => !prevMode);
+	};
+
 	return (
 		<InstructionContext.Provider value={{ instructions, setInstructions }}>
-			<div className="flex flex-col h-max font-sans bg-gray-900 text-white">
-				<div className="flex items-center justify-between p-4 bg-black border-b border-gray-700">
+			{isMobile ? (
+				<div
+					className={`flex flex-col items-center justify-center h-screen ${darkMode ? "bg-black text-white" : "bg-white text-black"} p-4`}
+				>
+					<p className="text-center text-xl mb-4">
+						For a better viewing experience, please visit this website on a
+						computer.
+					</p>
 					<Link href="/">
-						<button className="bg-gray-700 text-white py-2 px-4 rounded text-lg font-semibold hover:bg-gray-600">
-							&#8592;
+						<button
+							className={`${darkMode ? "bg-white text-black" : "bg-black text-white"} py-2 px-4 rounded text-lg font-semibold hover:bg-gray-300`}
+						>
+							Go Back
 						</button>
 					</Link>
-					<UserButton />
-
-					<div className="absolute right-4 top-10">
-						<Stream_Vid
-							onVideoChange={handleVideoChange}
-							isRecording={isRecording}
-							toggleRecording={toggleRecording}
-							videoSource={videoSource}
-						/>
-					</div>
 				</div>
-
-				<HeightInputModal
-					isOpen={isHeightModalOpen}
-					onClose={() => setIsHeightModalOpen(false)}
-					onSave={handleHeightSave}
-				/>
-
-				<div className="flex flex-grow overflow-auto">
-					<div className="w-1/3 bg-gray-800 p-4 flex flex-col space-y-4 border-r border-gray-700">
-						<div className="box-border h-full p-4 border-2 border-blue-700 rounded-lg shadow-lg">
-							{(aiResult ? aiResult.split("\n") : []).map((item, key) => {
-								return (
-									<span key={key}>
-										{item}
-										<br />
-									</span>
-								);
-							})}
-						</div>
-						<div className="box-border h-full p-4 border-2 border-gray-700 rounded-lg shadow-lg">
-							<Fencer_Stats
-								pose={pose}
-								lastCalled={lastCalled}
-								setLastCalled={setLastCalled}
-								setAiFeedback={setAiResult}
-								height={height}
-							/>
-						</div>
-					</div>
-					<div className="w-2/3 bg-gray-800 flex flex-col">
-						<div className="mt-9 flex flex-col items-center">
-							{showPreInstructionCountdown && (
-								<div className="pre-instruction-countdown text-4xl font-semibold mb-2">
-									{preInstructionCountdown}
-								</div>
-							)}
-							<Timer
-								onTimerStart={handleTimerStart}
-								onReset={handleReset}
-								isStartDisabled={isStartDisabled}
-								resetTimer={resetTimer}
-								data={instructions}
-								instructionIndex={instructionIndex}
-								initialTime={instructions[instructionIndex]?.time}
-							/>
-						</div>
-						<div className="my-5">
-							<Instruction
-								isRunning={isRunning}
-								instructionIndex={instructionIndex}
-								instructions={instructions}
-								performedPose={performedPose}
-								data={data}
-							/>
-						</div>
-						<div className="flex justify-center items-center">
-							<div
-								id="poseResult"
-								className="text-2xl font-semibold text-white flex items-center"
+			) : (
+				<div
+					className={`flex flex-col h-screen font-sans ${darkMode ? "bg-black text-white" : "bg-white text-black"} overflow-hidden`}
+				>
+					<header
+						className={`flex items-center justify-between p-4 ${darkMode ? "bg-gray-900 border-b border-gray-800" : "bg-gray-100 border-b border-gray-300"} z-10`}
+					>
+						<Link href="/api/auth/signout?callbackUrl=/">
+							<button
+								className={`${darkMode ? "bg-white text-black" : "bg-black text-white"} py-2 px-4 rounded text-lg font-semibold hover:bg-gray-300`}
+								aria-label="Go back"
 							>
-								{poseResult === "Success" && (
-									<FaCheckCircle className="text-green-500 mr-2" />
-								)}
-								{poseResult === "Failure" && (
-									<FaTimesCircle className="text-red-500 mr-2" />
-								)}
-								{hasSpoken && (
-									<div className="countdown-circle">{countdown}</div>
-								)}
+								&#8592;
+							</button>
+						</Link>
+						<div className="flex-grow flex justify-center">
+							<Stream_Vid
+								onVideoChange={handleVideoChange}
+								isRecording={isRecording}
+								toggleRecording={toggleRecording}
+								videoSource={videoSource}
+							/>
+						</div>
+						<div className="flex items-center space-x-4">
+							<button
+								className={`${darkMode ? "bg-white text-black" : "bg-black text-white"} p-2 rounded-full text-lg font-semibold hover:bg-gray-300`}
+								onClick={toggleDarkMode}
+								aria-label={
+									darkMode ? "Switch to Light Mode" : "Switch to Dark Mode"
+								}
+							>
+								{darkMode ? <FaSun /> : <FaMoon />}
+							</button>
+							{/* <UserButton /> */}
+						</div>
+					</header>
+
+					<main
+						className="flex flex-grow relative "
+						style={{ perspective: "1000px" }}
+					>
+						<div
+							className="w-1/8 absolute left-0 top-0 bottom-0"
+							style={{
+								transform: "rotateY(15deg)",
+								transformOrigin: "left center",
+								height: "100%",
+								scale: "65%",
+								top: "-60px",
+							}}
+						>
+							<div className="h-[full] p-6 flex flex-col justify-center items-center">
+								<MemoizedFencerStats
+									pose={pose}
+									lastCalled={lastCalled}
+									setLastCalled={setLastCalled}
+									setAiFeedback={setAiResult}
+									height={height}
+									setFeetDistance={setFeetDistance}
+									setShoulderWidth={setShoulderWidth}
+									darkMode={darkMode}
+								/>
 							</div>
 						</div>
-						<div className="flex-grow flex justify-right items-center ">
-							<Fencer_Canvas
-								videoSource={videoSource}
-								isRecording={isRecording}
-								setPose={setPose}
-							/>
+
+						<div
+							className="flex-1 flex flex-col items-center justify-center px-2.8 space-y-4 z-10"
+							style={{ transform: "scale(0.7)", marginTop: "-150px" }}
+						>
+							<div className="w-2/3 mt-10">
+								<MemoizedInstruction
+									isRunning={isRunning}
+									instructionIndex={instructionIndex}
+									instructions={instructions}
+									performedPose={performedPose}
+								/>
+								<div style={{ marginBottom: "20px" }}></div>{" "}
+								{/* Added space between the Timer and Instruction */}
+								<MemoizedTimer
+									onTimerStart={handleTimerStart}
+									onReset={handleReset}
+									isStartDisabled={isStartDisabled}
+									resetTimer={resetTimer}
+									data={instructions}
+									instructionIndex={instructionIndex}
+									initialTime={instructions[instructionIndex]?.time}
+									onRunningChange={setIsTimerRunning}
+									darkMode={darkMode}
+								/>
+							</div>
+
+							{/* Fencer Canvas Component */}
+							<div
+								className="w-2/3 aspect-video bg-black flex items-center justify-center rounded-lg relative border border-gray-600"
+								style={{ marginTop: "50px" }}
+							>
+								<Fencer_Canvas
+									videoSource={videoSource}
+									isRecording={isRecording}
+									setPose={setPose}
+									containerWidth="100%"
+									containerHeight="100%"
+									darkMode={darkMode}
+								/>
+							</div>
+
+							<div className="flex justify-center items-center">
+								<div
+									id="poseResult"
+									className="text-2xl font-semibold text-white flex items-center"
+								>
+									{poseResult === "Success" && (
+										<FaCheckCircle className="text-green-400 mr-2" />
+									)}
+									{poseResult === "Failure" && (
+										<FaTimesCircle className="text-red-400 mr-2" />
+									)}
+									{hasSpoken && (
+										<div className="countdown-circle">{countdown}</div>
+									)}
+								</div>
+							</div>
+							{/* <div className="mt-4">
+                <h3 className="text-xl font-semibold mb-2">Feedback</h3>
+                <ul className="list-disc pl-5">
+                  {feedback.map((item, index) => (
+                    <li key={index} className="text-white">{item}</li>
+                  ))}
+                </ul>
+              </div> */}
 						</div>
-					</div>
+
+						<div
+							className="absolute left-[1070px] top-[10%]"
+							style={{
+								transform: "rotateY(-20deg)",
+								transformOrigin: "left center",
+							}}
+						>
+							<CardContainer className="inter-var w-96 h-[24rem]">
+								<CardBody
+									className={`[transform-style:preserve-3d] [&>*]:[transform-style:preserve-3d] relative group/card ${darkMode ? "bg-gray-900 text-white" : "bg-white text-black"} h-full rounded-xl p-4 space-y-4 border ${darkMode ? "border-gray-700" : "border-gray-300"}`}
+								>
+									<CardItem
+										translateZ="50"
+										className="text-m font-bold mb-4 w-full text-left"
+									>
+										AI Feedback
+									</CardItem>
+									<div
+										className="rounded p-4 border shadow-lg w-[85%] h-[calc(100%-4rem)] overflow-y-auto"
+										style={{ wordWrap: "break-word" }}
+									>
+										{/* uncomment to generate AI feedback */}
+										{/* {(aiResult ? aiResult.split('\n') : []).map((item, key) => (
+                      <CardItem key={key} translateZ="60" className={`rounded p-2 ${darkMode ? 'bg-gray-800 text-white' : 'bg-gray-100 text-black'} border ${darkMode ? 'border-gray-700' : 'border-gray-300'} shadow-lg`}>
+                        <span>{item}</span><br/>
+                      </CardItem>
+                    ))} */}
+									</div>
+								</CardBody>
+							</CardContainer>
+						</div>
+
+						<div
+							className={`absolute top-0 left-0 p-4 ${darkMode ? "bg-gray-800 text-white" : "bg-gray-200 text-black"} rounded`}
+						>
+							{feedback.map((msg, index) => (
+								<div key={index}>{msg}</div>
+							))}
+						</div>
+					</main>
+
+					<HeightInputModal
+						isOpen={isHeightModalOpen}
+						onClose={() => setIsHeightModalOpen(false)}
+						onSave={handleHeightSave}
+					/>
+
+					<style jsx>{`
+            .countdown-circle {
+              width: 40px;
+              height: 40px;
+              border: 2px solid white;
+              border-radius: 50%;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              font-size: 1.5rem;
+            }
+            .pre-instruction-countdown {
+              color: white;
+            }
+          `}</style>
 				</div>
-				<style jsx>{`
-        .countdown-circle {
-          width: 40px;
-          height: 40px;
-          border: 2px solid white;
-          border-radius: 50%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 1.5rem;
-        }
-        .pre-instruction-countdown {
-          color: white;
-        }
-      `}</style>
-			</div>
+			)}
 		</InstructionContext.Provider>
 	);
 }

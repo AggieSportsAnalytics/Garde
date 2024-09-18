@@ -27,7 +27,7 @@ const Contact = () => {
 
 	return (
 		<>
-			<div className="">
+			<div className="" id="contact">
 				<div className="mt-16">
 					<h1 className="text-center text-white text-4xl md:text-6xl font-extrabold font-platypi">
 						Contact Us.

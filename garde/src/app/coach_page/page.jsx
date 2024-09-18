@@ -3,7 +3,7 @@
 import "../../app/globals.css";
 import React, { useEffect, useState /*useRef*/ } from "react";
 import { Pie } from "react-chartjs-2";
-import "chart.js/auto";
+// import "chart.js/auto";
 import {
 	LineChart,
 	Line,
@@ -22,22 +22,23 @@ import { Button, Input } from "antd";
 import { options } from "../api/auth/[...nextauth]/options";
 import { getServerSession } from "next-auth/next";
 import { redirect } from "next/navigation";
+import axois from "axios";
 // import { FormEvent } from "react";
 
 export default async function CoachPage() {
-	const session = await getServerSession(options);
+	const session = await getServerSession(options); // async??
 
 	if (!session) {
 		redirect("/api/auth/signin");
 	} else {
-		coach_signin({ name: session.user.name, email: session.user.email });
+		// coach_signin({ name: session.user.name, email: session.user.email });
 	}
 
 	return (
 		<div>
 			<TopBar />
 			<Feedback />
-			<Analytics />
+			{/* <Analytics /> */}
 			<AddFencerInstruction />
 		</div>
 	);
@@ -336,36 +337,35 @@ function TopBar() {
 	);
 }
 
-async function getInfo(queryType, id) {
-	const workerUrl = "https://garde.gardefencing.workers.dev"; // Replace with your actual Worker URL
+// function getInfo(queryType, id) {
+// 	const workerUrl = "https://garde.gardefencing.workers.dev"; // Replace with your actual Worker URL
 
-	// Define the query data (e.g., query by ID or name)
-	const queryData = {
-		queryType: queryType, // getFencer, getCoach
-		id: id,
-	};
+// 	// Define the query data (e.g., query by ID or name)
+// 	const queryData = {
+// 		queryType: queryType, // getFencer, getCoach
+// 		id: id,
+// 	};
+// axios.post(workerUrl, queryData, {
+// 	headers: { "Content-Type": "application/json" },
+// });
 
-	try {
-		const response = await fetch(workerUrl, {
-			method: "POST", // Use POST for querying the database
-			headers: {
-				"Content-Type": "application/json",
-			},
-			body: JSON.stringify(queryData), // Send query data as JSON
-		});
+// 	fetch(workerUrl, {
+// 		method: "POST", // Use POST for querying the database
+// 		headers: {
+// 			"Content-Type": "application/json",
+// 		},
+// 		body: JSON.stringify(queryData), // Send query data as JSON
+// 	});
 
-		// Parse the JSON response
-		const data = await response.json();
+// 	// Parse the JSON response
+// 	const data = await response.json();
 
-		// Display the results on the page
-		console.log(data);
-	} catch (error) {
-		console.error("Error fetching data:", error);
-	}
-}
+// 	// Display the results on the page
+// 	console.log(data);
+// }
 
 function deleteFencer() {
-	const onSubmit = async (fencerId, coachId) => {
+	const onSubmit = (fencerId, coachId) => {
 		const workerUrl = "https://garde.gardefencing.workers.dev"; // Replace with your actual Worker URL
 
 		const queryData = {
@@ -373,41 +373,33 @@ function deleteFencer() {
 			coachId: coachId,
 		};
 
-		try {
-			const response = await fetch(workerUrl, {
-				method: "DELETE", // Use POST for querying the database
-				headers: {
-					"Content-Type": "application/json",
-				},
-				body: JSON.stringify(queryData), // Send query data as JSON
-			});
-		} catch (error) {
-			console.error("Error putting data:", error);
-		}
+		axois
+			.delete(workerUrl, queryData, {
+				headers: { "Content-Type": "application/json" },
+			})
+			.then((res) => console.log(res))
+			.catch((e) => console.log(e));
 	};
 
 	return <div>Hello</div>;
 }
 
-async function AddFencerInstruction() {
-	const onSubmit = async (name) => {
+function AddFencerInstruction() {
+	const [res, setRes] = useState({});
+
+	const onSubmit = (name) => {
 		const workerUrl = "https://garde.gardefencing.workers.dev"; // Replace with your actual Worker URL
 
 		const queryData = {
 			fencerInstruction: name,
 		};
 
-		try {
-			const response = await fetch(workerUrl, {
-				method: "PUT", // Use POST for querying the database
-				headers: {
-					"Content-Type": "application/json",
-				},
-				body: JSON.stringify(queryData), // Send query data as JSON
-			});
-		} catch (error) {
-			console.error("Error putting data:", error);
-		}
+		axois
+			.put(workerUrl, queryData, {
+				headers: { "Content-Type": "application/json" },
+			})
+			.then((res) => setRes(res))
+			.catch((e) => console.log(e));
 	};
 
 	return (

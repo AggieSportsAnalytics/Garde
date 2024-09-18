@@ -1,3 +1,4 @@
 wrangler.toml
+wrangler-backup.toml
 .mypy_cache
 .wrangler

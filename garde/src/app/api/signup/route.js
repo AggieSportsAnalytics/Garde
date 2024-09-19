@@ -12,7 +12,7 @@ export async function POST(req, res) {
 
 	try {
 		// Parse request body
-		const { email, password, name, queryType } = await req.json();
+		const { email, password, name, queryType, type } = await req.json();
 
 		// Hash the user's password
 		const hashedPassword = await hashPassword(password);
@@ -48,6 +48,7 @@ export async function POST(req, res) {
 					id: data.id,
 					name: data.name,
 					email: data.email,
+					type: type,
 				},
 				JWT_SECRET,
 				{ expiresIn: "1h" }, // Token will expire in 1 hour

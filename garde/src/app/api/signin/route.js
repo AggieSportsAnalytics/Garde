@@ -11,7 +11,7 @@ export async function POST(req, res) {
 	const workerUrl = "https://garde.gardefencing.workers.dev"; // Cloudflare Worker URL
 
 	try {
-		const { email, password, queryType } = await req.json();
+		const { email, password, queryType, type } = await req.json();
 
 		const queryData = {
 			queryType: queryType,
@@ -40,6 +40,7 @@ export async function POST(req, res) {
 					id: data.id,
 					email: data.email,
 					name: data.name,
+					type: type,
 				},
 				JWT_SECRET,
 				{ expiresIn: "1h" },

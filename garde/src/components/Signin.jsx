@@ -43,7 +43,11 @@ export default function Signin({ isSignUpDefault, type }) {
 					const currentTime = Date.now() / 1000;
 					if (decoded.exp > currentTime) {
 						setUserData(decoded);
-						router.push(`/${type}_page`);
+						if (decoded.type === type) {
+							router.push(`/${type}_page`);
+						} else {
+							router.push(`${type}_signin`);
+						}
 					}
 				} catch (error) {
 					console.error("Invalid token", error);
@@ -65,8 +69,8 @@ export default function Signin({ isSignUpDefault, type }) {
 		const endpoint = isSignUp ? "/api/signup" : "/api/signin";
 		const queryType = isSignUp ? `auth-${type}` : `verify-${type}`;
 		const body = isSignUp
-			? { email, password, name, queryType }
-			: { email, password, queryType };
+			? { email, password, name, queryType, type }
+			: { email, password, queryType, type };
 
 		try {
 			const res = await axios.post(endpoint, body, {

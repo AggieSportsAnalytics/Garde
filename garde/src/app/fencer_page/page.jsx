@@ -822,7 +822,7 @@ export default function Fencer_Page2() {
 					<header
 						className={`flex items-center justify-between p-4 ${darkMode ? "bg-gray-900 border-b border-gray-800" : "bg-gray-100 border-b border-gray-300"} z-10`}
 					>
-						<Link href="/api/auth/signout?callbackUrl=/">
+						<Link href="/">
 							<button
 								className={`${darkMode ? "bg-white text-black" : "bg-black text-white"} py-2 px-4 rounded text-lg font-semibold hover:bg-gray-300`}
 								aria-label="Go back"

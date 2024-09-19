@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import { GoogleLogin } from "@react-oauth/google";
 import { useRouter, useSearchParams } from "next/navigation";
 import axios from "axios";
-import { useUser } from "../components/UserContext";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import { jwtDecode } from "jwt-decode"; // To decode the token
 
@@ -15,7 +14,6 @@ export default function Signin({ isSignUpDefault, type }) {
 	const [name, setName] = useState(""); // Only used for sign-up
 	const [error, setError] = useState(null);
 	const router = useRouter();
-	const { setUserData } = useUser();
 	const [showAlert, setShowAlert] = useState(false);
 	const searchParams = useSearchParams();
 
@@ -42,7 +40,6 @@ export default function Signin({ isSignUpDefault, type }) {
 					// Check if the token is still valid (i.e., not expired)
 					const currentTime = Date.now() / 1000;
 					if (decoded.exp > currentTime) {
-						setUserData(decoded);
 						if (decoded.type === type) {
 							router.push(`/${type}_page`);
 						} else {
@@ -80,10 +77,11 @@ export default function Signin({ isSignUpDefault, type }) {
 			});
 
 			if (res.status === 200) {
-				setUserData(res.data); // Update the user data
+				setError("Please wait, logging in...");
 				router.push(`/${type}_page`); // Redirect to the appropriate page
 			}
 		} catch (error) {
+			console.log(error);
 			setError("Something went wrong. Please try again.");
 		}
 	};

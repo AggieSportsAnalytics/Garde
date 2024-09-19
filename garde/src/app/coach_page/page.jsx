@@ -22,17 +22,27 @@ import { Button, Input } from "antd";
 import { getServerSession } from "next-auth/next";
 import { redirect } from "next/navigation";
 import axios from "axios";
-import { useUser } from "../../components/UserContext"; // Import the useUser hook
 // import { FormEvent } from "react";
+import Logout from "../../components/Logout";
+import { jwtDecode } from "jwt-decode"; // To decode the token
 
-export default async function CoachPage() {
+export default function CoachPage() {
 	const [coachFencers, setCoachFencers] = useState({});
 	const [currentFencer, setCurrentFencer] = useState("");
 	const [fencerData, setFencerData] = useState({});
-	const { userData } = useUser();
 
 	useEffect(() => {
-		getInfo("getCoach", userData.id);
+		const token = document.cookie
+			.split("; ")
+			.find((row) => row.startsWith("token="))
+			?.split("=")[1];
+
+		if (token) {
+			const decoded = jwtDecode(token);
+			getInfo("getCoach", decoded.id);
+		} else {
+			console.log("No cookies found");
+		}
 	}, []);
 
 	return (
@@ -288,31 +298,20 @@ function TopBar() {
 
 	return (
 		<div className="text-white">
-			<header className="flex items-center justify-between border-b">
-				<button
-					type="button"
-					onClick={doSomething}
-					className="cursor-pointer duration-200 hover:scale-125 active:scale-100"
-					title="Go Back"
-				>
-					<Link href="/">
-						<svg
-							xmlns="http://www.w3.org/2000/svg"
-							width="50px"
-							height="50px"
-							viewBox="0 0 24 24"
-							className="stroke-blue-300"
-						>
-							<path
-								strokeLinejoin="round"
-								strokeLinecap="round"
-								strokeWidth="1.5"
-								d="M11 6L5 12M5 12L11 18M5 12H19"
-							></path>
-						</svg>
-					</Link>
-				</button>
-				<span className="flex-grow text-center text-3xl">
+			<header className="flex items-center justify-between border-b py-4">
+				{/* Link for navigation - Go back */}
+				<Link href="/" className="cursor-pointer ml-4">
+					<button
+						type="button"
+						className="bg-white text-black py-2 px-4 rounded text-lg font-semibold hover:bg-gray-300 duration-200 hover:scale-125 active:scale-100"
+						title="Go Back"
+					>
+						&#8592;
+					</button>
+				</Link>
+
+				{/* User name and dropdown */}
+				<span className="flex-grow text-center text-3xl relative">
 					{name}
 					<span onClick={handleClick} className="cursor-pointer">
 						{" "}
@@ -332,7 +331,11 @@ function TopBar() {
 						</div>
 					)}
 				</span>
-				{/* <div className="w-50px"></div> */}
+
+				{/* Logout button positioned to the right */}
+				<div className="absolute right-4 top-4">
+					<Logout />
+				</div>
 			</header>
 		</div>
 	);

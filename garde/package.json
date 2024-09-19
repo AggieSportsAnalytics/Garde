@@ -30,6 +30,7 @@
     "chart.js": "^4.4.4",
     "clsx": "^2.1.1",
     "framer-motion": "^11.3.30",
+    "js-cookie": "^3.0.5",
     "jsonwebtoken": "^9.0.2",
     "jwt-decode": "^4.0.0",
     "lucide-react": "^0.395.0",

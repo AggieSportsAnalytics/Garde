@@ -75,8 +75,7 @@ CREATE TABLE IF NOT EXISTS coach_fencers (
     fencer_name TEXT,
     PRIMARY KEY (coach_id, fencer_id),
     FOREIGN KEY (coach_id) REFERENCES coaches(unique_id) ON DELETE CASCADE,
-    FOREIGN KEY (fencer_id) REFERENCES fencers(unique_id) ON DELETE CASCADE,
-    FOREIGN KEY (fencer_name) REFERENCES fencers(name) ON DELETE CASCADE
+    FOREIGN KEY (fencer_id) REFERENCES fencers(unique_id) ON DELETE CASCADE
 );
 """
 

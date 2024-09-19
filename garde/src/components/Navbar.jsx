@@ -64,12 +64,12 @@ const navbar = () => {
 								Contact
 							</li>
 						</Link>
-						<Link href="/api/auth/signin?callbackUrl=/fencer_page">
+						<Link href="/fencer_signin">
 							<button class="login ml-10 hover:text-[#5bb1d5] transition-colors duration-500 text-md">
 								Fencer Login/signup
 							</button>
 						</Link>
-						<Link href="/api/auth/signin?callbackUrl=/coach_page">
+						<Link href="/coach_signin">
 							<button class="button ml-3">
 								<span class="button-content font-bold">Coach Login/Signup</span>
 							</button>

@@ -19,20 +19,21 @@ import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Link from "next/link";
 import { Button, Input } from "antd";
-import { options } from "../api/auth/[...nextauth]/options";
 import { getServerSession } from "next-auth/next";
 import { redirect } from "next/navigation";
-import axois from "axios";
+import axios from "axios";
+import { useUser } from "../../components/UserContext"; // Import the useUser hook
 // import { FormEvent } from "react";
 
 export default async function CoachPage() {
-	const session = await getServerSession(options); // async??
+	const [coachFencers, setCoachFencers] = useState({});
+	const [currentFencer, setCurrentFencer] = useState("");
+	const [fencerData, setFencerData] = useState({});
+	const { userData } = useUser();
 
-	if (!session) {
-		redirect("/api/auth/signin");
-	} else {
-		// coach_signin({ name: session.user.name, email: session.user.email });
-	}
+	useEffect(() => {
+		getInfo("getCoach", userData.id);
+	}, []);
 
 	return (
 		<div>
@@ -337,36 +338,25 @@ function TopBar() {
 	);
 }
 
-// function getInfo(queryType, id) {
-// 	const workerUrl = "https://garde.gardefencing.workers.dev"; // Replace with your actual Worker URL
+function getInfo(queryType, id) {
+	const workerUrl = "https://garde.gardefencing.workers.dev"; // Replace with your actual Worker URL
+	// Define the query data (e.g., query by ID or name)
+	const queryData = {
+		queryType: queryType, // getFencer, getCoach
+		id: id,
+	};
 
-// 	// Define the query data (e.g., query by ID or name)
-// 	const queryData = {
-// 		queryType: queryType, // getFencer, getCoach
-// 		id: id,
-// 	};
-// axios.post(workerUrl, queryData, {
-// 	headers: { "Content-Type": "application/json" },
-// });
-
-// 	fetch(workerUrl, {
-// 		method: "POST", // Use POST for querying the database
-// 		headers: {
-// 			"Content-Type": "application/json",
-// 		},
-// 		body: JSON.stringify(queryData), // Send query data as JSON
-// 	});
-
-// 	// Parse the JSON response
-// 	const data = await response.json();
-
-// 	// Display the results on the page
-// 	console.log(data);
-// }
+	const response = axios
+		.post(workerUrl, queryData, {
+			headers: { "Content-Type": "application/json" },
+		})
+		.then((data) => console.log(data))
+		.catch((error) => console.log(error));
+}
 
 function deleteFencer() {
 	const onSubmit = (fencerId, coachId) => {
-		const workerUrl = "https://garde.gardefencing.workers.dev"; // Replace with your actual Worker URL
+		const workerUrl = "https://garde.gardefencing.workers.dev";
 
 		const queryData = {
 			fencerId: fencerId,

@@ -5,7 +5,6 @@ import jwt from "jsonwebtoken";
 
 // Set JWT secret in .env.local
 const JWT_SECRET = process.env.JWT_SECRET;
-console.log(JWT_SECRET);
 
 export async function POST(req, res) {
 	const workerUrl = "https://garde.gardefencing.workers.dev"; // Cloudflare Worker URL
@@ -24,7 +23,7 @@ export async function POST(req, res) {
 		});
 
 		if (response.status !== 200) {
-			throw new Error("Failed to authenticate");
+			throw new Error(response.data.error);
 		}
 
 		const data = response.data;
@@ -63,9 +62,8 @@ export async function POST(req, res) {
 
 		return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
 	} catch (error) {
-		console.error("Error authenticating: ", error);
 		return NextResponse.json(
-			{ error: "Authentication failed" },
+			{ error: error.response.data.error },
 			{ status: 500 },
 		);
 	}

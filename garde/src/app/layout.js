@@ -7,6 +7,7 @@ import "./globals.css";
 // import navbar from "../components/Navbar";
 // import CoachPage from "./coach_page/page";
 const inter = Inter({ subsets: ["latin"] });
+import { GoogleOAuthProvider } from "@react-oauth/google";
 
 // export const metadata = {
 // 	title: "Garde",
@@ -16,7 +17,9 @@ const inter = Inter({ subsets: ["latin"] });
 export default function RootLayout({ children }) {
 	return (
 		<html lang="en">
-			<body className={inter.className}>{children}</body>
+			<GoogleOAuthProvider clientId="863304397120-tf8iocednab0668so0qbrg837s6qvbuo.apps.googleusercontent.com">
+				<body className={inter.className}>{children}</body>
+			</GoogleOAuthProvider>
 		</html>
 	);
 }

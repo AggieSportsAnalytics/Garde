@@ -155,6 +155,46 @@ async function handlePutRequest(request, env) {
 async function handlePostRequest(request, env) {
 	const { DB } = env;
 
+	const authGoogle = async (id, email, name, type) => {
+		const googlePassword = "google";
+
+		// Check if the user already exists in the database
+		const fetched = await DB.prepare(`SELECT * FROM ${type} WHERE email = ?`)
+			.bind(email)
+			.all();
+
+		if (fetched.results.length > 0) {
+			const user = fetched.results[0];
+
+			// If the user exists and the password is "google", return id and name
+			if (user.password === googlePassword) {
+				return {
+					status: true,
+					id: user.unique_id,
+				};
+			}
+
+			// If the user exists and the password is not "google", return a failure message
+			return {
+				status: false,
+				message: "Non-google signin found, please use email/password signin",
+			};
+		}
+
+		// User does not exist, create a new user
+		const result = await env.DB.prepare(`
+      INSERT INTO ${type} (unique_id, name, email, password)
+      VALUES (?, ?, ?, ?);
+  `)
+			.bind(id, name, email, googlePassword)
+			.run();
+
+		// If the user was created successfully, return their id and name
+		return result.success
+			? { status: true, id: id }
+			: { status: false, message: "Failed to create user" };
+	};
+
 	const auth = async (type, name, email, password, id) => {
 		// Check if the user already exists in the database
 		const fetched = await DB.prepare(`SELECT * FROM ${type} WHERE email = ?`)
@@ -163,7 +203,7 @@ async function handlePostRequest(request, env) {
 
 		if (fetched.results.length > 0) {
 			// User already exists, return an error
-			return false;
+			return { status: false, message: "User already exists" };
 		}
 
 		// User does not exist, create a new user
@@ -175,7 +215,9 @@ async function handlePostRequest(request, env) {
 			.run();
 
 		// Return the result of the insertion, or an error if something went wrong
-		return result.success ? true : false;
+		return result.success
+			? { status: true, message: "success" }
+			: { status: false, message: "Failed to create user" };
 	};
 
 	const getFencer = async (id) => {
@@ -206,7 +248,7 @@ async function handlePostRequest(request, env) {
 
 		if (fetched.results.length === 0) {
 			// User does not exist, return an error
-			return null;
+			return { message: "User does not exist" };
 		}
 
 		const user = fetched.results[0];
@@ -246,16 +288,71 @@ async function handlePostRequest(request, env) {
 				);
 			}
 
-			if (!status) {
-				return new Response(JSON.stringify({ error: "failed to signup" }), {
+			if (status && !status.status) {
+				return new Response(JSON.stringify({ error: status.message }), {
+					status: 500,
 					headers: {
 						"Content-Type": "application/json",
 						"Access-Control-Allow-Origin": "*", // Allow requests from any origin
 					},
 				});
+			} else if (!status) {
+				return new Response(
+					JSON.stringify({ error: "Failed to create user" }),
+					{
+						status: 500,
+						headers: {
+							"Content-Type": "application/json",
+							"Access-Control-Allow-Origin": "*", // Allow requests from any origin
+						},
+					},
+				);
 			}
 
-			return new Response(JSON.stringify({ id: body.id, name: body.name }), {
+			return new Response(JSON.stringify({ id: body.id }), {
+				headers: {
+					"Content-Type": "application/json",
+					"Access-Control-Allow-Origin": "*", // Allow requests from any origin
+				},
+			});
+		}
+
+		if (
+			(body.queryType === "google-fencer-auth" ||
+				body.queryType === "google-coach-auth") &&
+			body.id &&
+			body.email &&
+			body.type &&
+			body.name
+		) {
+			let status;
+			if (body.queryType === "google-fencer-auth") {
+				status = await authGoogle(body.id, body.email, body.name, "fencers");
+			}
+			if (body.queryType === "google-coach-auth") {
+				status = await authGoogle(body.id, body.email, body.name, "coaches");
+			}
+			if (status && !status.status) {
+				return new Response(JSON.stringify({ error: status.message }), {
+					status: 500,
+					headers: {
+						"Content-Type": "application/json",
+						"Access-Control-Allow-Origin": "*", // Allow requests from any origin
+					},
+				});
+			} else if (!status) {
+				return new Response(
+					JSON.stringify({ error: "Failed to create user" }),
+					{
+						status: 500,
+						headers: {
+							"Content-Type": "application/json",
+							"Access-Control-Allow-Origin": "*", // Allow requests from any origin
+						},
+					},
+				);
+			}
+			return new Response(JSON.stringify({ id: body.id }), {
 				headers: {
 					"Content-Type": "application/json",
 					"Access-Control-Allow-Origin": "*", // Allow requests from any origin
@@ -275,8 +372,17 @@ async function handlePostRequest(request, env) {
 				user = await verify("coaches", body.email);
 			}
 
-			if (!user) {
-				return new Response(JSON.stringify({ error: "failed to login" }), {
+			if (user && user.message) {
+				return new Response(JSON.stringify({ error: user.message }), {
+					status: 404,
+					headers: {
+						"Content-Type": "application/json",
+						"Access-Control-Allow-Origin": "*", // Allow requests from any origin
+					},
+				});
+			} else if (!user) {
+				return new Response(JSON.stringify({ error: "Failed to login" }), {
+					status: 500,
 					headers: {
 						"Content-Type": "application/json",
 						"Access-Control-Allow-Origin": "*", // Allow requests from any origin

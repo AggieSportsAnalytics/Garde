@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import { GoogleLogin } from "@react-oauth/google";
 import { useRouter, useSearchParams } from "next/navigation";
 import axios from "axios";
-import { GoogleOAuthProvider } from "@react-oauth/google";
 import { jwtDecode } from "jwt-decode"; // To decode the token
 
 export default function Signin({ isSignUpDefault, type }) {
@@ -16,6 +15,7 @@ export default function Signin({ isSignUpDefault, type }) {
 	const router = useRouter();
 	const [showAlert, setShowAlert] = useState(false);
 	const searchParams = useSearchParams();
+	const [success, setSuccess] = useState("");
 
 	useEffect(() => {
 		const restricted = searchParams.get("restricted");
@@ -46,9 +46,7 @@ export default function Signin({ isSignUpDefault, type }) {
 							router.push(`${type}_signin`);
 						}
 					}
-				} catch (error) {
-					console.error("Invalid token", error);
-				}
+				} catch (error) {}
 			}
 		};
 
@@ -77,137 +75,129 @@ export default function Signin({ isSignUpDefault, type }) {
 			});
 
 			if (res.status === 200) {
-				setError("Please wait, logging in...");
+				setSuccess("Please wait, logging in...");
 				router.push(`/${type}_page`); // Redirect to the appropriate page
 			}
 		} catch (error) {
-			console.log(error);
-			setError("Something went wrong. Please try again.");
+			setError(error.response.data.error);
 		}
 	};
 
 	// Handle Google Auth Success
 	const handleGoogleSuccess = async (response) => {
-		try {
-			const res = await fetch("/api/google-auth", {
-				method: "POST",
-				headers: {
-					"Content-Type": "application/json",
-				},
-				body: JSON.stringify({ token: response.credential }), // Send Google token to backend
-			});
+		setError("");
+		setSuccess("Please wait, logging in...");
 
-			if (res.ok) {
-				const data = await res.json();
-				router.push(`/${type}_page`);
-			} else {
-				const errorData = await res.json();
-				setError(errorData.error);
-			}
-		} catch (error) {
-			setError("Google Authentication failed. Please try again.");
-		}
+		const queryData = {
+			userData: response.credential,
+			type: type,
+		};
+		const res = await axios.post("/api/google-auth", queryData, {
+			headers: { "Content-Type": "application/json" },
+		});
+
+		router.push(`/${type}_page`);
+	};
+
+	const handleGoogleError = () => {
+		setError("Google Auth failed");
 	};
 
 	return (
-		<GoogleOAuthProvider>
-			<div className="min-h-screen flex items-center justify-center bg-gray-900 text-white">
-				{showAlert && (
-					<div className="fixed inset-0 bg-opacity-50 flex justify-center items-center">
-						<div className="p-8 bg-gray-900 rounded-lg shadow-lg max-w-md w-full">
-							<h2 className="text-xl font-semibold mb-4">Restricted Access</h2>
-							<p className="mb-6">
-								You must sign in to access the requested page.
-							</p>
-							<button
-								onClick={closeModal}
-								className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg"
-							>
-								Dismiss
-							</button>
-						</div>
-					</div>
-				)}
-				<div className="bg-gray-800 p-8 rounded-lg shadow-lg max-w-md w-full">
-					<h1 className="text-center text-2xl font-semibold mb-6">
-						{isSignUp ? "Sign Up" : "Sign In"}
-					</h1>
-
-					<form onSubmit={handleSubmit} className="space-y-6">
-						{isSignUp && (
-							<div>
-								<label htmlFor="name" className="block text-sm font-medium">
-									Name
-								</label>
-								<input
-									type="text"
-									id="name"
-									className="mt-1 block w-full p-2.5 bg-gray-700 border border-gray-600 rounded-lg focus:ring-blue-500 focus:border-blue-500"
-									value={name}
-									onChange={(e) => setName(e.target.value)}
-									required={isSignUp}
-								/>
-							</div>
-						)}
-
-						<div>
-							<label htmlFor="email" className="block text-sm font-medium">
-								Email
-							</label>
-							<input
-								type="email"
-								id="email"
-								className="mt-1 block w-full p-2.5 bg-gray-700 border border-gray-600 rounded-lg focus:ring-blue-500 focus:border-blue-500"
-								value={email}
-								onChange={(e) => setEmail(e.target.value)}
-								required
-							/>
-						</div>
-
-						<div>
-							<label htmlFor="password" className="block text-sm font-medium">
-								Password
-							</label>
-							<input
-								type="password"
-								id="password"
-								className="mt-1 block w-full p-2.5 bg-gray-700 border border-gray-600 rounded-lg focus:ring-blue-500 focus:border-blue-500"
-								value={password}
-								onChange={(e) => setPassword(e.target.value)}
-								required
-							/>
-						</div>
-
-						{error && <p className="text-red-500">{error}</p>}
-
+		<div className="min-h-screen flex items-center justify-center bg-gray-900 text-white">
+			{showAlert && (
+				<div className="fixed inset-0 bg-opacity-50 flex justify-center items-center">
+					<div className="p-8 bg-gray-900 rounded-lg shadow-lg max-w-md w-full">
+						<h2 className="text-xl font-semibold mb-4">Restricted Access</h2>
+						<p className="mb-6">
+							You must sign in to access the requested page.
+						</p>
 						<button
-							type="submit"
-							className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg"
+							onClick={closeModal}
+							className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg"
 						>
-							{isSignUp ? "Sign Up" : "Sign In"}
+							Dismiss
 						</button>
-					</form>
+					</div>
+				</div>
+			)}
+			<div className="bg-gray-800 p-8 rounded-lg shadow-lg max-w-md w-full">
+				<h1 className="text-center text-2xl font-semibold mb-6">
+					{isSignUp ? "Sign Up" : "Sign In"}
+				</h1>
 
-					{/* Google Auth Button */}
-					<div className="mt-4">
-						<GoogleLogin
-							onSuccess={handleGoogleSuccess}
-							onError={() =>
-								setError("Google Authentication failed. Please try again.")
-							}
+				<form onSubmit={handleSubmit} className="space-y-6">
+					{isSignUp && (
+						<div>
+							<label htmlFor="name" className="block text-sm font-medium">
+								Name
+							</label>
+							<input
+								type="text"
+								id="name"
+								className="mt-1 block w-full p-2.5 bg-gray-700 border border-gray-600 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+								value={name}
+								onChange={(e) => setName(e.target.value)}
+								required={isSignUp}
+							/>
+						</div>
+					)}
+
+					<div>
+						<label htmlFor="email" className="block text-sm font-medium">
+							Email
+						</label>
+						<input
+							type="email"
+							id="email"
+							className="mt-1 block w-full p-2.5 bg-gray-700 border border-gray-600 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+							value={email}
+							onChange={(e) => setEmail(e.target.value)}
+							required
 						/>
 					</div>
 
+					<div>
+						<label htmlFor="password" className="block text-sm font-medium">
+							Password
+						</label>
+						<input
+							type="password"
+							id="password"
+							className="mt-1 block w-full p-2.5 bg-gray-700 border border-gray-600 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+							value={password}
+							onChange={(e) => setPassword(e.target.value)}
+							required
+						/>
+					</div>
+
+					{error && <p className="text-red-500">{error}</p>}
+					{success && <p className="text-green-500">{success}</p>}
+
 					<button
-						onClick={() => setIsSignUp(!isSignUp)}
-						className="w-full text-blue-400 hover:text-blue-500 text-sm mt-4"
+						type="submit"
+						className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg"
 					>
-						{isSignUp
-							? "Already have an account? Sign In"
-							: "New here? Sign Up"}
+						{isSignUp ? "Sign Up" : "Sign In"}
 					</button>
+				</form>
+
+				{/* Google Auth Button */}
+				<div className="relative transform translate-x-1/4 mt-4">
+					<GoogleLogin
+						onSuccess={handleGoogleSuccess}
+						onError={handleGoogleError}
+						// redirectUri={`http://localhost:3000/api/google-auth?type=${type}`}
+					/>
 				</div>
+
+				<button
+					onClick={() => setIsSignUp(!isSignUp)}
+					className="w-full text-blue-400 hover:text-blue-500 text-sm mt-4"
+				>
+					{isSignUp ? "Already have an account? Sign In" : "New here? Sign Up"}
+				</button>
 			</div>
-		</GoogleOAuthProvider>
+		</div>
 	);
 }

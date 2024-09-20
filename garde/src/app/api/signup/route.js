@@ -35,7 +35,7 @@ export async function POST(req, res) {
 		});
 
 		if (response.status !== 200) {
-			throw new Error("Failed to register user");
+			throw new Error(response.data.error);
 		}
 
 		const data = response.data;
@@ -76,9 +76,8 @@ export async function POST(req, res) {
 		// If something goes wrong, return a failure response
 		return NextResponse.json({ error: "Signup failed" }, { status: 400 });
 	} catch (error) {
-		console.error("Error registering user: ", error);
 		return NextResponse.json(
-			{ error: "Internal server error" },
+			{ error: error.response.data.error },
 			{ status: 500 },
 		);
 	}

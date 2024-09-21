@@ -25,11 +25,13 @@ import axios from "axios";
 // import { FormEvent } from "react";
 import Logout from "../../components/Logout";
 import { jwtDecode } from "jwt-decode"; // To decode the token
+import DeleteAccountButton from "../../components/DeleteAccount";
 
 export default function CoachPage() {
 	const [coachFencers, setCoachFencers] = useState({});
 	const [currentFencer, setCurrentFencer] = useState("");
 	const [fencerData, setFencerData] = useState({});
+	const [id, setId] = useState("");
 
 	useEffect(() => {
 		const token = document.cookie
@@ -39,6 +41,7 @@ export default function CoachPage() {
 
 		if (token) {
 			const decoded = jwtDecode(token);
+			setId(decoded.id);
 			getInfo("getCoach", decoded.id);
 		} else {
 			console.log("No cookies found");
@@ -47,10 +50,29 @@ export default function CoachPage() {
 
 	return (
 		<div>
+			<DeleteAccountButton type="coach" otherId="" />
+			<UuidReveal uuid={id} />
 			<TopBar />
 			<Feedback />
 			{/* <Analytics /> */}
 			<AddFencerInstruction />
+		</div>
+	);
+}
+
+function UuidReveal({ uuid }) {
+	const [isRevealed, setIsRevealed] = useState(false);
+
+	const handleToggle = () => {
+		setIsRevealed(!isRevealed);
+	};
+
+	return (
+		<div className="text-white">
+			<p>{isRevealed ? uuid : "••••••••••••••••••••••••••••••••••"}</p>
+			<button onClick={handleToggle}>
+				{isRevealed ? "Hide ID" : "Reveal ID"}
+			</button>
 		</div>
 	);
 }
@@ -353,7 +375,7 @@ function getInfo(queryType, id) {
 		.post(workerUrl, queryData, {
 			headers: { "Content-Type": "application/json" },
 		})
-		.then((data) => console.log(data))
+		.then((data) => console.log(""))
 		.catch((error) => console.log(error));
 }
 

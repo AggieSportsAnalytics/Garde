@@ -27,6 +27,8 @@ import {
 	CardContainer,
 	CardItem,
 } from "../../components/ui/3d-card.tsx";
+import DeleteAccountButton from "../../components/DeleteAccount";
+import AddFencer from "../../components/AddFencer";
 
 const MemoizedFencerStats = memo(Fencer_Stats);
 const MemoizedInstruction = memo(Instruction);
@@ -830,6 +832,9 @@ export default function Fencer_Page2() {
 								&#8592;
 							</button>
 						</Link>
+						<DeleteAccountButton type="fencer" otherId="" />
+						<AddFencer />
+
 						<div className="flex-grow flex justify-center">
 							<Stream_Vid
 								onVideoChange={handleVideoChange}

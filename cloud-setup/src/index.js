@@ -23,10 +23,10 @@ export default {
 			return await handlePutRequest(request, env);
 		}
 
-		if (request.method === "DELETE") {
-			// coach page: SEND (fencer id, coach id) ## coach_fencers table
-			return await handleDeleteRequest(request, env);
-		}
+		// if (request.method === "DELETE") {
+		// 	// coach page: SEND (fencer id, coach id) ## coach_fencers table
+		// 	return await handleDeleteRequest(request, env);
+		// }
 
 		// Return an error for unsupported methods
 		return new Response("Method not allowed", { status: 405 });
@@ -41,68 +41,23 @@ function handleGetRequest() {
 function handleOptionsRequest() {
 	return new Response(null, {
 		headers: {
-			"Access-Control-Allow-Origin": "*", // Allow requests from any origin
-			"Access-Control-Allow-Methods": "GET, POST, OPTIONS", // Allow GET, POST, and OPTIONS methods
+			"Access-Control-Allow-Origin": "*",
+			"Access-Control-Allow-Methods": "GET, POST, OPTIONS, PUT", // Allow GET, POST, and OPTIONS methods
 			"Access-Control-Allow-Headers": "Content-Type", // Allow headers like Content-Type
 		},
 	});
 }
 
-async function handleDeleteRequest(request, env) {
-	const { DB } = env;
-
-	const deleteCoachFencers = async (fencerId, coachId) => {
-		// SQL query to delete the row where fencer_id and coach_id match
-		const query = `
-            DELETE FROM coach_fencers
-            WHERE fencer_id = ? AND coach_id = ?;
-        `;
-
-		// Execute the query with the bound fencer_id and coach_id
-		const result = await DB.prepare(query).bind(fencerId, coachId).run();
-		return result;
-	};
-
-	const deleteFencers = async (fencerId) => {
-		const query = `
-            DELETE FROM fencers
-            WHERE fencer_id = ?;
-        `;
-
-		// Execute the query with the bound fencer_id and coach_id
-		const result = await DB.prepare(query).bind(fencerId).run();
-		return result;
-	};
-
-	const deleteCoaches = async (coachId) => {
-		const query = `
-            DELETE FROM coaches
-            WHERE coach_id = ?;
-        `;
-
-		// Execute the query with the bound fencer_id and coach_id
-		const result = await DB.prepare(query).bind(coachId).run();
-		return result;
-	};
-
-	try {
-		const body = await request.json();
-
-		if (body.queryType === "fencer_coach" && body.fencerId && body.coachId) {
-			return deleteCoachFencers(body.fencerId, body.coachId);
-		}
-
-		if (body.queryType === "fencer") {
-			return deleteFencers(body.fencerId);
-		}
-
-		if (body.queryType === "coach") {
-			return deleteCoaches(body.coachId);
-		}
-	} catch (error) {
-		console.log(`Error: ${error.message}`);
-		return { error: error.message };
-	}
+function addCorsHeaders(response) {
+	return new Response(response.body, {
+		...response,
+		headers: {
+			...response.headers,
+			"Access-Control-Allow-Origin": "*", // Or specify a specific origin
+			"Access-Control-Allow-Methods": "GET, POST, OPTIONS, PUT",
+			"Access-Control-Allow-Headers": "Content-Type",
+		},
+	});
 }
 
 async function handlePutRequest(request, env) {
@@ -114,6 +69,15 @@ async function handlePutRequest(request, env) {
                 VALUES (?);
             `;
 		const result = await DB.prepare(query).bind(fencerInstruction).run();
+		return result;
+	};
+
+	const putCoachFencer = async (fencerId, coachId, fencerName) => {
+		const query =
+			"INSERT OR IGNORE INTO coach_fencers (coach_id, fencer_id, fencer_name) VALUES (?, ?, ?);";
+		const result = await DB.prepare(query)
+			.bind(coachId, fencerId, fencerName)
+			.run();
 		return result;
 	};
 
@@ -142,13 +106,42 @@ async function handlePutRequest(request, env) {
 		const body = await request.json();
 
 		if (body.queryType === "instruction" && body.fencerInstruction) {
-			return putInstruction(body.fencerInstruction);
+			await putInstruction(body.fencerInstruction);
+		} else if (
+			body.queryType === "angleData" &&
+			body.fencerId &&
+			body.angleData
+		) {
+			await putAngleData(body.fencerId, body.angleData);
+		} else if (
+			body.queryType === "fencer-coach" &&
+			body.fencerId &&
+			body.coachId &&
+			body.fencerName
+		) {
+			console.log(body);
+			await putCoachFencer(body.fencerId, body.coachId, body.fencerName);
 		}
-		if (body.queryType === "angleData" && body.fencerId && body.angleData) {
-			return putAngleData(body.fencerId, body.angleData);
-		}
+		const res = new Response(JSON.stringify({ message: "Success" }), {
+			status: 200,
+			headers: {
+				"Content-Type": "application/json",
+			},
+		});
+		return addCorsHeaders(res);
 	} catch (error) {
 		console.log(`Error: ${error}`);
+		return new Response(
+			JSON.stringify({
+				error: error.message,
+			}),
+			{
+				status: 500,
+				headers: {
+					"Content-Type": "application/json",
+				},
+			},
+		);
 	}
 }
 
@@ -256,6 +249,24 @@ async function handlePostRequest(request, env) {
 		return user;
 	};
 
+	const deleteCoachFencers = async (fencerId, coachId) => {
+		const query = `
+      DELETE FROM coach_fencers
+      WHERE fencer_id = ? AND coach_id = ?;
+    `;
+		const result = await DB.prepare(query).bind(fencerId, coachId).run();
+		return result;
+	};
+
+	const deleteUser = async (fencerId, type) => {
+		const query = `
+      DELETE FROM ${type}
+      WHERE unique_id = ?;
+    `;
+		const result = await DB.prepare(query).bind(fencerId).run();
+		return result;
+	};
+
 	try {
 		const body = await request.json();
 
@@ -296,7 +307,8 @@ async function handlePostRequest(request, env) {
 						"Access-Control-Allow-Origin": "*", // Allow requests from any origin
 					},
 				});
-			} else if (!status) {
+			}
+			if (!status) {
 				return new Response(
 					JSON.stringify({ error: "Failed to create user" }),
 					{
@@ -340,7 +352,8 @@ async function handlePostRequest(request, env) {
 						"Access-Control-Allow-Origin": "*", // Allow requests from any origin
 					},
 				});
-			} else if (!status) {
+			}
+			if (!status) {
 				return new Response(
 					JSON.stringify({ error: "Failed to create user" }),
 					{
@@ -352,7 +365,7 @@ async function handlePostRequest(request, env) {
 					},
 				);
 			}
-			return new Response(JSON.stringify({ id: body.id }), {
+			return new Response(JSON.stringify({ id: status.id }), {
 				headers: {
 					"Content-Type": "application/json",
 					"Access-Control-Allow-Origin": "*", // Allow requests from any origin
@@ -372,7 +385,7 @@ async function handlePostRequest(request, env) {
 				user = await verify("coaches", body.email);
 			}
 
-			if (user && user.message) {
+			if (user?.message) {
 				return new Response(JSON.stringify({ error: user.message }), {
 					status: 404,
 					headers: {
@@ -380,7 +393,8 @@ async function handlePostRequest(request, env) {
 						"Access-Control-Allow-Origin": "*", // Allow requests from any origin
 					},
 				});
-			} else if (!user) {
+			}
+			if (!user) {
 				return new Response(JSON.stringify({ error: "Failed to login" }), {
 					status: 500,
 					headers: {
@@ -405,6 +419,44 @@ async function handlePostRequest(request, env) {
 			);
 		}
 
+		if (
+			body.queryType === "delete-fencer" ||
+			(body.queryType === "delete-coach" && body.id && body.type)
+		) {
+			if (body.type === "fencer") {
+				result = await deleteUser(body.id, "fencers");
+			} else if (body.type === "coach") {
+				result = await deleteUser(body.id, "coaches");
+			}
+
+			return new Response(
+				JSON.stringify({ message: `${body.type} deleted`, result }),
+				{
+					headers: {
+						"Content-Type": "application/json",
+						"Access-Control-Allow-Origin": "*",
+					},
+				},
+			);
+		}
+
+		if (
+			body.queryType === "delete-coach-fencer" &&
+			body.fencerId &&
+			body.coachId
+		) {
+			result = await deleteCoachFencers(body.fencerId, body.coachId);
+			return new Response(
+				JSON.stringify({ message: "Coach-Fencer relation deleted", result }),
+				{
+					headers: {
+						"Content-Type": "application/json",
+						"Access-Control-Allow-Origin": "*",
+					},
+				},
+			);
+		}
+
 		if (body.queryType === "getFencer" && body.id) {
 			result = await getFencer(body.id);
 		} else if (body.queryType === "getCoach" && body.id) {
@@ -419,6 +471,8 @@ async function handlePostRequest(request, env) {
 				},
 			);
 		}
+
+		// Handle DELETE-like operations using POST
 
 		// Return the query result as JSON with CORS headers
 		return new Response(JSON.stringify(result.results), {

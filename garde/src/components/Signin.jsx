@@ -16,6 +16,7 @@ export default function Signin({ isSignUpDefault, type }) {
 	const [showAlert, setShowAlert] = useState(false);
 	const searchParams = useSearchParams();
 	const [success, setSuccess] = useState("");
+	const [accessKey, setAccessKey] = useState("");
 
 	useEffect(() => {
 		const restricted = searchParams.get("restricted");
@@ -170,6 +171,21 @@ export default function Signin({ isSignUpDefault, type }) {
 							required
 						/>
 					</div>
+					{/* {isSignUp && type !== "fencer" && ( */}
+					{/* 	<div> */}
+					{/* 		<label htmlFor="access-key" className="block text-sm font-medium"> */}
+					{/* 			Access Key */}
+					{/* 		</label> */}
+					{/* 		<input */}
+					{/* 			type="text" */}
+					{/* 			id="access-key" */}
+					{/* 			className="mt-1 block w-full p-2.5 bg-gray-700 border border-gray-600 rounded-lg focus:ring-blue-500 focus:border-blue-500" */}
+					{/* 			value={accessKey} */}
+					{/* 			onChange={(e) => setAccessKey(e.target.value)} */}
+					{/* 			required */}
+					{/* 		/> */}
+					{/* 	</div> */}
+					{/* )} */}
 
 					{error && <p className="text-red-500">{error}</p>}
 					{success && <p className="text-green-500">{success}</p>}

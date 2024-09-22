@@ -34,6 +34,7 @@ CREATE TABLE IF NOT EXISTS fencers (
     name TEXT NOT NULL,                   
     email TEXT NOT NULL UNIQUE,
     password TEXT NOT NULL,
+    is_verified BOOLEAN DEFAULT false,
     average_time_advance REAL DEFAULT 0,   
     average_time_retreat REAL DEFAULT 0,   
     average_time_lunge REAL DEFAULT 0,     
@@ -64,7 +65,8 @@ CREATE TABLE IF NOT EXISTS coaches (
     unique_id TEXT PRIMARY KEY, 
     name TEXT NOT NULL,
     email TEXT NOT NULL UNIQUE,
-    password TEXT NOT NULL
+    password TEXT NOT NULL,
+    is_verified BOOLEAN DEFAULT false
 );
 """
 

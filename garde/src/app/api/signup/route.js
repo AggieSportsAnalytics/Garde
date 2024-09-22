@@ -3,11 +3,12 @@ const axios = require("axios");
 const { v4: uuidv4 } = require("uuid");
 import { NextResponse } from "next/server";
 import jwt from "jsonwebtoken";
+import nodemailer from "nodemailer";
 
 // Set the JWT secret (ensure you have this in your .env.local file)
-const JWT_SECRET = process.env.JWT_SECRET || "your_secret_key";
+const JWT_SECRET = process.env.JWT_SECRET;
 
-export async function POST(req, res) {
+export async function POST(req) {
 	const workerUrl = "https://garde.gardefencing.workers.dev"; // Cloudflare Worker URL
 
 	try {
@@ -29,7 +30,7 @@ export async function POST(req, res) {
 			id: id,
 		};
 
-		// Send user data to the worker (simulating database registration)
+		// Send user data to the worker
 		const response = await axios.post(workerUrl, queryData, {
 			headers: { "Content-Type": "application/json" },
 		});
@@ -38,48 +39,44 @@ export async function POST(req, res) {
 			throw new Error(response.data.error);
 		}
 
+		// Send verification email
+		const emailResult = sendVerificationEmail(email, type);
+
+		if (!emailResult.success) {
+			return NextResponse.json({ error: emailResult.error }, { status: 500 });
+		}
+
 		const data = response.data;
 
-		// Check if valid data is returned from the worker
-		if (data?.id && data.name) {
-			// Generate a JWT for the user
+		// If successful, generate JWT token and set as cookie
+		if (data?.success) {
 			const token = jwt.sign(
 				{
-					id: data.id,
-					name: data.name,
-					email: data.email,
+					id: id,
+					name: name,
+					email: email,
 					type: type,
 				},
 				JWT_SECRET,
-				{ expiresIn: "1h" }, // Token will expire in 1 hour
+				{ expiresIn: "1h" },
 			);
 
-			// Set JWT token as an HTTP-only cookie
-			const response = NextResponse.json({
-				id: data.id,
-				name: data.name,
-			});
-
-			// Add the token to the cookies
-			response.cookies.set("token", token, {
-				httpOnly: false,
-				secure: process.env.NODE_ENV === "production", // Ensure this is true in production
+			const nextResponse = NextResponse.json({ id: id, name: name });
+			nextResponse.cookies.set("token", token, {
+				httpOnly: true,
+				secure: process.env.NODE_ENV === "production",
 				maxAge: 60 * 60, // 1 hour
 				path: "/",
 				sameSite: "Strict",
 			});
 
-			// Return the response with the user data and token
-			return response;
+			return nextResponse;
 		}
 
-		// If something goes wrong, return a failure response
+		// If something goes wrong
 		return NextResponse.json({ error: "Signup failed" }, { status: 400 });
 	} catch (error) {
-		return NextResponse.json(
-			{ error: error.response.data.error },
-			{ status: 500 },
-		);
+		return NextResponse.json({ error: error.message }, { status: 500 });
 	}
 }
 
@@ -89,4 +86,40 @@ async function hashPassword(plainPassword) {
 	const salt = await bcrypt.genSalt(saltRounds); // Generate salt
 	const hashedPassword = await bcrypt.hash(plainPassword, salt); // Hash the password with salt
 	return hashedPassword;
+}
+
+function sendVerificationEmail(email, type) {
+	const transporter = nodemailer.createTransport({
+		service: "gmail", // or another email service
+		auth: {
+			user: process.env.EMAIL_USER,
+			pass: process.env.EMAIL_PASSWORD,
+		},
+	});
+
+	const verificationToken = jwt.sign({ email: email, type: type }, JWT_SECRET, {
+		expiresIn: "1h",
+	});
+
+	const verificationUrl = `http://localhost:3000/verify-email?token=${verificationToken}`;
+
+	const mailOptions = {
+		from: process.env.EMAIL_USER,
+		to: email,
+		subject: "Email Verification",
+		text: `Click the link to verify your email: ${verificationUrl}`,
+		html: `<p>Click <a href="${verificationUrl}">here</a> to verify your email.</p>`,
+	};
+
+	transporter.sendMail(mailOptions, (error, info) => {
+		if (error) {
+			console.error("Error sending email: ", error);
+			// Return an error to the parent function for handling
+			return { success: false, error: error.message };
+		}
+		console.log("Verification email sent: ", info.response);
+		return { success: true };
+	});
+
+	return { success: true };
 }

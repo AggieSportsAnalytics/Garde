@@ -75,29 +75,47 @@ export default function Signin({ isSignUpDefault, type }) {
 				},
 			});
 
-			if (res.status === 200) {
+			if (res.status === 200 && !isSignUp) {
 				setSuccess("Please wait, logging in...");
 				router.push(`/${type}_page`); // Redirect to the appropriate page
+			} else if (res.status === 200 && isSignUp) {
+				setSuccess("Please verify your email address...");
+				await new Promise((r) => setTimeout(r, 2000));
+				window.location.reload();
 			}
 		} catch (error) {
+			setName("");
+			setEmail("");
+			setPassword("");
+			setSuccess("");
 			setError(error.response.data.error);
 		}
 	};
 
 	// Handle Google Auth Success
 	const handleGoogleSuccess = async (response) => {
-		setError("");
-		setSuccess("Please wait, logging in...");
+		try {
+			setError("");
 
-		const queryData = {
-			userData: response.credential,
-			type: type,
-		};
-		const res = await axios.post("/api/google-auth", queryData, {
-			headers: { "Content-Type": "application/json" },
-		});
+			const queryData = {
+				userData: response.credential,
+				type: type,
+			};
+			const res = await axios.post("/api/google-auth", queryData, {
+				headers: { "Content-Type": "application/json" },
+			});
 
-		router.push(`/${type}_page`);
+			if (res.data && res.data.status !== 200) {
+				setError(res.data.error);
+			}
+			if (res.status === 200) {
+				setSuccess("Please wait, logging in...");
+				router.push(`/${type}_page`);
+			}
+		} catch (error) {
+			// console.log(error);
+			setError("Google Auth failed");
+		}
 	};
 
 	const handleGoogleError = () => {

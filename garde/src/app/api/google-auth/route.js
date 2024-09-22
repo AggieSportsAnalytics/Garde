@@ -20,6 +20,14 @@ export async function POST(req, res) {
 		if (!status) {
 			throw new Error("Missing id");
 		}
+		console.log(status);
+
+		if (status.status && status.status !== 200) {
+			return NextResponse.json({
+				error: status.response.data.error,
+				status: 500,
+			});
+		}
 
 		// Handle the token (e.g., create a session, issue a JWT, etc.)
 		// You can sign your own JWT and set it as a cookie

@@ -148,6 +148,38 @@ async function handlePutRequest(request, env) {
 async function handlePostRequest(request, env) {
 	const { DB } = env;
 
+	const verifyEmail = async (email, table) => {
+		const query = `
+      SELECT * FROM ${table} WHERE email = ?  
+    `;
+		const user = await DB.prepare(query).bind(email).all();
+
+		// Check if the user exists
+		if (user.results.length === 0) {
+			return new Response(JSON.stringify({ error: "User not found" }), {
+				status: 404,
+			});
+		}
+
+		const updateQuery = `
+      UPDATE ${table} SET is_verified = 1 WHERE email = ?
+    `;
+		const result = await DB.prepare(updateQuery).bind(email).run();
+
+		const newUser = await DB.prepare(query).bind(email).all();
+		console.log(newUser);
+
+		if (newUser.results[0].is_verified === 1) {
+			return addCorsHeaders(
+				new Response(
+					JSON.stringify({ message: "Successfully verified email" }),
+				),
+			);
+		} else {
+			return new Response(JSON.stringify({ error: "Failed to verify email" }));
+		}
+	};
+
 	const authGoogle = async (id, email, name, type) => {
 		const googlePassword = "google";
 
@@ -175,11 +207,11 @@ async function handlePostRequest(request, env) {
 		}
 
 		// User does not exist, create a new user
-		const result = await env.DB.prepare(`
-      INSERT INTO ${type} (unique_id, name, email, password)
-      VALUES (?, ?, ?, ?);
+		const result = await DB.prepare(`
+      INSERT INTO ${type} (unique_id, name, email, password, is_verified)
+      VALUES (?, ?, ?, ?, ?);
   `)
-			.bind(id, name, email, googlePassword)
+			.bind(id, name, email, googlePassword, 1)
 			.run();
 
 		// If the user was created successfully, return their id and name
@@ -201,10 +233,10 @@ async function handlePostRequest(request, env) {
 
 		// User does not exist, create a new user
 		const result = await env.DB.prepare(`
-        INSERT OR IGNORE INTO ${type} (unique_id, name, email, password)
-        VALUES (?, ?, ?, ?);
+        INSERT OR IGNORE INTO ${type} (unique_id, name, email, password, is_verified)
+        VALUES (?, ?, ?, ?, ?);
     `)
-			.bind(id, name, email, password)
+			.bind(id, name, email, password, 0)
 			.run();
 
 		// Return the result of the insertion, or an error if something went wrong
@@ -245,6 +277,10 @@ async function handlePostRequest(request, env) {
 		}
 
 		const user = fetched.results[0];
+
+		if (user.is_verified === 0) {
+			return { message: "User has not verified their email" };
+		}
 
 		return user;
 	};
@@ -321,7 +357,7 @@ async function handlePostRequest(request, env) {
 				);
 			}
 
-			return new Response(JSON.stringify({ id: body.id }), {
+			return new Response(JSON.stringify({ success: true }), {
 				headers: {
 					"Content-Type": "application/json",
 					"Access-Control-Allow-Origin": "*", // Allow requests from any origin
@@ -371,6 +407,14 @@ async function handlePostRequest(request, env) {
 					"Access-Control-Allow-Origin": "*", // Allow requests from any origin
 				},
 			});
+		}
+
+		if (body.queryType === "verify-email" && body.type && body.email) {
+			if (body.type === "fencer") {
+				return await verifyEmail(body.email, "fencers");
+			} else if (body.type === "coach") {
+				return await verifyEmail(body.email, "coaches");
+			}
 		}
 
 		if (

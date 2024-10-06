@@ -4,7 +4,7 @@ import { OpenAIAPIFeedback } from './Fencer_Canvas';
 import "@mediapipe/pose";
 import { CardBody, CardContainer, CardItem } from "./ui/3d-card";
 
-const Fencer_Stats = ({ pose, lastCalled, setLastCalled, setAiFeedback, height, setFeetDistance, setShoulderWidth, darkMode }) => {
+const Fencer_Stats = ({ pose, lastCalled, setLastCalled, setAiFeedback, height, setFeetDistance, setShoulderWidth, darkMode, onPoseSequenceDetected }) => {
   const [feetDistanceState, setFeetDistanceState] = useState(null);
   const [leftElbAngle, setLeftElbAngle] = useState(null);
   const [rightElbAngle, setRightElbAngle] = useState(null);
@@ -16,10 +16,14 @@ const Fencer_Stats = ({ pose, lastCalled, setLastCalled, setAiFeedback, height, 
   const [speed, setSpeed] = useState(null);
   const [frontFootState, setFrontFootState] = useState(null);
   const [facingDirection, setFacingDirection] = useState(null);
-  
   const prevPoseRef = useRef(null);
   const stateBufferRef = useRef([]);
   let speedHistory = [];
+  const [advanceCount, setAdvanceCount] = useState(0);
+  const [retreatCount, setRetreatCount] = useState(0);
+  const [lungeCount, setLungeCount] = useState(0);
+  const poseSequenceTimerRef = useRef(null);
+  const poseDataBuffer = useRef([]);
 
   const smoothSpeed = (currentSpeed) => {
     const smoothingFactor = 0.7;
@@ -42,44 +46,44 @@ const Fencer_Stats = ({ pose, lastCalled, setLastCalled, setAiFeedback, height, 
     const midHipX = (leftHip.x + rightHip.x) / 2;
 
     if (nose.x < midHipX) {
-      // If the nose is to the left of the mid-hip, the user is facing right
       return 'facingLeft';
     } else if (nose.x > midHipX) {
-      // If the nose is to the right of the mid-hip, the user is facing left
       return 'facingRight';
     } else {
-      // If the nose and mid-hip are aligned, the user is facing forward or backward
       return null;
     }
   };
-  
-  
-
-  const determineFrontFoot = (leftAnkleX, rightAnkleX, facingDirection) => {
-    if (facingDirection === 'facingLeft') {
-      return leftAnkleX < rightAnkleX ? 'left' : 'right';
-    } else if (facingDirection === 'facingRight') {
-      return leftAnkleX > rightAnkleX ? 'left' : 'right';
-    } else {
-      return null; // Can't determine
-    }
-  };
-  
 
   const detectMovement = (currentPose, prevPose, facingDirection) => {
     if (!currentPose || !prevPose || !facingDirection) return 'static';
-  
+
     const currentLeftAnkle = currentPose.keypoints[27];
     const currentRightAnkle = currentPose.keypoints[28];
     const prevLeftAnkle = prevPose.keypoints[27];
     const prevRightAnkle = prevPose.keypoints[28];
-  
+
     const averageMovement = ((currentLeftAnkle.x + currentRightAnkle.x) / 2) - ((prevLeftAnkle.x + prevRightAnkle.x) / 2);
-    const movementThreshold = 0.5; // Adjust this value based on your needs
-  
-    console.log(`Average Movement: ${averageMovement}`);
-    console.log(`Facing Direction: ${facingDirection}`);
-  
+    const movementThreshold = 0.8;
+
+    // Check if a lunge is in progress
+    const rightKneeAngle = calculateAngle(currentPose.keypoints[24], currentPose.keypoints[26], currentPose.keypoints[28]);
+    const leftKneeAngle = calculateAngle(currentPose.keypoints[23], currentPose.keypoints[25], currentPose.keypoints[27]);
+    const swordArmAngle = calculateAngle(currentPose.keypoints[11], currentPose.keypoints[13], currentPose.keypoints[15]);
+    const nonSwordArmAngle = calculateAngle(currentPose.keypoints[12], currentPose.keypoints[14], currentPose.keypoints[16]);
+    const lungeKneeAngleThreshold = 150;
+    const lungeArmAngleThreshold = 150;
+
+    const isLunge = (
+      ((rightKneeAngle >= 90 && rightKneeAngle <= lungeKneeAngleThreshold && leftKneeAngle > 150) ||
+      (leftKneeAngle >= 90 && leftKneeAngle <= lungeKneeAngleThreshold && rightKneeAngle > 150)) &&
+      swordArmAngle > lungeArmAngleThreshold &&
+      nonSwordArmAngle > lungeArmAngleThreshold
+    );
+
+    if (isLunge) {
+      return 'lunge';
+    }
+
     if (Math.abs(averageMovement) > movementThreshold) {
       if ((facingDirection === 'facingRight' && averageMovement > 0) || (facingDirection === 'facingLeft' && averageMovement < 0)) {
         return 'advance';
@@ -89,10 +93,9 @@ const Fencer_Stats = ({ pose, lastCalled, setLastCalled, setAiFeedback, height, 
     }
     return 'static';
   };
-  
 
   const stabilizeState = (newState) => {
-    const bufferSize = 10; // Increased buffer size for more stability
+    const bufferSize = 10;
     const buffer = stateBufferRef.current;
 
     buffer.push(newState);
@@ -105,7 +108,6 @@ const Fencer_Stats = ({ pose, lastCalled, setLastCalled, setAiFeedback, height, 
       return acc;
     }, {});
 
-    // Require a significant majority for state change
     const threshold = bufferSize * 0.7;
     for (const [state, count] of Object.entries(stateCounts)) {
       if (count >= threshold) {
@@ -113,52 +115,70 @@ const Fencer_Stats = ({ pose, lastCalled, setLastCalled, setAiFeedback, height, 
       }
     }
 
-    // If no clear majority, return the most recent stable state
     return buffer[buffer.length - 1];
   };
 
   const predictPose = (pose, feetDistance, shoulderWidth) => {
     if (!pose || !pose.keypoints) return 'onguard';
-  
+    
     const rightKneeAngle = calculateAngle(pose.keypoints[24], pose.keypoints[26], pose.keypoints[28]);
     const leftKneeAngle = calculateAngle(pose.keypoints[23], pose.keypoints[25], pose.keypoints[27]);
     const swordArmAngle = calculateAngle(pose.keypoints[11], pose.keypoints[13], pose.keypoints[15]);
     const nonSwordArmAngle = calculateAngle(pose.keypoints[12], pose.keypoints[14], pose.keypoints[16]);
-
-    const instantaneousMovement = detectMovement(pose, prevPoseRef.current, facingDirection);
-
-    // Lunge Detection
-    const lungeKneeAngleThreshold = 120;
-    const lungeArmAngleThreshold = 140;
-    const lungeDistanceThreshold = shoulderWidth * 1.8;
   
+    // Lunge Detection - PRIORITIZED
+    const lungeKneeAngleThreshold = 150;
+    const lungeArmAngleThreshold = 150;
+    const lungeDistanceThreshold = shoulderWidth * 1.2;
+    
     if (
-      ((rightKneeAngle >= 80 && rightKneeAngle <= lungeKneeAngleThreshold && leftKneeAngle > 160) ||
-      (leftKneeAngle >= 80 && leftKneeAngle <= lungeKneeAngleThreshold && rightKneeAngle > 160)) &&
+      ((rightKneeAngle >= 90 && rightKneeAngle <= lungeKneeAngleThreshold && leftKneeAngle > 150) ||
+      (leftKneeAngle >= 90 && leftKneeAngle <= lungeKneeAngleThreshold && rightKneeAngle > 150)) &&
       swordArmAngle > lungeArmAngleThreshold &&
       nonSwordArmAngle > lungeArmAngleThreshold &&
       feetDistance > lungeDistanceThreshold
     ) {
       return 'lunge';
     }
-  
+    
     // En Garde Detection
     const enGardeKneeAngleThreshold = 150;
     const enGardeFeetDistanceThreshold = shoulderWidth * 1.2;
-  
+    
     if (
       rightKneeAngle <= enGardeKneeAngleThreshold &&
       leftKneeAngle <= enGardeKneeAngleThreshold &&
       feetDistance <= enGardeFeetDistanceThreshold &&
       swordArmAngle < lungeArmAngleThreshold &&
-      nonSwordArmAngle < lungeArmAngleThreshold &&
-      instantaneousMovement === 'static'
+      nonSwordArmAngle < lungeArmAngleThreshold
     ) {
       return 'onguard';
     }
   
-    // Return the instantaneous movement if it's not a lunge or on guard
+    // Movement Detection (Advance/Retreat)
+    const instantaneousMovement = detectMovement(pose, prevPoseRef.current, facingDirection);
+    
     return instantaneousMovement !== 'static' ? instantaneousMovement : 'onguard';
+  };
+
+  const handlePoseSequence = (poseType) => {
+    const angles = {
+      leftElbAngle,
+      rightElbAngle,
+      leftHipAngle,
+      rightHipAngle,
+      leftKneeAngle,
+      rightKneeAngle
+    };
+
+    // Add the current pose data to the buffer
+    poseDataBuffer.current.push({ poseType, angles });
+
+    // If the buffer has data for 10 seconds, pass it to the parent component
+    if (poseDataBuffer.current.length >= 10) {
+      onPoseSequenceDetected(poseDataBuffer.current);
+      poseDataBuffer.current = []; // Clear the buffer
+    }
   };
 
   useEffect(() => {
@@ -202,6 +222,8 @@ const Fencer_Stats = ({ pose, lastCalled, setLastCalled, setAiFeedback, height, 
           const instantaneousPose = predictPose(pose, feetDistance, shoulderWidth);
           const stablePose = stabilizeState(instantaneousPose);
           setPredictedPose(stablePose);
+
+          handlePoseSequence(stablePose);
 
           setSpeed(Math.round(smoothSpeed(calculateSpeed(pose.keypoints).currentSpeed)));
 
@@ -254,7 +276,6 @@ const Fencer_Stats = ({ pose, lastCalled, setLastCalled, setAiFeedback, height, 
             { label: "Left Knee Angle", value: leftKneeAngle },
             { label: "Right Knee Angle", value: rightKneeAngle },
             { label: "Speed", value: speed },
-            { label: "Front Foot", value: frontFootState || 'N/A' }
           ].map((item, index) => (
             <CardItem key={index} translateZ="60" className={`rounded p-4 ${darkMode ? 'bg-gray-800 text-white' : 'bg-gray-100 text-black'} border ${darkMode ? 'border-gray-700' : 'border-gray-300'} shadow-lg w-[230px]`} style={{ paddingBottom: '35px' }}>
               <h4>{item.label}</h4>

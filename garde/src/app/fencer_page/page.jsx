@@ -216,6 +216,9 @@ export default function Fencer_Page2() {
       lunge: []
     };
 
+    // Conversion factor from meters to inches
+    const metersToInches = 39.37;
+
     // Aggregate feedback based on average angle data for 10 second intervals
     const intervalDuration = 10; 
     const intervalCount = Math.ceil(poseDataArray.length / intervalDuration);
@@ -229,7 +232,10 @@ export default function Fencer_Page2() {
       };
 
       intervalData.forEach(({ poseType, angles }) => {
-        const { leftKneeAngle, rightKneeAngle, leftElbAngle, rightElbAngle } = angles;
+        const { leftKneeAngle, rightKneeAngle, leftElbAngle, rightElbAngle, feetDistance } = angles;
+
+        // Convert feetDistance from meters to inches
+        const feetDistanceInches = feetDistance * metersToInches;
 
         if (poseType === 'advance') {
           angleSums.advance.leftKnee += leftKneeAngle;
@@ -237,16 +243,47 @@ export default function Fencer_Page2() {
           angleSums.advance.leftElb += leftElbAngle;
           angleSums.advance.rightElb += rightElbAngle;
           angleSums.advance.count++;
-        } else if (poseType === 'retreat') {
-          angleSums.retreat.leftKnee += leftKneeAngle;
-          angleSums.retreat.rightKnee += rightKneeAngle;
-          angleSums.retreat.count++;
-        } else if (poseType === 'lunge') {
-          angleSums.lunge.leftKnee += leftKneeAngle;
-          angleSums.lunge.rightKnee += rightKneeAngle;
-          angleSums.lunge.leftElb += leftElbAngle;
-          angleSums.lunge.rightElb += rightElbAngle;
-          angleSums.lunge.count++;
+
+          const generateFeedback = (poseType, conditions, messages) => {
+            conditions.forEach((condition, index) => {
+              if (condition) {
+                feedbackMessages[poseType].push(messages[index]);
+              }
+            });
+          };
+
+          if (poseType === 'advance') {
+            generateFeedback('advance', [
+              feetDistanceInches < 12 || feetDistanceInches > 15,
+              rightElbAngle < 85 || rightElbAngle > 95,
+              leftKneeAngle < 100 || leftKneeAngle > 170 || rightKneeAngle < 100 || rightKneeAngle > 170
+            ], [
+              'Try to keep your feet at a comfortable distance apart.',
+              'Keep your right elbow at a natural angle.',
+              'Aim for a natural bend in your left elbow.',
+              'Adjust your knees to maintain a comfortable stance.'
+            ]);
+          } else if (poseType === 'retreat') {
+            generateFeedback('retreat', [
+              feetDistanceInches < 12 || feetDistanceInches > 15,
+              leftKneeAngle < 70 || leftKneeAngle > 80 || rightKneeAngle < 70 || rightKneeAngle > 80
+            ], [
+              'Maintain a natural feet distance.',
+              'Keep your knees slightly bent.'
+            ]);
+          } else if (poseType === 'lunge') {
+            generateFeedback('lunge', [
+              feetDistanceInches < 20 || feetDistanceInches > 24,
+              rightElbAngle < 175 || rightElbAngle > 185,
+              leftKneeAngle < 85 || leftKneeAngle > 95,
+              rightKneeAngle < 175 || rightKneeAngle > 185
+            ], [
+              'Extend your front foot a bit more naturally.',
+              'Extend your right elbow fully.',
+              'Bend your front knee to a comfortable angle.',
+              'Straighten your back knee completely.'
+            ]);
+          }
         }
       });
 
@@ -269,43 +306,27 @@ export default function Fencer_Page2() {
         }
       };
 
-      if (averageAngles.advance.leftKnee < 100 || averageAngles.advance.rightKnee < 100) {
-        feedbackMessages.advance.push('Bend knees more.');
-      } else if (averageAngles.advance.leftElb < 140 || averageAngles.advance.rightElb < 140) {
-        feedbackMessages.advance.push('Extend arms more.');
-      }
+      // Determine the most common feedback for each pose type
+      const mostCommonFeedback = (feedbackArray) => {
+        if (feedbackArray.length === 0) return '';
+        const frequency = {};
+        feedbackArray.forEach(msg => frequency[msg] = (frequency[msg] || 0) + 1);
+        return Object.keys(frequency).reduce((a, b) => frequency[a] > frequency[b] ? a : b);
+      };
 
-      if (averageAngles.retreat.leftKnee > 160 || averageAngles.retreat.rightKnee > 160) {
-        feedbackMessages.retreat.push('Keep knees bent.');
-      }
+      const feedbackMessage = [
+        mostCommonFeedback(feedbackMessages.advance),
+        mostCommonFeedback(feedbackMessages.retreat),
+        mostCommonFeedback(feedbackMessages.lunge)
+      ].filter(Boolean)[0]; // Get the most relevant feedback
 
-      if (averageAngles.lunge.leftKnee < 110 || averageAngles.lunge.rightKnee < 110) {
-        feedbackMessages.lunge.push('Bend front knee more.');
-      } else if (averageAngles.lunge.leftElb < 150 || averageAngles.lunge.rightElb < 150) {
-        feedbackMessages.lunge.push('Extend sword arm fully.');
-      }
-    }
-
-    // Determine the most common feedback for each pose type
-    const mostCommonFeedback = (feedbackArray) => {
-      if (feedbackArray.length === 0) return '';
-      const frequency = {};
-      feedbackArray.forEach(msg => frequency[msg] = (frequency[msg] || 0) + 1);
-      return Object.keys(frequency).reduce((a, b) => frequency[a] > frequency[b] ? a : b);
-    };
-
-    const feedbackMessage = [
-      mostCommonFeedback(feedbackMessages.advance),
-      mostCommonFeedback(feedbackMessages.retreat),
-      mostCommonFeedback(feedbackMessages.lunge)
-    ].filter(Boolean)[0]; // Get the most relevant feedback
-
-    if (feedbackMessage && !isFeedbackMuted) {
-      const now = Date.now();
-      if (now - lastSpokenFeedbackTime >= 10000) { // Ensure at least 10 seconds between feedback
-        setFeedback([feedbackMessage]);
-        speak({ text: feedbackMessage, voice: voice, rate: 1.2, pitch: 1.1, lang: 'en-US' });
-        setLastSpokenFeedbackTime(now);
+      if (feedbackMessage && !isFeedbackMuted) {
+        const now = Date.now();
+        if (now - lastSpokenFeedbackTime >= 10000) { // Ensure at least 10 seconds between feedback
+          setFeedback([feedbackMessage]);
+          speak({ text: feedbackMessage, voice: voice, rate: 1.2, pitch: 1.1, lang: 'en-US' });
+          setLastSpokenFeedbackTime(now);
+        }
       }
     }
   }, [speak, voice, lastSpokenFeedbackTime, isFeedbackMuted]);
@@ -386,13 +407,6 @@ export default function Fencer_Page2() {
                 <Fencer_Canvas videoSource={height ? videoSource : null} isRecording={isRecording} setPose={setPose} containerWidth="100%" containerHeight="100%" darkMode={darkMode} />
               </div>
 
-              <div className="flex justify-center items-center">
-                <div id="poseResult" className="text-2xl font-semibold text-white flex items-center">
-                  {poseResult === "Success" && <FaCheckCircle className="text-green-400 mr-2" />}
-                  {poseResult === "Failure" && <FaTimesCircle className="text-red-400 mr-2" />}
-                  {hasSpoken && <div className="countdown-circle">{countdown}</div>}
-                </div>
-              </div>
               {/* <div className="mt-4">
                 <h3 className="text-xl font-semibold mb-2">Feedback</h3>
                 <ul className="list-disc pl-5">
@@ -434,21 +448,6 @@ export default function Fencer_Page2() {
             onSave={handleHeightSave}
           />
 
-          <style jsx>{`
-            .countdown-circle {
-              width: 40px;
-              height: 40px;
-              border: 2px solid white;
-              border-radius: 50%;
-              display: flex;
-              align-items: center;
-              justify-content: center;
-              font-size: 1.5rem;
-            }
-            .pre-instruction-countdown {
-              color: white;
-            }
-          `}</style>
         </div>
       )}
     </InstructionContext.Provider>

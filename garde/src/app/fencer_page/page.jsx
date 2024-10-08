@@ -108,42 +108,20 @@ export default function Fencer_Page2() {
     }, 1000);
   }, []);
 
-  const startSuccessCountdown = useCallback(() => {
-    if (!videoInput) return;
-
-    const instructionTime = instructions[instructionIndex]?.time || 3;
-    setCountdown(instructionTime);
-    const interval = setInterval(() => {
-      setCountdown((prevCountdown) => {
-        if (prevCountdown > 1) {
-          return prevCountdown - 1;
-        } else {
-          clearInterval(interval);
-          setCountdownFinished(true);
-          return 0;
-        }
-      });
-    }, 1000);
-  }, [videoInput, instructions, instructionIndex]);
+  const handleInstructionChange = useCallback((newIndex) => {
+    setInstructionIndex(newIndex);
+  }, []);
 
   const handleTimerStart = useCallback(() => {
     setHasStarted(true);
     setShowPreInstructionCountdown(false);
-    setInstructionIndex((prevIndex) => {
-      if (prevIndex >= instructions.length - 1) {
-        setIsStartDisabled(true);
-        return prevIndex;
-      }
-      setHasSpoken(false);
-      return prevIndex + 1;
-    });
+    setInstructionIndex(0);
     setPoseResult("");
     setResetTimer(false);
-    setCountdown(instructions[instructionIndex] ? instructions[instructionIndex + 1]?.time : 3);
     setIsRunning(true);
-    setFeedbackEnabled(true); // Enable feedback when the timer starts
-    setLastFeedbackTime(Date.now()); // Set initial feedback time when timer starts
-  }, [instructions, instructionIndex]);
+    setFeedbackEnabled(true);
+    setLastFeedbackTime(Date.now());
+  }, []);
 
   const handleReset = useCallback(() => {
     setInstructionIndex(-1);
@@ -151,12 +129,11 @@ export default function Fencer_Page2() {
     setPoseStartTime(null);
     setHasSpoken(false);
     setPoseResult("");
-    setCountdown(3);
     setResetTimer(true);
     setPreInstructionCountdown(3);
     setShowPreInstructionCountdown(false);
     clearTimeout(failureTimeout);
-    setFeedbackEnabled(false); // Disable feedback on reset
+    setFeedbackEnabled(false);
   }, [failureTimeout]);
 
   const handleVideoChange = useCallback((newVideoSource) => {
@@ -244,45 +221,50 @@ export default function Fencer_Page2() {
           angleSums.advance.rightElb += rightElbAngle;
           angleSums.advance.count++;
 
-          const generateFeedback = (poseType, conditions, messages) => {
-            conditions.forEach((condition, index) => {
-              if (condition) {
-                feedbackMessages[poseType].push(messages[index]);
-              }
-            });
-          };
+          // Feedback for Advances
+          if (feetDistanceInches < 12 || feetDistanceInches > 15) {
+            feedbackMessages.advance.push('Fix your feet distance.');
+          }
+          if (rightElbAngle < 85 || rightElbAngle > 95) {
+            feedbackMessages.advance.push('Right elbow should be around 90 degrees.');
+          }
+          if (leftElbAngle < 40 || leftElbAngle > 50) {
+            feedbackMessages.advance.push('Left elbow should be bent at 45 degrees.');
+          }
+          if (leftKneeAngle < 100 || leftKneeAngle > 170 || rightKneeAngle < 100 || rightKneeAngle > 170) {
+            feedbackMessages.advance.push('Adjust your knees a bit');
+          }
+        } else if (poseType === 'retreat') {
+          angleSums.retreat.leftKnee += leftKneeAngle;
+          angleSums.retreat.rightKnee += rightKneeAngle;
+          angleSums.retreat.count++;
 
-          if (poseType === 'advance') {
-            generateFeedback('advance', [
-              feetDistanceInches < 12 || feetDistanceInches > 15,
-              rightElbAngle < 85 || rightElbAngle > 95,
-              leftKneeAngle < 100 || leftKneeAngle > 170 || rightKneeAngle < 100 || rightKneeAngle > 170
-            ], [
-              'Try to keep your feet at a comfortable distance apart.',
-              'Keep your right elbow at a natural angle.',
-              'Aim for a natural bend in your left elbow.',
-              'Adjust your knees to maintain a comfortable stance.'
-            ]);
-          } else if (poseType === 'retreat') {
-            generateFeedback('retreat', [
-              feetDistanceInches < 12 || feetDistanceInches > 15,
-              leftKneeAngle < 70 || leftKneeAngle > 80 || rightKneeAngle < 70 || rightKneeAngle > 80
-            ], [
-              'Maintain a natural feet distance.',
-              'Keep your knees slightly bent.'
-            ]);
-          } else if (poseType === 'lunge') {
-            generateFeedback('lunge', [
-              feetDistanceInches < 20 || feetDistanceInches > 24,
-              rightElbAngle < 175 || rightElbAngle > 185,
-              leftKneeAngle < 85 || leftKneeAngle > 95,
-              rightKneeAngle < 175 || rightKneeAngle > 185
-            ], [
-              'Extend your front foot a bit more naturally.',
-              'Extend your right elbow fully.',
-              'Bend your front knee to a comfortable angle.',
-              'Straighten your back knee completely.'
-            ]);
+          // Feedback for Retreats
+          if (feetDistanceInches < 12 || feetDistanceInches > 15) {
+            feedbackMessages.retreat.push('Maintain feet distance between 12 to 15 inches.');
+          }
+          if (leftKneeAngle < 70 || leftKneeAngle > 80 || rightKneeAngle < 70 || rightKneeAngle > 80) {
+            feedbackMessages.retreat.push('Knees should be bent between 70 to 80 degrees.');
+          }
+        } else if (poseType === 'lunge') {
+          angleSums.lunge.leftKnee += leftKneeAngle;
+          angleSums.lunge.rightKnee += rightKneeAngle;
+          angleSums.lunge.leftElb += leftElbAngle;
+          angleSums.lunge.rightElb += rightElbAngle;
+          angleSums.lunge.count++;
+
+          // Feedback for Lunges
+          if (feetDistanceInches < 20 || feetDistanceInches > 24) {
+            feedbackMessages.lunge.push('Front foot should move forward by 20 to 24 inches.');
+          }
+          if (rightElbAngle < 175 || rightElbAngle > 185) {
+            feedbackMessages.lunge.push('Right elbow should be fully extended at 180 degrees.');
+          }
+          if (leftKneeAngle < 85 || leftKneeAngle > 95) {
+            feedbackMessages.lunge.push('Front knee should be bent at 90 degrees.');
+          }
+          if (rightKneeAngle < 175 || rightKneeAngle > 185) {
+            feedbackMessages.lunge.push('Back knee should straighten completely at 180 degrees.');
           }
         }
       });
@@ -397,10 +379,21 @@ export default function Fencer_Page2() {
 
             <div className="flex-1 flex flex-col items-center justify-center px-2.8 space-y-4 z-10" style={{ transform: 'scale(0.7)', marginTop: '-150px'}}>
               <div className="w-2/3 mt-10">
-                <MemoizedInstruction isRunning={isRunning} instructionIndex={instructionIndex} instructions={instructions} performedPose={performedPose} />
+              <MemoizedInstruction isRunning={isRunning} instructionIndex={instructionIndex} />
                 <div style={{ marginBottom: '20px' }}></div> {/* Added space between the Timer and Instruction */}
-                <MemoizedTimer onTimerStart={handleTimerStart} onReset={handleReset} isStartDisabled={isStartDisabled} resetTimer={resetTimer} data={instructions} instructionIndex={instructionIndex} initialTime={instructions[instructionIndex]?.time} onRunningChange={setIsTimerRunning} darkMode={darkMode} />
-              </div>
+                <MemoizedTimer
+                onTimerStart={handleTimerStart}
+                onReset={handleReset}
+                isStartDisabled={isStartDisabled}
+                resetTimer={resetTimer}
+                initialTime={instructions[instructionIndex]?.time}
+                onRunningChange={setIsTimerRunning}
+                darkMode={darkMode}
+                instructions={instructions}
+                instructionIndex={instructionIndex}
+                setInstructionIndex={handleInstructionChange}
+              />         
+                </div>
 
               {/* Fencer Canvas Component */}
               <div className="w-2/3 aspect-video bg-black flex items-center justify-center rounded-lg relative border border-gray-600" style={{marginTop:'50px'}}>
@@ -452,6 +445,5 @@ export default function Fencer_Page2() {
       )}
     </InstructionContext.Provider>
   );
-}
+}Fencer_Page2.propTypes = {};
 
-Fencer_Page2.propTypes = {};

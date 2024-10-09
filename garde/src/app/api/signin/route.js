@@ -7,20 +7,13 @@ import jwt from "jsonwebtoken";
 const JWT_SECRET = process.env.JWT_SECRET;
 
 export async function POST(req, res) {
-	const workerUrl = "https://garde.gardefencing.workers.dev"; // Cloudflare Worker URL
-
 	try {
-		const { email, password, queryType, type } = await req.json();
+		const { email, password, type } = await req.json();
 
-		const queryData = {
-			queryType: queryType,
-			email: email,
-		};
+		const workerUrl = `${process.env.NEXT_PUBLIC_GARDE_WORKER}/verify?type=${type}&email=${email}`;
 
 		// Check the worker API to validate credentials
-		const response = await axios.post(workerUrl, queryData, {
-			headers: { "Content-Type": "application/json" },
-		});
+		const response = await axios.get(workerUrl);
 
 		if (response.status !== 200) {
 			throw new Error(response.data.error);

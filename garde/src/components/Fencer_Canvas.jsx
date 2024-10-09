@@ -10,6 +10,9 @@ import Modal from "react-modal";
 import FencerInstructionMenu from "./FencerInstructionMenu";
 import { CardBody, CardContainer, CardItem } from "./ui/3d-card.tsx";
 import { Hammer } from "lucide-react";
+import axios from "axios";
+import { v4 as uuidv4 } from "uuid";
+import { jwtDecode } from "jwt-decode";
 
 const WebcamPose = ({
 	onVideoChange,
@@ -26,10 +29,13 @@ const WebcamPose = ({
 	const webcamRef = useRef(null);
 	const canvasRef = useRef(null);
 	const intervalId = useRef(null);
+	const mediaRecorderRef = useRef(null);
+
 	const minConfidence = 0.5;
 
 	const [latestPose, setLatestPose] = useState(null);
 	const [showInstructionMenu, setInstructionMenu] = useState(false);
+	const [recordedChunks, setRecordedChunks] = useState([]);
 
 	useEffect(() => {
 		Modal.setAppElement("body");
@@ -65,6 +71,7 @@ const WebcamPose = ({
 				video.height = videoHeight;
 				canvasRef.current.width = videoWidth;
 				canvasRef.current.height = videoHeight;
+
 				const poses = await detector.estimatePoses(video, {
 					flipHorizontal: true,
 				});
@@ -212,14 +219,107 @@ const WebcamPose = ({
 	};
 
 	useEffect(() => {
+		const options = { mimeType: "video/webm; codecs=vp9" };
+
 		if (videoSource || isRecording) {
 			runPoseDetection();
 		}
 
+		const startRecording = () => {
+			const webcamVideo = webcamRef.current?.video;
+			const canvas = canvasRef.current;
+
+			if (webcamVideo && webcamVideo.readyState === 4) {
+				const stream = webcamVideo.captureStream();
+
+				// Reinitialize MediaRecorder each time a new recording starts
+				if (mediaRecorderRef.current) {
+					mediaRecorderRef.current = null; // Clear the old MediaRecorder
+				}
+
+				mediaRecorderRef.current = new MediaRecorder(stream, options);
+				mediaRecorderRef.current.ondataavailable = handleDataAvailable;
+
+				if (isRecording && mediaRecorderRef.current.state === "inactive") {
+					mediaRecorderRef.current.start();
+					console.log("Recording started");
+				}
+			} else {
+				console.error("Webcam stream is not ready.");
+			}
+		};
+
+		const webcamVideo = webcamRef.current?.video;
+
+		if (webcamVideo) {
+			if (webcamVideo.readyState === 0) {
+				console.log("Waiting for webcam to be ready...");
+				webcamVideo.addEventListener("canplay", startRecording);
+			} else {
+				startRecording();
+			}
+		}
+
 		return () => {
+			if (webcamVideo) {
+				webcamVideo.removeEventListener("canplay", startRecording);
+			}
+
+			if (
+				mediaRecorderRef.current &&
+				mediaRecorderRef.current.state === "recording"
+			) {
+				mediaRecorderRef.current.stop();
+				console.log("Recording stopped");
+			}
+
 			clearInterval(intervalId.current);
 		};
 	}, [isRecording, videoSource, runtime, modelType]);
+
+	const handleDataAvailable = async (event) => {
+		const workerUrl = `${process.env.NEXT_PUBLIC_R2_WORKER}/putVideo`;
+
+		let decoded = "";
+		const token = document.cookie
+			.split("; ")
+			.find((row) => row.startsWith("token="))
+			?.split("=")[1];
+
+		if (token) {
+			try {
+				decoded = jwtDecode(token);
+			} catch (error) {
+				console.log("Invalid JWT token");
+				return;
+			}
+		} else {
+			console.log("No cookies found");
+			return;
+		}
+
+		const uniqueId = uuidv4();
+		const fileName = `${decoded.id}/${uniqueId}`;
+
+		try {
+			const formData = new FormData();
+			formData.append("file", event.data, fileName); // Append the video file
+
+			const response = await axios.put(workerUrl, formData, {
+				headers: {
+					"Content-Type": "multipart/form-data", // Axios manages boundary automatically
+				},
+			});
+
+			if (response.status === 200) {
+				console.log("Video uploaded successfully");
+			} else {
+				console.error("Video upload failed");
+			}
+		} catch (error) {
+			console.error("Error uploading video:", error);
+		}
+	};
 
 	const ShowInstructionMenu = () => {
 		setInstructionMenu((prev) => !prev);
@@ -258,6 +358,7 @@ const WebcamPose = ({
 								/>
 							)}
 							<canvas
+								id="canvas"
 								className="rounded-md"
 								ref={canvasRef}
 								style={{
@@ -632,4 +733,21 @@ export const convertPixelsToMeters = (pixels, height, fencerHeightPixels) => {
 //     } catch (err) {
 //         res.status(500).json({ error: err.message });
 //     }
+// }
+
+// function handleDataAvailable(event) {
+// 	if (event.data.size > 0) {
+// 		const recordedChunks = [event.data];
+//
+// 		// Download.
+// 		const blob = new Blob(recordedChunks, { type: "video/webm" });
+// 		const url = URL.createObjectURL(blob);
+// 		const a = document.createElement("a");
+// 		document.body.appendChild(a);
+// 		a.style = "display: none";
+// 		a.href = url;
+// 		a.download = "pose.webm";
+// 		a.click();
+// 		window.URL.revokeObjectURL(url);
+// 	}
 // }

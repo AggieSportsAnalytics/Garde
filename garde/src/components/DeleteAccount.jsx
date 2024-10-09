@@ -30,7 +30,12 @@ export default function DeleteAccountButton({ type, otherId }) {
 		setSuccess(null);
 
 		try {
-			const workerUrl = "https://garde.gardefencing.workers.dev";
+			let workerUrl = process.env.NEXT_PUBLIC_GARDE_WORKER;
+			if (type === "coach-fencer") {
+				workerUrl += "/deleteCoachFencer";
+			} else {
+				workerUrl += "/deleteUser";
+			}
 			const token = document.cookie
 				.split("; ")
 				.find((row) => row.startsWith("token="))
@@ -41,32 +46,16 @@ export default function DeleteAccountButton({ type, otherId }) {
 			let queryData;
 			if (type === "coach-fencer") {
 				if (decoded.type === "coach") {
-					queryData = {
-						fencerId: otherId,
-						coachId: decoded.id,
-						queryType: `delete-${type}`,
-					};
+					workerUrl += `?fencerId=${otherId}&coachId=${decoded.id}`;
 				} else {
-					queryData = {
-						fencerId: decoded.id,
-						coachId: otherId,
-						queryType: `delete-${type}`,
-					};
+					workerUrl += `?fencerId=${decoded.id}&coachId=${otherId}`;
 				}
 			} else {
-				queryData = {
-					id: decoded.id,
-					queryType: `delete-${type}`,
-					type: type,
-				};
+				workerUrl += `?id=${decoded.id}&type=${type}`;
 			}
 
 			// Replace with your actual DELETE API endpoint
-			const response = await axios.post(workerUrl, queryData, {
-				headers: {
-					"Content-Type": "application/json",
-				},
-			});
+			const response = await axios.delete(workerUrl);
 
 			if (response.status === 200) {
 				const res = await axios.get("/api/logout");

@@ -92,8 +92,8 @@ const Fencer_Stats = ({
 			(prevLeftAnkle.x + prevRightAnkle.x) / 2;
 		const movementThreshold = 0.5; // Adjust this value based on your needs
 
-		console.log(`Average Movement: ${averageMovement}`);
-		console.log(`Facing Direction: ${facingDirection}`);
+		// console.log(`Average Movement: ${averageMovement}`);
+		// console.log(`Facing Direction: ${facingDirection}`);
 
 		if (Math.abs(averageMovement) > movementThreshold) {
 			if (

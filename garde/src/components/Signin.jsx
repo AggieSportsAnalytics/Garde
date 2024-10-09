@@ -62,11 +62,11 @@ export default function Signin({ isSignUpDefault, type }) {
 	// Handle form submission for both sign-in and sign-up
 	const handleSubmit = async (e) => {
 		e.preventDefault();
+
 		const endpoint = isSignUp ? "/api/signup" : "/api/signin";
-		const queryType = isSignUp ? `auth-${type}` : `verify-${type}`;
 		const body = isSignUp
-			? { email, password, name, queryType, type }
-			: { email, password, queryType, type };
+			? { email, password, name, type }
+			: { email, password, type };
 
 		try {
 			const res = await axios.post(endpoint, body, {

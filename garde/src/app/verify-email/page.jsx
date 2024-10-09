@@ -9,7 +9,7 @@ export default function VerifyEmail() {
 	const [message, setMessage] = useState("Verifying...");
 	const searchParams = useSearchParams();
 	const router = useRouter();
-	const workerUrl = "https://garde.gardefencing.workers.dev"; // Cloudflare Worker URL
+	const workerUrl = `${process.env.NEXT_PUBLIC_GARDE_WORKER}/verifyEmail`; // Cloudflare Worker URL
 
 	useEffect(() => {
 		const token = searchParams.get("token"); // Get the token from the URL
@@ -32,7 +32,6 @@ export default function VerifyEmail() {
 				const queryData = {
 					email: decoded.email,
 					type: decoded.type,
-					queryType: "verify-email",
 				};
 
 				// Token is valid, send POST request to Cloudflare Worker

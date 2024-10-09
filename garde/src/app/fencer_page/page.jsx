@@ -29,6 +29,7 @@ import {
 } from "../../components/ui/3d-card.tsx";
 import DeleteAccountButton from "../../components/DeleteAccount";
 import AddFencer from "../../components/AddFencer";
+import Logout from "../../components/Logout.jsx";
 
 const MemoizedFencerStats = memo(Fencer_Stats);
 const MemoizedInstruction = memo(Instruction);
@@ -833,6 +834,7 @@ export default function Fencer_Page2() {
 							</button>
 						</Link>
 						<DeleteAccountButton type="fencer" otherId="" />
+						<Logout />
 						<AddFencer />
 
 						<div className="flex-grow flex justify-center">

@@ -29,7 +29,7 @@ Created by Vikram Penumarti
 
 # SQL commands to create the tables
 create_fencers_table = """
-CREATE TABLE IF NOT EXISTS fencers (
+CREATE TABLE IF NOT EXISTS fencer (
     unique_id TEXT PRIMARY KEY, 
     name TEXT NOT NULL,                   
     email TEXT NOT NULL UNIQUE,
@@ -56,12 +56,12 @@ CREATE TABLE IF NOT EXISTS fencer_sessions (
     right_knee REAL,                               
     feet_distance REAL,                            
     accuracy REAL,                                 
-    FOREIGN KEY (fencer_id) REFERENCES fencers(unique_id) ON DELETE CASCADE
+    FOREIGN KEY (fencer_id) REFERENCES fencer(unique_id) ON DELETE CASCADE
 );
 """
 
 create_coaches_table = """
-CREATE TABLE IF NOT EXISTS coaches (
+CREATE TABLE IF NOT EXISTS coach (
     unique_id TEXT PRIMARY KEY, 
     name TEXT NOT NULL,
     email TEXT NOT NULL UNIQUE,
@@ -71,13 +71,13 @@ CREATE TABLE IF NOT EXISTS coaches (
 """
 
 create_coach_fencers_table = """
-CREATE TABLE IF NOT EXISTS coach_fencers (
+CREATE TABLE IF NOT EXISTS coach_fencer (
     coach_id TEXT,       
     fencer_id TEXT,
     fencer_name TEXT,
     PRIMARY KEY (coach_id, fencer_id),
-    FOREIGN KEY (coach_id) REFERENCES coaches(unique_id) ON DELETE CASCADE,
-    FOREIGN KEY (fencer_id) REFERENCES fencers(unique_id) ON DELETE CASCADE
+    FOREIGN KEY (coach_id) REFERENCES coach(unique_id) ON DELETE CASCADE,
+    FOREIGN KEY (fencer_id) REFERENCES fencer(unique_id) ON DELETE CASCADE
 );
 """
 

@@ -9,11 +9,11 @@ import nodemailer from "nodemailer";
 const JWT_SECRET = process.env.JWT_SECRET;
 
 export async function POST(req) {
-	const workerUrl = "https://garde.gardefencing.workers.dev"; // Cloudflare Worker URL
+	const workerUrl = `${process.env.NEXT_PUBLIC_GARDE_WORKER}/auth`;
 
 	try {
 		// Parse request body
-		const { email, password, name, queryType, type } = await req.json();
+		const { email, password, name, type } = await req.json();
 
 		// Hash the user's password
 		const hashedPassword = await hashPassword(password);
@@ -23,7 +23,7 @@ export async function POST(req) {
 
 		// Create query data to send to the Cloudflare worker
 		const queryData = {
-			queryType: queryType,
+			type: type,
 			name: name,
 			email: email,
 			password: hashedPassword,
@@ -76,6 +76,7 @@ export async function POST(req) {
 		// If something goes wrong
 		return NextResponse.json({ error: "Signup failed" }, { status: 400 });
 	} catch (error) {
+		console.log(error);
 		return NextResponse.json({ error: error.message }, { status: 500 });
 	}
 }

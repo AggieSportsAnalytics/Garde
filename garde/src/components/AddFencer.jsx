@@ -5,7 +5,7 @@ import { jwtDecode } from "jwt-decode";
 export default function AddFencer() {
 	const [coachToken, setCoachToken] = useState("");
 	const [status, setStatus] = useState("");
-	const workerUrl = "https://garde.gardefencing.workers.dev";
+	const workerUrl = `${process.env.NEXT_PUBLIC_GARDE_WORKER}/putCoachFencer`;
 
 	const handleAddFencer = async () => {
 		try {
@@ -19,7 +19,6 @@ export default function AddFencer() {
 				fencerId: decoded.id,
 				fencerName: decoded.name,
 				coachId: coachToken,
-				queryType: "fencer-coach",
 			};
 
 			const response = await axios.put(workerUrl, queryData, {

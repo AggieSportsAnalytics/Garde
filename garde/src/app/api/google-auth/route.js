@@ -66,13 +66,11 @@ export async function POST(req, res) {
 }
 
 async function uploadToD1(id, email, name, type) {
-	const workerUrl = "https://garde.gardefencing.workers.dev"; // Cloudflare Worker URL
-	const password = "google";
+	const workerUrl = `${process.env.NEXT_PUBLIC_GARDE_WORKER}/authGoogle`;
 
 	try {
 		const queryData = {
 			id: id,
-			queryType: `google-${type}-auth`,
 			email: email,
 			name: name,
 			type: type,

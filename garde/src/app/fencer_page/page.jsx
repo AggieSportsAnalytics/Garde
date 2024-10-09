@@ -30,20 +30,15 @@ export default function Fencer_Page2() {
   const [pose, setPose] = useState(null);
   const [instructionIndex, setInstructionIndex] = useState(-1);
   const [isStartDisabled, setIsStartDisabled] = useState(false);
-  const [poseStartTime, setPoseStartTime] = useState(null);
-  const [performedPose, setPerformedPose] = useState("");
   const [hasSpoken, setHasSpoken] = useState(false);
   const [poseResult, setPoseResult] = useState("");
   const [countdown, setCountdown] = useState(3);
-  const [failureTimeout, setFailureTimeout] = useState(null);
   const [hasStarted, setHasStarted] = useState(false);
   const [resetTimer, setResetTimer] = useState(false);
   const [countdownFinished, setCountdownFinished] = useState(false);
   const [preInstructionCountdown, setPreInstructionCountdown] = useState(3);
   const [showPreInstructionCountdown, setShowPreInstructionCountdown] = useState(false);
   const [isInstructionBeingSaid, setIsInstructionBeingSaid] = useState(false);
-  const [lastCalled, setLastCalled] = useState(Date.now());
-  const [aiResult, setAiResult] = useState(null);
   const [height, setHeight] = useState(null);
   const [isHeightModalOpen, setIsHeightModalOpen] = useState(false);
   const { speak, voices } = useSpeechSynthesis();
@@ -60,8 +55,6 @@ export default function Fencer_Page2() {
   const previousFeedback = useRef({ message: '', timestamp: 0 });
   const [previousPose, setPreviousPose] = useState(null);
   const [isTimerRunning, setIsTimerRunning] = useState(false);
-  const [lastSpokenFeedbackTime, setLastSpokenFeedbackTime] = useState(0);
-  const spokenFeedbackCooldown = 5000; // Increased cooldown to 5 seconds
   const [darkMode, setDarkMode] = useState(false);
   const feedbackHistory = useRef([]);
   const heelCountRef = useRef(0);
@@ -70,8 +63,8 @@ export default function Fencer_Page2() {
   const feedbackDelay = 10000; // 10 seconds delay
   const [poseData, setPoseData] = useState(null);
   const poseDataIntervalRef = useRef(null);
-  const feedbackCooldown = 15000; // 15 seconds cooldown for feedback
   const feedbackBuffer = useRef([]);
+  const [lastSpokenFeedbackTime, setLastSpokenFeedbackTime] = useState(0);
   const [lastFeedbackMessage, setLastFeedbackMessage] = useState('');
   const [isFeedbackMuted, setIsFeedbackMuted] = useState(false);
 
@@ -126,15 +119,13 @@ export default function Fencer_Page2() {
   const handleReset = useCallback(() => {
     setInstructionIndex(-1);
     setIsStartDisabled(false);
-    setPoseStartTime(null);
     setHasSpoken(false);
     setPoseResult("");
     setResetTimer(true);
     setPreInstructionCountdown(3);
     setShowPreInstructionCountdown(false);
-    clearTimeout(failureTimeout);
     setFeedbackEnabled(false);
-  }, [failureTimeout]);
+  }, []);
 
   const handleVideoChange = useCallback((newVideoSource) => {
     setVideoSource(newVideoSource);
@@ -226,7 +217,7 @@ export default function Fencer_Page2() {
             feedbackMessages.advance.push('Fix your feet distance.');
           }
           if (rightElbAngle < 85 || rightElbAngle > 95) {
-            feedbackMessages.advance.push('Right elbow should be around 90 degrees.');
+            feedbackMessages.advance.push('Keep your right elbow more upright.');
           }
           if (leftElbAngle < 40 || leftElbAngle > 50) {
             feedbackMessages.advance.push('Left elbow should be bent at 45 degrees.');
@@ -365,9 +356,7 @@ export default function Fencer_Page2() {
               <div className="h-[full] p-6 flex flex-col justify-center items-center">
                 <MemoizedFencerStats
                   pose={pose}
-                  lastCalled={lastCalled}
-                  setLastCalled={setLastCalled}
-                  setAiFeedback={setAiResult}
+                  // setAiFeedback={setAiResult}
                   height={height}
                   setFeetDistance={setFeetDistance}
                   setShoulderWidth={setShoulderWidth}
@@ -446,4 +435,3 @@ export default function Fencer_Page2() {
     </InstructionContext.Provider>
   );
 }Fencer_Page2.propTypes = {};
-

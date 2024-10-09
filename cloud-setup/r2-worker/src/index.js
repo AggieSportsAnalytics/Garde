@@ -77,7 +77,7 @@ function handleOptionsRequest() {
 		headers: {
 			"Access-Control-Allow-Origin": "*",
 			"Access-Control-Allow-Methods": "GET, POST, OPTIONS, PUT", // Allow GET, POST, and OPTIONS methods
-			"Access-Control-Allow-Headers": "Content-Type", // Allow headers like Content-Type
+			"Access-Control-Allow-Headers": "Content-Type, Range", // Allow headers like Content-Type
 		},
 	});
 }
@@ -86,7 +86,7 @@ function addCorsHeaders(response) {
 	const newHeaders = new Headers(response.headers);
 	newHeaders.set("Access-Control-Allow-Origin", "*");
 	newHeaders.set("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT");
-	newHeaders.set("Access-Control-Allow-Headers", "Content-Type, Range");
+	newHeaders.set("Access-Control-Allow-Headers", "Content-Type");
 
 	return new Response(response.body, {
 		status: response.status,
@@ -100,34 +100,18 @@ async function getVideoChunks(videoId, range, BUCKET) {
 	if (!video) {
 		return new Response("Video not found", { status: 404 });
 	}
-
-	// Ensure the range request is handled correctly
 	const { size } = video;
-	let [start, end] = range
-		.replace(/bytes=/, "")
-		.split("-")
-		.map(Number);
+	let [start, end] = range.split("-").map(Number);
 	start = Number.isNaN(start) ? 0 : start;
 	end = Number.isNaN(end) ? size - 1 : Math.min(end, size - 1);
-
-	// Chunk size and video slicing
-	const chunkSize = end - start + 1;
-	const stream = video.slice(start, end + 1);
-
-	// Prepare headers for partial content response
-	const headers = new Headers({
-		"Content-Range": `bytes ${start}-${end}/${size}`,
-		"Accept-Ranges": "bytes",
-		"Content-Length": chunkSize,
-		"Content-Type": "video/mp4", // Adjust based on actual content type
-	});
-
+	const stream = video.body;
 	const res = new Response(stream, {
-		status: 206, // Partial content
-		headers,
+		status: 200,
+		headers: {
+			"Content-Type": "video/mp4",
+		},
 	});
-
-	return addCorsHeaders(res); // Ensure CORS headers are added
+	return addCorsHeaders(res);
 }
 
 // uploading video to bucket

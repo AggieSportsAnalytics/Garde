@@ -219,7 +219,8 @@ const WebcamPose = ({
 	};
 
 	useEffect(() => {
-		const options = { mimeType: "video/webm; codecs=vp9" };
+		// video/webm; codecs=vp9 is more space efficient but less compatible
+		const options = { mimeType: "video/mp4" };
 
 		if (videoSource || isRecording) {
 			runPoseDetection();

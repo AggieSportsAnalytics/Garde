@@ -24,7 +24,7 @@ const Videos = ({ fencer }) => {
 	}, [fencer, workerUrl]);
 
 	const fetchVideoChunks = async (videoId) => {
-		const range = "bytes=0-"; // Start with an initial range
+		const range = "0-"; // Start with an initial range
 		const splitVideo = videoId.split("/");
 		const fencerId = splitVideo[0];
 		const video = splitVideo[1];

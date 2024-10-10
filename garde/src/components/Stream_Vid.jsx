@@ -86,26 +86,32 @@ const handleVideoUpload = async (file) => {
 	}
 
 	const uniqueId = uuidv4();
-	const fileName = `${decoded.id}/${uniqueId}`;
-	const formData = new FormData();
-	formData.append("file", file, fileName);
-
-	const workerUrl = `${process.env.NEXT_PUBLIC_R2_WORKER}/putVideo`;
+	const fencerId = decoded.id;
+	const videoId = uniqueId;
+	const workerUrl = `${process.env.NEXT_PUBLIC_R2_WORKER}/getPresignedUrl?videoId=${videoId}&fencerId=${fencerId}`;
 
 	try {
-		const response = await axios.put(workerUrl, formData, {
+		const presignedUrlResponse = await axios.get(workerUrl, {
 			headers: {
-				"Content-Type": "multipart/form-data", // Axios manages boundary automatically
+				"Content-Type": "application/json",
 			},
 		});
 
-		if (response.status >= 200 && response.status < 300) {
-			console.log("Video uploaded successfully");
+		const presignedUrl = presignedUrlResponse.data.url;
+
+		const uploadResponse = await axios.put(presignedUrl, file, {
+			headers: {
+				"Content-Type": "video/mp4",
+			},
+		});
+
+		if (uploadResponse.status >= 200 && uploadResponse.status <= 300) {
+			console.log("File uploaded successfully!");
 		} else {
-			console.error("Video upload failed");
+			console.error("Failed to upload file");
 		}
 	} catch (error) {
-		console.error("Error uploading video:", error.message);
+		console.error("Error during file upload:", error);
 	}
 };
 

@@ -1,7 +1,10 @@
+import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+
 export default {
 	async fetch(request, env) {
 		const url = new URL(request.url);
-		const { BUCKET } = env;
+		const { BUCKET, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY } = env;
 		const path = url.pathname;
 
 		try {
@@ -30,13 +33,18 @@ export default {
 					const pathName = path.split("/");
 					return await listBucket(pathName[pathName.length - 1], BUCKET);
 				}
-			} else if (request.method === "PUT") {
-				if (url.pathname === "/putVideo") {
-					const body = await request.formData();
 
-					const file = body.get("file");
-					const filename = file.name;
-					return await uploadVideo(file, filename, BUCKET);
+				if (path === "/getPresignedUrl") {
+					const fencerId = url.searchParams.get("fencerId");
+					const videoId = url.searchParams.get("videoId");
+
+					const key = `${fencerId}/${videoId}`;
+
+					return await getPresignedUrl(
+						key,
+						R2_ACCESS_KEY_ID,
+						R2_SECRET_ACCESS_KEY,
+					);
 				}
 			}
 
@@ -76,7 +84,7 @@ function handleOptionsRequest() {
 		headers: {
 			"Access-Control-Allow-Origin": "*",
 			"Access-Control-Allow-Methods": "GET, POST, OPTIONS, PUT", // Allow GET, POST, and OPTIONS methods
-			"Access-Control-Allow-Headers": "Content-Type, Range", // Allow headers like Content-Type
+			"Access-Control-Allow-Headers": "Content-Type", // Allow headers like Content-Type
 		},
 	});
 }
@@ -118,21 +126,6 @@ async function getVideoChunks(videoId, range, BUCKET) {
 	return addCorsHeaders(res);
 }
 
-// uploading video to bucket
-async function uploadVideo(file, filename, BUCKET) {
-	await BUCKET.put(filename, file.stream(), {
-		httpMetadata: { contentType: file.type },
-	});
-
-	const res = new Response(JSON.stringify({ message: "Success" }), {
-		status: 201,
-		headers: {
-			"Content-Type": "application/json",
-		},
-	});
-	return addCorsHeaders(res);
-}
-
 // Listing bucket under prefix (user id)
 async function listBucket(prefix, BUCKET) {
 	if (prefix === "") {
@@ -162,4 +155,44 @@ async function listBucket(prefix, BUCKET) {
 	);
 
 	return addCorsHeaders(res);
+}
+
+async function getPresignedUrl(
+	filename,
+	R2_ACCESS_KEY_ID,
+	R2_SECRET_ACCESS_KEY,
+) {
+	const client = new S3Client({
+		region: "auto",
+		endpoint:
+			"https://aab5b28251de4c153b96e6f8d3179cbc.r2.cloudflarestorage.com",
+		credentials: {
+			accessKeyId: R2_ACCESS_KEY_ID,
+			secretAccessKey: R2_SECRET_ACCESS_KEY,
+		},
+	});
+
+	const command = new PutObjectCommand({
+		Bucket: "garde-fencing-videos",
+		Key: filename,
+	});
+
+	const presignedUrl = await getSignedUrl(client, command, {
+		expiresIn: 3600,
+	});
+
+	return addCorsHeaders(
+		new Response(
+			JSON.stringify({
+				url: presignedUrl,
+				message: "Successfully generated presigned url",
+			}),
+			{
+				status: 200,
+				headers: {
+					"Content-Type": "application/json",
+				},
+			},
+		),
+	);
 }

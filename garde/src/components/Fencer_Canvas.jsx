@@ -279,8 +279,6 @@ const WebcamPose = ({
 	}, [isRecording, videoSource, runtime, modelType]);
 
 	const handleDataAvailable = async (event) => {
-		const workerUrl = `${process.env.NEXT_PUBLIC_R2_WORKER}/putVideo`;
-
 		let decoded = "";
 		const token = document.cookie
 			.split("; ")
@@ -300,25 +298,32 @@ const WebcamPose = ({
 		}
 
 		const uniqueId = uuidv4();
-		const fileName = `${decoded.id}/${uniqueId}`;
+		const fencerId = decoded.id;
+		const videoId = uniqueId;
+		const workerUrl = `${process.env.NEXT_PUBLIC_R2_WORKER}/getPresignedUrl?videoId=${videoId}&fencerId=${fencerId}`;
 
 		try {
-			const formData = new FormData();
-			formData.append("file", event.data, fileName); // Append the video file
-
-			const response = await axios.put(workerUrl, formData, {
+			const presignedUrlResponse = await axios.get(workerUrl, {
 				headers: {
-					"Content-Type": "multipart/form-data", // Axios manages boundary automatically
+					"Content-Type": "application/json",
 				},
 			});
 
-			if (response.status >= 200 && response.status < 300) {
-				console.log("Video uploaded successfully");
+			const presignedUrl = presignedUrlResponse.data.url;
+
+			const uploadResponse = await axios.put(presignedUrl, event.data, {
+				headers: {
+					"Content-Type": "video/mp4",
+				},
+			});
+
+			if (uploadResponse.status >= 200 && uploadResponse.status <= 300) {
+				console.log("File uploaded successfully!");
 			} else {
-				console.error("Video upload failed");
+				console.error("Failed to upload file");
 			}
 		} catch (error) {
-			console.error("Error uploading video:", error.message);
+			console.error("Error during file upload:", error);
 		}
 	};
 

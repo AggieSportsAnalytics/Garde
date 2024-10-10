@@ -51,7 +51,7 @@ export default function Signin({ isSignUpDefault, type }) {
 		};
 
 		checkToken();
-	}, [router]);
+	}, [router, type]);
 
 	const closeModal = () => {
 		setShowAlert(false);
@@ -82,7 +82,11 @@ export default function Signin({ isSignUpDefault, type }) {
 				setError("");
 				setSuccess("Please verify your email address...");
 				await new Promise((r) => setTimeout(r, 2000));
-				window.location.reload();
+				setEmail("");
+				setPassword("");
+				setName("");
+				setError("");
+				setSuccess("");
 			}
 		} catch (error) {
 			setName("");
@@ -90,6 +94,8 @@ export default function Signin({ isSignUpDefault, type }) {
 			setPassword("");
 			setSuccess("");
 			setError(error.response.data.error || "Failed to login/sign up");
+			await new Promise((r) => setTimeout(r, 2000));
+			setError("");
 		}
 	};
 
@@ -113,12 +119,23 @@ export default function Signin({ isSignUpDefault, type }) {
 		} catch (error) {
 			setSuccess("");
 			setError(error.response.data.error || "Failed to sign up");
+			await new Promise((r) => setTimeout(r, 2000));
+			setError("");
 		}
 	};
 
 	const handleGoogleError = () => {
 		setSuccess("");
 		setError("Google Auth failed");
+	};
+
+	const toggleSignUp = () => {
+		setError("");
+		setSuccess("");
+		setName("");
+		setEmail("");
+		setPassword("");
+		setIsSignUp(!isSignUp);
 	};
 
 	return (
@@ -226,7 +243,8 @@ export default function Signin({ isSignUpDefault, type }) {
 				</div>
 
 				<button
-					onClick={() => setIsSignUp(!isSignUp)}
+					type="button"
+					onClick={toggleSignUp}
 					className="w-full text-blue-400 hover:text-blue-500 text-sm mt-4"
 				>
 					{isSignUp ? "Already have an account? Sign In" : "New here? Sign Up"}

@@ -17,7 +17,13 @@ export async function POST(req) {
 		console.log(response);
 
 		const data = response?.data?.data; // Safeguard check
-		console.log(data);
+
+		if (data.password === "google") {
+			return NextResponse.json(
+				{ error: "Google sign in detected, please login with google" },
+				{ status: 401 },
+			);
+		}
 
 		// Check password
 		const matched = await checkPassword(password, data.password);

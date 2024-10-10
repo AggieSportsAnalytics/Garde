@@ -12,6 +12,7 @@ const Videos = ({ fencer }) => {
 	useEffect(() => {
 		const fetchVideos = async () => {
 			try {
+				setVideoUrl(null);
 				const listUrl = `${workerUrl}/listBucket/${fencer.fencer_id}`;
 				const response = await axios.get(listUrl);
 				setVideos(response.data.videos);

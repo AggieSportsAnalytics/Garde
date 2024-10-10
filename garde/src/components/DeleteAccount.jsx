@@ -57,10 +57,10 @@ export default function DeleteAccountButton({ type, otherId }) {
 			// Replace with your actual DELETE API endpoint
 			const response = await axios.delete(workerUrl);
 
-			if (response.status === 200) {
+			if (response.status >= 200 && response.status < 300) {
 				const res = await axios.get("/api/logout");
 
-				if (res.status === 200) {
+				if (response.status >= 200 && response.status < 300) {
 					// Redirect to the login page after logout
 					router.push("/");
 				} else {

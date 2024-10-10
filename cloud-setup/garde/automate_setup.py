@@ -43,9 +43,10 @@ CREATE TABLE IF NOT EXISTS fencer (
 );
 """
 
+# consider changing session_id to uuid specified on client/server side rather than autoincrement
 create_fencer_sessions_table = """
 CREATE TABLE IF NOT EXISTS fencer_sessions (
-    session_id INTEGER PRIMARY KEY AUTOINCREMENT,  
+    session_id INTEGER PRIMARY KEY AUTOINCREMENT, 
     fencer_id TEXT,                                
     speed REAL,                                    
     left_elbow REAL,                               
@@ -75,17 +76,27 @@ CREATE TABLE IF NOT EXISTS coach_fencer (
     coach_id TEXT,       
     fencer_id TEXT,
     fencer_name TEXT,
+    fencer_email TEXT,
     PRIMARY KEY (coach_id, fencer_id),
     FOREIGN KEY (coach_id) REFERENCES coach(unique_id) ON DELETE CASCADE,
     FOREIGN KEY (fencer_id) REFERENCES fencer(unique_id) ON DELETE CASCADE
 );
 """
 
-# SQL command to create the session_types table
-create_fencer_instruction_table = """
-CREATE TABLE IF NOT EXISTS fencer_instructions (
-    name TEXT PRIMARY KEY
+create_whitelist_table = """
+CREATE TABLE IF NOT EXISTS whitelist (
+    email TEXT PRIMARY KEY
 );
+"""
+
+insert_or_replace_whitelist = """
+INSERT OR IGNORE INTO whitelist (email) 
+VALUES 
+    ('vikram.penumarti@gmail.com'),
+    ('vpenumarti@ucdavis.edu'),
+    ('haalexander@ucdavis.edu'),
+    ('rdas@ucdavis.edu'),
+    ('sjbarman@ucdavis.edu');
 """
 
 # SQL command to create the ideal_angles table
@@ -98,6 +109,12 @@ CREATE TABLE IF NOT EXISTS ideal_angles (
     elbow_right REAL,           
     hip_right REAL,             
     knee_right REAL             
+);
+"""
+
+create_fencer_instruction_table = """
+CREATE TABLE IF NOT EXISTS fencer_instructions (
+    name TEXT PRIMARY KEY
 );
 """
 
@@ -259,8 +276,10 @@ if __name__ == "__main__":
         execute_sql(database_name, create_coach_fencers_table)
         execute_sql(database_name, create_fencer_instruction_table)
         execute_sql(database_name, create_ideal_angles_table)
+        execute_sql(database_name, create_whitelist_table)
         execute_sql(database_name, insert_or_replace_fencer_instructions)
         execute_sql(database_name, insert_or_replace_ideal_angles)
+        execute_sql(database_name, insert_or_replace_whitelist)
         deploy_script()
     else:
         delete_d1_database(database_name)

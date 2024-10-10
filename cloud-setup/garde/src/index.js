@@ -34,9 +34,7 @@ export default {
 						DB,
 					);
 				}
-			}
-
-			if (request.method === "DELETE") {
+			} else if (request.method === "DELETE") {
 				if (path === "/deleteCoachFencer") {
 					return await deleteCoachFencers(
 						url.searchParams.get("fencerId"),
@@ -52,9 +50,7 @@ export default {
 						DB,
 					);
 				}
-			}
-
-			if (request.method === "GET") {
+			} else if (request.method === "GET") {
 				if (path === "/") {
 					return handleGetRequest();
 				}
@@ -76,9 +72,7 @@ export default {
 					const pathName = path.split("/");
 					return await getFencer(pathName[pathName.length - 1], DB);
 				}
-			}
-
-			if (request.method === "PUT") {
+			} else if (request.method === "PUT") {
 				if (path.includes("/putInstruction")) {
 					const pathName = path.split("/");
 					return await putInstruction(pathName[pathName.length - 1], DB);
@@ -91,6 +85,7 @@ export default {
 						body.fencerId,
 						body.coachId,
 						body.fencerName,
+						body.fencerEmail,
 						DB,
 					);
 				}
@@ -100,7 +95,12 @@ export default {
 				}
 			}
 			return addCorsHeaders(
-				new Response("Method not allowed", { status: 405 }),
+				new Response(JSON.stringify({ message: "Method not allowed" }), {
+					status: 405,
+					headers: {
+						"Content-Type": "application/json",
+					},
+				}),
 			);
 		} catch (error) {
 			const err = new Response(
@@ -108,7 +108,7 @@ export default {
 					error: error.message,
 				}),
 				{
-					status: 500,
+					status: error.status,
 					headers: {
 						"Content-Type": "application/json",
 					},
@@ -122,7 +122,12 @@ export default {
 
 // default get method (test)
 function handleGetRequest() {
-	return new Response(JSON.stringify({ message: "success" }));
+	return new Response(JSON.stringify({ message: "success" }), {
+		status: 200,
+		headers: {
+			"Content-Type": "application/json",
+		},
+	});
 }
 
 // Function to handle preflight OPTIONS requests (CORS)
@@ -157,26 +162,34 @@ async function putInstruction(fencerInstruction, DB) {
     `;
 	await DB.prepare(query).bind(fencerInstruction).run();
 
-	const res = new Response(JSON.stringify({ message: "Success" }), {
-		status: 200,
-		headers: {
-			"Content-Type": "application/json",
+	const res = new Response(
+		JSON.stringify({ message: "Successfully put instruction" }),
+		{
+			status: 201,
+			headers: {
+				"Content-Type": "application/json",
+			},
 		},
-	});
+	);
 	return addCorsHeaders(res);
 }
 
-async function putCoachFencer(fencerId, coachId, fencerName, DB) {
+async function putCoachFencer(fencerId, coachId, fencerName, fencerEmail, DB) {
 	const query =
-		"INSERT OR IGNORE INTO coach_fencer (coach_id, fencer_id, fencer_name) VALUES (?, ?, ?);";
-	await DB.prepare(query).bind(coachId, fencerId, fencerName).run();
+		"INSERT OR IGNORE INTO coach_fencer (coach_id, fencer_id, fencer_name, fencer_email) VALUES (?, ?, ?, ?);";
+	await DB.prepare(query)
+		.bind(coachId, fencerId, fencerName, fencerEmail)
+		.run();
 
-	const res = new Response(JSON.stringify({ message: "Success" }), {
-		status: 200,
-		headers: {
-			"Content-Type": "application/json",
+	const res = new Response(
+		JSON.stringify({ message: "Successfully added fencer to coach" }),
+		{
+			status: 201,
+			headers: {
+				"Content-Type": "application/json",
+			},
 		},
-	});
+	);
 	return addCorsHeaders(res);
 }
 
@@ -199,12 +212,15 @@ async function putAngleData(fencerId, angleData, DB) {
 		)
 		.run();
 
-	const res = new Response(JSON.stringify({ message: "Success" }), {
-		status: 200,
-		headers: {
-			"Content-Type": "application/json",
+	const res = new Response(
+		JSON.stringify({ message: "Successfully added angle data" }),
+		{
+			status: 201,
+			headers: {
+				"Content-Type": "application/json",
+			},
 		},
-	});
+	);
 	return addCorsHeaders(res);
 }
 
@@ -217,6 +233,9 @@ async function verifyEmail(email, type, DB) {
 		return addCorsHeaders(
 			new Response(JSON.stringify({ error: "User not found" }), {
 				status: 404,
+				headers: {
+					"Content-Type": "application/json",
+				},
 			}),
 		);
 	}
@@ -228,16 +247,45 @@ async function verifyEmail(email, type, DB) {
 
 	if (newUser.results[0].is_verified === 1) {
 		return addCorsHeaders(
-			new Response(JSON.stringify({ message: "Successfully verified email" })),
+			new Response(JSON.stringify({ message: "Successfully verified email" }), {
+				status: 200,
+				headers: {
+					"Content-Type": "application/json",
+				},
+			}),
 		);
 	}
 
 	return addCorsHeaders(
-		new Response(JSON.stringify({ error: "Failed to verify email" })),
+		new Response(JSON.stringify({ error: "Failed to verify email" }), {
+			status: 500,
+			headers: {
+				"Content-Type": "application/json",
+			},
+		}),
 	);
 }
 
 async function authGoogle(id, email, name, type, DB) {
+	// remove this code once Garde goes public
+	const isWhitelisted = await isOnWhitelist(email, DB);
+	if (!isWhitelisted) {
+		return addCorsHeaders(
+			new Response(
+				JSON.stringify({
+					error:
+						"Garde is currently in closed beta please contact 'gardefencing@gmail.com' to be granted access to Garde",
+				}),
+				{
+					status: 403,
+					headers: {
+						"Content-Type": "application/json",
+					},
+				},
+			),
+		);
+	}
+
 	const googlePassword = "google";
 
 	// Check if the user already exists in the database
@@ -251,18 +299,36 @@ async function authGoogle(id, email, name, type, DB) {
 
 		// If the user exists and the password is "google", return id and name
 		if (user.password === googlePassword) {
-			const res = new Response(JSON.stringify({ id: user.unique_id }), {
-				headers: {
-					"Content-Type": "application/json",
-					"Access-Control-Allow-Origin": "*", // Allow requests from any origin
+			const res = new Response(
+				JSON.stringify({
+					message: "User exists, logging in",
+					data: {
+						id: user.unique_id,
+					},
+				}),
+				{
+					status: 200,
+					headers: {
+						"Content-Type": "application/json",
+					},
 				},
-			});
+			);
 
 			return addCorsHeaders(res);
 		}
 
-		throw new Error(
-			"Non-google signin found, please use email/password signin",
+		return addCorsHeaders(
+			new Response(
+				JSON.stringify({
+					error: "Non-google signin found, please use email/password signin",
+				}),
+				{
+					status: 400,
+					headers: {
+						"Content-Type": "application/json",
+					},
+				},
+			),
 		);
 	}
 
@@ -275,27 +341,86 @@ async function authGoogle(id, email, name, type, DB) {
 		.run();
 
 	if (!result.success) {
-		throw new Error("Failed to create user");
+		return addCorsHeaders(
+			new Response(
+				JSON.stringify({
+					error: "Failed to create user",
+				}),
+				{
+					status: 500,
+					headers: {
+						"Content-Type": "application/json",
+					},
+				},
+			),
+		);
 	}
 
-	const res = new Response(JSON.stringify({ id: id }), {
-		headers: {
-			"Content-Type": "application/json",
-			"Access-Control-Allow-Origin": "*", // Allow requests from any origin
+	const res = new Response(
+		JSON.stringify({ message: "Successfully created user", data: { id: id } }),
+		{
+			status: 201,
+			headers: {
+				"Content-Type": "application/json",
+			},
 		},
-	});
+	);
 
 	return addCorsHeaders(res);
 }
 
+// remove this code once Garde goes public
+async function isOnWhitelist(email, DB) {
+	const fetched = await DB.prepare("SELECT * FROM whitelist WHERE email = ?")
+		.bind(email)
+		.all();
+
+	if (fetched.results.length < 1) {
+		return false;
+	}
+
+	return true;
+}
+
 async function auth(type, name, email, password, id, DB) {
+	// remove this code once Garde goes public
+	const isWhitelisted = await isOnWhitelist(email, DB);
+	if (!isWhitelisted) {
+		return addCorsHeaders(
+			new Response(
+				JSON.stringify({
+					error:
+						"Garde is currently in closed beta please contact 'gardefencing@gmail.com' to be granted access to Garde",
+				}),
+				{
+					status: 403,
+					headers: {
+						"Content-Type": "application/json",
+					},
+				},
+			),
+		);
+	}
+
 	// Check if the user already exists in the database
 	const fetched = await DB.prepare(`SELECT * FROM ${type} WHERE email = ?`)
 		.bind(email)
 		.all();
 
 	if (fetched.results.length > 0) {
-		throw new Error("User already exists");
+		return addCorsHeaders(
+			new Response(
+				JSON.stringify({
+					error: "User already exists",
+				}),
+				{
+					status: 409,
+					headers: {
+						"Content-Type": "application/json",
+					},
+				},
+			),
+		);
 	}
 
 	// User does not exist, create a new user
@@ -307,15 +432,30 @@ async function auth(type, name, email, password, id, DB) {
 		.run();
 
 	if (!result.success) {
-		throw new Error("Failed to create user");
+		return addCorsHeaders(
+			new Response(
+				JSON.stringify({
+					error: "Failed to create user",
+				}),
+				{
+					status: 500,
+					headers: {
+						"Content-Type": "application/json",
+					},
+				},
+			),
+		);
 	}
 
-	const res = new Response(JSON.stringify({ success: true }), {
-		headers: {
-			"Content-Type": "application/json",
-			"Access-Control-Allow-Origin": "*", // Allow requests from any origin
+	const res = new Response(
+		JSON.stringify({ message: "Successfully created user" }),
+		{
+			status: 201,
+			headers: {
+				"Content-Type": "application/json",
+			},
 		},
-	});
+	);
 
 	return addCorsHeaders(res);
 }
@@ -327,12 +467,18 @@ async function getFencer(id, DB) {
 		.bind(id)
 		.all();
 
-	const res = new Response(JSON.stringify(result.results), {
-		headers: {
-			"Content-Type": "application/json",
-			"Access-Control-Allow-Origin": "*", // Allow requests from any origin
+	const res = new Response(
+		JSON.stringify({
+			data: result.results,
+			message: "Succesfully retrieved fencer sessions",
+		}),
+		{
+			status: 200,
+			headers: {
+				"Content-Type": "application/json",
+			},
 		},
-	});
+	);
 
 	return addCorsHeaders(res);
 }
@@ -344,12 +490,18 @@ async function getCoach(id, DB) {
 		.bind(id)
 		.all();
 
-	const res = new Response(JSON.stringify(result.results), {
-		headers: {
-			"Content-Type": "application/json",
-			"Access-Control-Allow-Origin": "*", // Allow requests from any origin
+	const res = new Response(
+		JSON.stringify({
+			data: result.results,
+			message: "Successfully got coach's fencers",
+		}),
+		{
+			status: 200,
+			headers: {
+				"Content-Type": "application/json",
+			},
 		},
-	});
+	);
 
 	return addCorsHeaders(res);
 }
@@ -361,25 +513,52 @@ async function verify(type, email, DB) {
 		.all();
 
 	if (fetched.results.length === 0) {
-		throw new Error("User does not exist");
+		return addCorsHeaders(
+			new Response(
+				JSON.stringify({
+					error: "User does not exist",
+				}),
+				{
+					status: 404,
+					headers: {
+						"Content-Type": "application/json",
+					},
+				},
+			),
+		);
 	}
 
 	const user = fetched.results[0];
 
 	if (user.is_verified === 0) {
-		throw new Error("User has not verified their email");
+		return addCorsHeaders(
+			new Response(
+				JSON.stringify({
+					error: "User has not verified their email",
+				}),
+				{
+					status: 500,
+					headers: {
+						"Content-Type": "application/json",
+					},
+				},
+			),
+		);
 	}
 
 	const res = new Response(
 		JSON.stringify({
-			id: user.unique_id,
-			name: user.name,
-			password: user.password,
+			data: {
+				id: user.unique_id,
+				name: user.name,
+				password: user.password,
+			},
+			message: "Successfully verified user",
 		}),
 		{
+			status: 200,
 			headers: {
 				"Content-Type": "application/json",
-				"Access-Control-Allow-Origin": "*", // Allow requests from any origin
 			},
 		},
 	);
@@ -392,14 +571,14 @@ async function deleteCoachFencers(fencerId, coachId, DB) {
         DELETE FROM coach_fencer
         WHERE fencer_id = ? AND coach_id = ?;
     `;
-	const result = await DB.prepare(query).bind(fencerId, coachId).run();
+	await DB.prepare(query).bind(fencerId, coachId).run();
 
 	const res = new Response(
-		JSON.stringify({ message: "Coach-Fencer relation deleted", result }),
+		JSON.stringify({ message: "Coach-Fencer relation deleted" }),
 		{
+			status: 200,
 			headers: {
 				"Content-Type": "application/json",
-				"Access-Control-Allow-Origin": "*",
 			},
 		},
 	);
@@ -412,17 +591,14 @@ async function deleteUser(id, type, DB) {
         DELETE FROM ${type}
         WHERE unique_id = ?;
     `;
-	const result = await DB.prepare(query).bind(id).run();
+	await DB.prepare(query).bind(id).run();
 
-	const res = new Response(
-		JSON.stringify({ message: `${type} deleted`, result }),
-		{
-			headers: {
-				"Content-Type": "application/json",
-				"Access-Control-Allow-Origin": "*",
-			},
+	const res = new Response(JSON.stringify({ message: `${type} deleted` }), {
+		status: 200,
+		headers: {
+			"Content-Type": "application/json",
 		},
-	);
+	});
 
 	return addCorsHeaders(res);
 }

@@ -13,9 +13,11 @@ export default function CoachPage() {
 	const [id, setId] = useState(""); // coach id
 	const [fencers, setFencers] = useState([]); // Initially an empty array for fencers
 	const [currentFencer, setCurrentFencer] = useState({}); // current fencer
+	const [coachName, setCoachName] = useState("");
 
 	// Fetch the coach ID and fencers
 	useEffect(() => {
+		console.log(document.cookie);
 		const token = document.cookie
 			.split("; ")
 			.find((row) => row.startsWith("token="))
@@ -24,6 +26,7 @@ export default function CoachPage() {
 		if (token) {
 			const decoded = jwtDecode(token);
 			setId(decoded.id);
+			setCoachName(decoded.name);
 			getInfo("getCoach", decoded.id);
 		} else {
 			console.log("No cookies found");
@@ -49,7 +52,7 @@ export default function CoachPage() {
 		axios
 			.get(workerUrl)
 			.then((response) => {
-				setFencers(response.data); // Setting the fencers data from the response
+				setFencers(response.data.data); // Setting the fencers data from the response
 			})
 			.catch((error) => console.log(error));
 	}
@@ -62,13 +65,13 @@ export default function CoachPage() {
 				currentFencer={currentFencer}
 				setCurrentFencer={setCurrentFencer}
 			/>
-			<Feedback fencer={currentFencer} />
+			<Feedback fencer={currentFencer} coachName={coachName} />
 			<AddFencerInstruction />
 		</div>
 	);
 }
 
-function Feedback({ fencer }) {
+function Feedback({ fencer, coachName }) {
 	return (
 		<div className="flex flex-row mx-10 pt-10 text-white space-x-6">
 			{/* Video Gallery */}
@@ -78,7 +81,7 @@ function Feedback({ fencer }) {
 
 			{/* Editor Component */}
 			<div className="w-1/2">
-				<Editor />
+				<Editor fencer={fencer} coachName={coachName} />
 			</div>
 		</div>
 	);

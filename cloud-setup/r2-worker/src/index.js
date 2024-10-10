@@ -30,11 +30,7 @@ export default {
 					const pathName = path.split("/");
 					return await listBucket(pathName[pathName.length - 1], BUCKET);
 				}
-
-				return new Response("Not found", { status: 404 });
-			}
-
-			if (request.method === "PUT") {
+			} else if (request.method === "PUT") {
 				if (url.pathname === "/putVideo") {
 					const body = await request.formData();
 
@@ -42,8 +38,6 @@ export default {
 					const filename = file.name;
 					return await uploadVideo(file, filename, BUCKET);
 				}
-
-				return new Response("Not found", { status: 404 });
 			}
 
 			// Return an error for unsupported methods
@@ -54,7 +48,7 @@ export default {
 					error: error.message,
 				}),
 				{
-					status: 500,
+					status: error.status,
 					headers: {
 						"Content-Type": "application/json",
 					},
@@ -68,7 +62,12 @@ export default {
 
 // default get request (test)
 function handleGetRequest() {
-	return new Response(JSON.stringify({ message: "success" }));
+	return new Response(JSON.stringify({ message: "success" }), {
+		status: 200,
+		headers: {
+			"Content-Type": "application/json",
+		},
+	});
 }
 
 // Function to handle preflight OPTIONS requests (CORS)
@@ -98,7 +97,12 @@ function addCorsHeaders(response) {
 async function getVideoChunks(videoId, range, BUCKET) {
 	const video = await BUCKET.get(videoId);
 	if (!video) {
-		return new Response("Video not found", { status: 404 });
+		return new Response(JSON.stringify({ message: "Video not found" }), {
+			status: 404,
+			headers: {
+				"Content-Type": "application/json",
+			},
+		});
 	}
 	const { size } = video;
 	let [start, end] = range.split("-").map(Number);
@@ -121,7 +125,7 @@ async function uploadVideo(file, filename, BUCKET) {
 	});
 
 	const res = new Response(JSON.stringify({ message: "Success" }), {
-		status: 200,
+		status: 201,
 		headers: {
 			"Content-Type": "application/json",
 		},
@@ -131,18 +135,31 @@ async function uploadVideo(file, filename, BUCKET) {
 
 // Listing bucket under prefix (user id)
 async function listBucket(prefix, BUCKET) {
+	if (prefix === "") {
+		const res = new Response(JSON.stringify({ error: "No fencer detected" }), {
+			status: 404,
+			headers: {
+				"Content-Type": "application/json",
+			},
+		});
+
+		return addCorsHeaders(res);
+	}
 	const items = await BUCKET.list({ prefix: prefix });
 	const videos = items.objects.map((object) => ({
 		key: object.key,
 		lastModified: object.uploaded,
 	}));
 
-	const res = new Response(JSON.stringify({ videos: videos }), {
-		headers: {
-			"Content-Type": "application/json",
-			"Access-Control-Allow-Origin": "*",
+	const res = new Response(
+		JSON.stringify({ videos: videos, message: "Successfully listed bucket" }),
+		{
+			status: 200,
+			headers: {
+				"Content-Type": "application/json",
+			},
 		},
-	});
+	);
 
 	return addCorsHeaders(res);
 }

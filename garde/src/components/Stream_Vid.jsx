@@ -99,13 +99,13 @@ const handleVideoUpload = async (file) => {
 			},
 		});
 
-		if (response.status === 200) {
+		if (response.status >= 200 && response.status < 300) {
 			console.log("Video uploaded successfully");
 		} else {
 			console.error("Video upload failed");
 		}
 	} catch (error) {
-		console.error("Error uploading video:", error);
+		console.error("Error uploading video:", error.message);
 	}
 };
 

@@ -18,7 +18,10 @@ export async function POST(req) {
 		const decoded = jwt.verify(cookies, JWT_SECRET);
 
 		// If valid, return the decoded token
-		return NextResponse.json({ message: "Token is valid", decoded });
+		return NextResponse.json(
+			{ message: "Token is valid", decoded },
+			{ status: 200 },
+		);
 	} catch (error) {
 		// If verification fails, return an error
 		return NextResponse.json(

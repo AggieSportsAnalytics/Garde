@@ -16,7 +16,7 @@ const Videos = ({ fencer }) => {
 				const response = await axios.get(listUrl);
 				setVideos(response.data.videos);
 			} catch (error) {
-				console.error("Failed to fetch video list:", error);
+				console.error(error.message);
 			}
 		};
 
@@ -38,11 +38,11 @@ const Videos = ({ fencer }) => {
 			// Set video URL to play it in ReactPlayer
 			setVideoUrl(videoObjectUrl);
 		} catch (error) {
-			if (error.response.data) {
-				const videoObjectUrl = URL.createObjectURL(error.response.data);
-				setVideoUrl(videoObjectUrl);
-			}
-			console.error("Failed to fetch video:", error);
+			// if (error.response.data) {
+			// 	const videoObjectUrl = URL.createObjectURL(error.response.data);
+			// 	setVideoUrl(videoObjectUrl);
+			// }
+			console.error("Failed to fetch video:", error.message);
 		}
 	};
 
@@ -77,8 +77,10 @@ const Videos = ({ fencer }) => {
 						width="100%"
 						height="300px"
 					/>
-				) : (
+				) : videos.length > 0 ? (
 					<p>Select a video to play</p>
+				) : (
+					<p>No fencer selected</p>
 				)}
 			</div>
 		</div>

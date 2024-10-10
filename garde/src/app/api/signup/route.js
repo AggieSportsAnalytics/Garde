@@ -35,40 +35,26 @@ export async function POST(req) {
 			headers: { "Content-Type": "application/json" },
 		});
 
-		if (response.status !== 200) {
-			throw new Error(response.data.error);
-		}
-
 		// Send verification email
-		const emailResult = sendVerificationEmail(email, type);
+		const emailResult = await sendVerificationEmail(email, type); // Add 'await'
 
 		if (!emailResult.success) {
-			return NextResponse.json({ error: emailResult.error }, { status: 500 });
+			return NextResponse.json(
+				{ error: emailResult.error },
+				{ status: emailResult.status },
+			);
 		}
 
 		const data = response.data;
 
 		// If successful, generate JWT token and set as cookie
-		if (data?.success) {
-			const token = jwt.sign(
+		if (data?.message) {
+			const nextResponse = NextResponse.json(
 				{
-					id: id,
-					name: name,
-					email: email,
-					type: type,
+					message: "Successfully signed up",
 				},
-				JWT_SECRET,
-				{ expiresIn: "1h" },
+				{ status: 201 },
 			);
-
-			const nextResponse = NextResponse.json({ id: id, name: name });
-			nextResponse.cookies.set("token", token, {
-				httpOnly: true,
-				secure: process.env.NODE_ENV === "production",
-				maxAge: 60 * 60, // 1 hour
-				path: "/",
-				sameSite: "Strict",
-			});
 
 			return nextResponse;
 		}
@@ -76,8 +62,11 @@ export async function POST(req) {
 		// If something goes wrong
 		return NextResponse.json({ error: "Signup failed" }, { status: 400 });
 	} catch (error) {
-		console.log(error);
-		return NextResponse.json({ error: error.message }, { status: 500 });
+		console.error(error);
+		return NextResponse.json(
+			{ error: error.response?.data?.error || "Internal server error" },
+			{ status: error.response?.status || 500 },
+		);
 	}
 }
 
@@ -89,7 +78,7 @@ async function hashPassword(plainPassword) {
 	return hashedPassword;
 }
 
-function sendVerificationEmail(email, type) {
+async function sendVerificationEmail(email, type) {
 	const transporter = nodemailer.createTransport({
 		service: "gmail", // or another email service
 		auth: {
@@ -112,15 +101,13 @@ function sendVerificationEmail(email, type) {
 		html: `<p>Click <a href="${verificationUrl}">here</a> to verify your email.</p>`,
 	};
 
-	transporter.sendMail(mailOptions, (error, info) => {
-		if (error) {
-			console.error("Error sending email: ", error);
-			// Return an error to the parent function for handling
-			return { success: false, error: error.message };
-		}
+	// Send the email using async/await
+	try {
+		const info = await transporter.sendMail(mailOptions);
 		console.log("Verification email sent: ", info.response);
 		return { success: true };
-	});
-
-	return { success: true };
+	} catch (error) {
+		console.error("Error sending email: ", error);
+		return { success: false, error: error.message, status: 500 };
+	}
 }

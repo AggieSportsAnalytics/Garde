@@ -9,14 +9,14 @@ export default function Logout() {
 		try {
 			const response = await axios.get("/api/logout");
 
-			if (response.status === 200) {
+			if (response.status >= 200 && response.status < 300) {
 				// Redirect to the login page after logout
 				router.push("/");
 			} else {
 				console.error("Failed to log out");
 			}
 		} catch (error) {
-			console.error("An error occurred during logout:", error);
+			console.error(error.message);
 		}
 	};
 

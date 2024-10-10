@@ -1,4 +1,4 @@
-"use client"; // This ensures it's a client component
+"use client";
 
 import { useState, useEffect } from "react";
 import { GoogleLogin } from "@react-oauth/google";
@@ -16,7 +16,6 @@ export default function Signin({ isSignUpDefault, type }) {
 	const [showAlert, setShowAlert] = useState(false);
 	const searchParams = useSearchParams();
 	const [success, setSuccess] = useState("");
-	const [accessKey, setAccessKey] = useState("");
 
 	useEffect(() => {
 		const restricted = searchParams.get("restricted");
@@ -75,10 +74,12 @@ export default function Signin({ isSignUpDefault, type }) {
 				},
 			});
 
-			if (res.status === 200 && !isSignUp) {
+			if (res.status >= 200 && res.status < 300 && !isSignUp) {
+				setError("");
 				setSuccess("Please wait, logging in...");
 				router.push(`/${type}_page`); // Redirect to the appropriate page
-			} else if (res.status === 200 && isSignUp) {
+			} else if (res.status >= 200 && res.status < 300 && isSignUp) {
+				setError("");
 				setSuccess("Please verify your email address...");
 				await new Promise((r) => setTimeout(r, 2000));
 				window.location.reload();
@@ -88,7 +89,7 @@ export default function Signin({ isSignUpDefault, type }) {
 			setEmail("");
 			setPassword("");
 			setSuccess("");
-			setError(error.response.data.error);
+			setError(error.response.data.error || "Failed to login/sign up");
 		}
 	};
 
@@ -105,20 +106,18 @@ export default function Signin({ isSignUpDefault, type }) {
 				headers: { "Content-Type": "application/json" },
 			});
 
-			if (res.data && res.data.status !== 200) {
-				setError(res.data.error);
-			}
-			if (res.status === 200) {
+			if (res.status >= 200 && res.status < 300) {
 				setSuccess("Please wait, logging in...");
 				router.push(`/${type}_page`);
 			}
 		} catch (error) {
-			// console.log(error);
-			setError("Google Auth failed");
+			setSuccess("");
+			setError(error.response.data.error || "Failed to sign up");
 		}
 	};
 
 	const handleGoogleError = () => {
+		setSuccess("");
 		setError("Google Auth failed");
 	};
 
@@ -132,6 +131,7 @@ export default function Signin({ isSignUpDefault, type }) {
 							You must sign in to access the requested page.
 						</p>
 						<button
+							type="button"
 							onClick={closeModal}
 							className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg"
 						>

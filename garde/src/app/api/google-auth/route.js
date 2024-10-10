@@ -3,8 +3,6 @@ import jwt from "jsonwebtoken"; // To sign/verify tokens
 import axios from "axios"; // To make API requests to Google
 const { v4: uuidv4 } = require("uuid");
 
-const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
-const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
 const JWT_SECRET = process.env.JWT_SECRET;
 
 export async function POST(req, res) {
@@ -16,24 +14,19 @@ export async function POST(req, res) {
 
 	try {
 		const id = uuidv4();
-		const status = await uploadToD1(id, decoded.email, decoded.name, type);
-		if (!status) {
-			throw new Error("Missing id");
-		}
-		console.log(status);
+		const uploadRes = await uploadToD1(id, decoded.email, decoded.name, type);
 
-		if (status.status && status.status !== 200) {
-			return NextResponse.json({
-				error: status.response.data.error,
-				status: 500,
-			});
+		if (uploadRes.status !== 200 && uploadRes.status !== 201) {
+			return NextResponse.json(
+				{ error: uploadRes.data.error },
+				{ status: uploadRes.status },
+			);
 		}
 
 		// Handle the token (e.g., create a session, issue a JWT, etc.)
-		// You can sign your own JWT and set it as a cookie
 		const token = jwt.sign(
 			{
-				id: status.id,
+				id: uploadRes.data.data.id,
 				email: decoded.email,
 				name: decoded.name,
 				type: type,
@@ -42,11 +35,12 @@ export async function POST(req, res) {
 			{ expiresIn: "1h" },
 		);
 
-		const response = NextResponse.json({
-			id: status.id,
-			name: decoded.name,
-		});
+		const response = NextResponse.json(
+			{ message: "Successfully logged in" },
+			{ status: 201 },
+		);
 
+		// Set the cookie
 		response.cookies.set("token", token, {
 			httpOnly: false,
 			maxAge: 60 * 60,
@@ -57,9 +51,9 @@ export async function POST(req, res) {
 
 		return response;
 	} catch (error) {
-		console.error("Error exchanging code for token:", error);
+		console.log(error);
 		return NextResponse.json(
-			{ error: "Failed to authenticate with Google" },
+			{ error: error.message || "An error occurred" },
 			{ status: 500 },
 		);
 	}
@@ -80,18 +74,12 @@ async function uploadToD1(id, email, name, type) {
 			headers: { "Content-Type": "application/json" },
 		});
 
-		if (response.status !== 200) {
-			throw new Error(response.data.error);
-		}
-
-		const data = response.data;
-
-		if (data?.id) {
-			return { id: data.id };
-		}
-
-		return null;
+		return response; // Return the actual Axios response if successful
 	} catch (error) {
-		return error;
+		// If there's an error, return a structured response
+		return {
+			status: error.response?.status || 500,
+			data: error.response?.data || { error: "Server error" },
+		};
 	}
 }

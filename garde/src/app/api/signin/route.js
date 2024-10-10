@@ -6,7 +6,7 @@ import jwt from "jsonwebtoken";
 // Set JWT secret in .env.local
 const JWT_SECRET = process.env.JWT_SECRET;
 
-export async function POST(req, res) {
+export async function POST(req) {
 	try {
 		const { email, password, type } = await req.json();
 
@@ -14,19 +14,16 @@ export async function POST(req, res) {
 
 		// Check the worker API to validate credentials
 		const response = await axios.get(workerUrl);
+		console.log(response);
 
-		if (response.status !== 200) {
-			throw new Error(response.data.error);
-		}
-
-		const data = response.data;
+		const data = response?.data?.data; // Safeguard check
+		console.log(data);
 
 		// Check password
 		const matched = await checkPassword(password, data.password);
 
 		// Check if valid data is returned
 		if (data?.id && data.name && matched) {
-			// Generate JWT token
 			const token = jwt.sign(
 				{
 					id: data.id,
@@ -38,11 +35,12 @@ export async function POST(req, res) {
 				{ expiresIn: "1h" },
 			);
 
-			// Set JWT as HttpOnly cookie
-			const response = NextResponse.json({
-				id: data.id,
-				name: data.name,
-			});
+			const response = NextResponse.json(
+				{
+					message: "Successfully signed in",
+				},
+				{ status: 200 },
+			);
 			response.cookies.set("token", token, {
 				httpOnly: false,
 				maxAge: 60 * 60, // 1 hour
@@ -55,14 +53,15 @@ export async function POST(req, res) {
 
 		return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
 	} catch (error) {
+		// Handle Axios errors and other errors properly
 		return NextResponse.json(
-			{ error: error.response.data.error },
-			{ status: 500 },
+			{ error: error?.response?.data?.error || "Internal server error" },
+			{ status: error?.response?.status || 500 },
 		);
 	}
 }
 
+// Function to check the password
 async function checkPassword(enteredPassword, storedHashedPassword) {
-	const isMatch = await bcrypt.compare(enteredPassword, storedHashedPassword);
-	return isMatch;
+	return bcrypt.compare(enteredPassword, storedHashedPassword);
 }

@@ -5,8 +5,9 @@ import { useState } from "react";
 import StarterKit from "@tiptap/starter-kit";
 import { BoldOutlined, ItalicOutlined } from "@ant-design/icons"; // Ant Design icons
 import ListItem from "@tiptap/extension-list-item";
+import axios from "axios";
 
-function Editor() {
+function Editor({ fencer, coachName }) {
 	const [errorMessage, setErrorMessage] = useState("");
 
 	// Initialize editor with necessary extensions, including lists
@@ -21,7 +22,7 @@ function Editor() {
 		placeholder: "Enter your feedback here...",
 	});
 
-	const handleSubmit = () => {
+	const handleSubmit = async () => {
 		if (!editor) return;
 
 		const content = editor.getHTML();
@@ -34,13 +35,25 @@ function Editor() {
 		editor.commands.setContent(""); // Clear content after submission
 		setErrorMessage("");
 		console.log("Submitting feedback:", content);
+
+		const queryData = {
+			data: content,
+			email: fencer.fencer_email,
+			coachName: coachName,
+		};
+
+		await axios.put("/api/send_feedback", queryData, {
+			headers: {
+				"Content-Type": "application/json",
+			},
+		});
 	};
 
 	const handleBold = () => editor?.chain().focus().toggleBold().run();
 	const handleItalic = () => editor?.chain().focus().toggleItalic().run();
 
 	return (
-		<div className="w-full">
+		<div className="w-full text-black">
 			{" "}
 			{/* Full width */}
 			{/* Toolbar */}

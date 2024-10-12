@@ -43,7 +43,6 @@ export default function DeleteAccountButton({ type, otherId }) {
 
 			const decoded = jwtDecode(token);
 
-			let queryData;
 			if (type === "coach-fencer") {
 				if (decoded.type === "coach") {
 					workerUrl += `?fencerId=${otherId}&coachId=${decoded.id}`;

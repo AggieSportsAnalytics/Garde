@@ -30,6 +30,8 @@ import {
 import DeleteAccountButton from "../../components/DeleteAccount";
 import AddFencer from "../../components/AddFencer";
 import Logout from "../../components/Logout.jsx";
+import { Modal } from "antd";
+import { SettingOutlined } from "@ant-design/icons";
 
 const MemoizedFencerStats = memo(Fencer_Stats);
 const MemoizedInstruction = memo(Instruction);
@@ -441,6 +443,15 @@ export default function Fencer_Page2() {
 		useState(false);
 	const feedbackDelay = 10000; // 10 seconds delay
 
+	const showModal = () => {
+		setIsModalVisible(true);
+	};
+	const handleCancel = () => {
+		setIsModalVisible(false);
+	};
+
+	const [isModalVisible, setIsModalVisible] = useState(false);
+
 	useEffect(() => {
 		const userAgent =
 			typeof window.navigator === "undefined" ? "" : navigator.userAgent;
@@ -833,9 +844,6 @@ export default function Fencer_Page2() {
 								&#8592;
 							</button>
 						</Link>
-						<DeleteAccountButton type="fencer" otherId="" />
-						<Logout />
-						<AddFencer />
 
 						<div className="flex-grow flex justify-center">
 							<Stream_Vid
@@ -857,6 +865,25 @@ export default function Fencer_Page2() {
 							</button>
 							{/* <UserButton /> */}
 						</div>
+
+						<div className="mx-4">
+							<SettingOutlined
+								className="text-white text-2xl cursor-pointer"
+								onClick={showModal}
+							/>
+						</div>
+						<Modal
+							title="Settings"
+							open={isModalVisible}
+							onCancel={handleCancel}
+							footer={null}
+						>
+							<div className="flex flex-col items-center space-y-4">
+								<AddFencer />
+								<Logout />
+								<DeleteAccountButton type="fencer" otherId="" />
+							</div>
+						</Modal>
 					</header>
 
 					<main

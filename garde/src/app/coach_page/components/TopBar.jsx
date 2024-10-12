@@ -85,13 +85,9 @@ function TopBar({ id, fencers, currentFencer, setCurrentFencer }) {
 				onCancel={handleCancel}
 				footer={null}
 			>
-				<div className="flex flex-col items-center">
-					{/* Logout Button */}
-					<Logout />
-
-					{/* Reveal ID Button */}
+				<div className="flex flex-col items-center space-y-4">
 					<UuidReveal uuid={id} />
-
+					<Logout />
 					<DeleteAccountButton type="coach" otherId="" />
 				</div>
 			</Modal>

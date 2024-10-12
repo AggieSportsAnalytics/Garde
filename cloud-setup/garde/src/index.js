@@ -1,7 +1,7 @@
 export default {
 	async fetch(request, env) {
 		const url = new URL(request.url);
-		const { DB } = env;
+		const { DB, BUCKET } = env;
 		const path = url.pathname;
 
 		try {
@@ -48,6 +48,7 @@ export default {
 						url.searchParams.get("id"),
 						url.searchParams.get("type"),
 						DB,
+						BUCKET,
 					);
 				}
 			} else if (request.method === "GET") {
@@ -586,12 +587,22 @@ async function deleteCoachFencers(fencerId, coachId, DB) {
 	return addCorsHeaders(res);
 }
 
-async function deleteUser(id, type, DB) {
+async function deleteUser(id, type, DB, BUCKET) {
 	const query = `
         DELETE FROM ${type}
         WHERE unique_id = ?;
     `;
 	await DB.prepare(query).bind(id).run();
+
+	const listResult = await BUCKET.list({ prefix: id });
+
+	if (listResult.objects.length > 0) {
+		await Promise.all(
+			listResult.objects.map(async (video) => {
+				await BUCKET.delete(video.key);
+			}),
+		);
+	}
 
 	const res = new Response(JSON.stringify({ message: `${type} deleted` }), {
 		status: 200,

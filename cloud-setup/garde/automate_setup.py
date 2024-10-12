@@ -8,6 +8,11 @@ main = "src/index.js"
 compatibility_date = "2023-08-23"
 
 
+[[r2_buckets]]
+binding = "BUCKET"
+bucket_name = "garde-fencing-videos"
+
+
 """
 
 program_name: str = """

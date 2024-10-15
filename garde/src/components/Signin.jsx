@@ -12,10 +12,10 @@ export default function Signin({ isSignUpDefault, type }) {
 	const [password, setPassword] = useState("");
 	const [name, setName] = useState(""); // Only used for sign-up
 	const [error, setError] = useState(null);
-	const router = useRouter();
 	const [showAlert, setShowAlert] = useState(false);
-	const searchParams = useSearchParams();
 	const [success, setSuccess] = useState("");
+	const router = useRouter();
+	const searchParams = useSearchParams();
 
 	useEffect(() => {
 		const restricted = searchParams.get("restricted");

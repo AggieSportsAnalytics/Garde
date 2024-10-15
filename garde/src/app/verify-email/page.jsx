@@ -7,11 +7,11 @@ import axios from "axios";
 
 export default function VerifyEmail() {
 	const [message, setMessage] = useState("Verifying...");
-	const searchParams = useSearchParams();
-	const router = useRouter();
-	const workerUrl = `${process.env.NEXT_PUBLIC_GARDE_WORKER}/verifyEmail`; // Cloudflare Worker URL
 
 	useEffect(() => {
+		const searchParams = useSearchParams();
+		const router = useRouter();
+		const workerUrl = `${process.env.NEXT_PUBLIC_GARDE_WORKER}/verifyEmail`;
 		const token = searchParams.get("token"); // Get the token from the URL
 
 		const verifyEmail = async () => {
@@ -54,7 +54,7 @@ export default function VerifyEmail() {
 		};
 
 		verifyEmail();
-	}, [searchParams, router]);
+	}, []);
 
 	return (
 		<div className="min-h-screen flex items-center justify-center text-white">

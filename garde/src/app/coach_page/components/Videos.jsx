@@ -9,13 +9,12 @@ const Videos = ({ fencer }) => {
 	const [videos, setVideos] = useState([]);
 	const [loading, setLoading] = useState(false);
 	const [videoNumber, setVideoNumber] = useState(-1);
-	const workerUrl = process.env.NEXT_PUBLIC_R2_WORKER;
 
 	useEffect(() => {
 		const fetchVideos = async () => {
 			try {
 				setVideoUrl(null);
-				const listUrl = `${workerUrl}/listBucket/${fencer.fencer_id}`;
+				const listUrl = `${process.env.NEXT_PUBLIC_R2_WORKER}/listBucket/${fencer.fencer_id}`;
 				const response = await axios.get(listUrl);
 				setVideos(response.data.videos);
 			} catch (error) {
@@ -24,14 +23,14 @@ const Videos = ({ fencer }) => {
 		};
 
 		fetchVideos(); // Call the async function
-	}, [fencer, workerUrl]);
+	}, [fencer]);
 
 	const fetchVideoChunks = async (videoId) => {
 		const range = "0-"; // Start with an initial range
 		const splitVideo = videoId.split("/");
 		const fencerId = splitVideo[0];
 		const video = splitVideo[1];
-		const url = `${workerUrl}/getVideoChunks?fencerId=${fencerId}&videoId=${video}&range=${range}`;
+		const url = `${process.env.NEXT_PUBLIC_R2_WORKER}/getVideoChunks?fencerId=${fencerId}&videoId=${video}&range=${range}`;
 
 		try {
 			// Fetch video chunk from backend

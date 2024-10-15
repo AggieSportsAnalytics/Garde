@@ -10,13 +10,17 @@ const Stream_Vid = ({ onVideoChange, isRecording, toggleRecording }) => {
 	const [videoAdded, setVideoAdded] = useState(false); // Track if video has been added
 	const [selectedFile, setSelectedFile] = useState(null);
 
-	const handleFileChange = (event) => {
+	const handleFileChange = async (event) => {
 		const file = event.target.files[0];
 		if (file) {
 			const videoURL = URL.createObjectURL(file);
 			onVideoChange(videoURL);
 			setVideoAdded(true); // Update state to show video has been added
-			handleVideoUpload(file);
+			const convertedFile = await convertFile(file);
+			// handleVideoUpload(file);
+			if (convertedFile) {
+				handleVideoUpload(convertedFile);
+			}
 		}
 	};
 
@@ -50,12 +54,14 @@ const Stream_Vid = ({ onVideoChange, isRecording, toggleRecording }) => {
 			/>
 			<div className="flex gap-2">
 				<button
+					type="button"
 					className="bg-white text-black font-bold py-2 px-4 rounded shadow-md hover:bg-gray-100"
 					onClick={addVideo}
 				>
 					{videoAdded ? "Remove Video" : "Add Video"}
 				</button>
 				<button
+					type="button"
 					className="bg-white text-black font-bold py-2 px-4 rounded shadow-md hover:bg-gray-100"
 					onClick={toggleRecording}
 				>
@@ -101,7 +107,7 @@ const handleVideoUpload = async (file) => {
 
 		const uploadResponse = await axios.put(presignedUrl, file, {
 			headers: {
-				"Content-Type": "video/mp4",
+				"Content-Type": "video/webm",
 			},
 		});
 
@@ -112,6 +118,42 @@ const handleVideoUpload = async (file) => {
 		}
 	} catch (error) {
 		console.error("Error during file upload:", error);
+	}
+};
+
+const convertFile = async (selectedFile) => {
+	const formData = new FormData();
+	formData.append("video", selectedFile);
+
+	try {
+		// Request backend conversion, expecting a blob response
+		const response = await axios.post("/api/convert-video", formData, {
+			headers: {
+				// "Content-Type": "multipart/form-data", // Correct header for FormData
+				"Content-Type": "video/webm",
+			},
+		});
+
+		if (response.status >= 200 && response.status < 300) {
+			// Receive the blob from the response and convert it into a File object
+			const fileBlob = response.data;
+			const convertedFile = new File(
+				[fileBlob],
+				`converted_${selectedFile.name}.webm`,
+				{
+					type: "video/webm",
+				},
+			);
+
+			console.log("File converted successfully!");
+			return convertedFile; // Return the converted file as a File object
+		}
+
+		console.error("Failed to upload and convert file");
+		return null;
+	} catch (error) {
+		console.error("Error during file conversion:", error);
+		return null;
 	}
 };
 

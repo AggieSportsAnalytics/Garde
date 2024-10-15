@@ -8,6 +8,7 @@ import {
 import { OpenAIAPIFeedback } from "./Fencer_Canvas";
 import "@mediapipe/pose";
 import { CardBody, CardContainer, CardItem } from "./ui/3d-card";
+import { jwtDecode } from "jwt-decode";
 
 const Fencer_Stats = ({
 	pose,
@@ -30,6 +31,7 @@ const Fencer_Stats = ({
 	const [speed, setSpeed] = useState(null);
 	const [frontFootState, setFrontFootState] = useState(null);
 	const [facingDirection, setFacingDirection] = useState(null);
+	const [id, setId] = useState("");
 
 	const prevPoseRef = useRef(null);
 	const stateBufferRef = useRef([]);
@@ -333,9 +335,25 @@ const Fencer_Stats = ({
 	}, [feetDistanceState, setFeetDistance]);
 
 	useEffect(() => {
+		console.log(document.cookie);
+		const token = document.cookie
+			.split("; ")
+			.find((row) => row.startsWith("token="))
+			?.split("=")[1];
+
+		if (token) {
+			const decoded = jwtDecode(token);
+			setId(decoded.id);
+		} else {
+			console.log("No cookies found");
+		}
+	}, []);
+
+	useEffect(() => {
 		if (pose && Date.now() - lastCalled >= 30000) {
 			setLastCalled(Date.now());
 			OpenAIAPIFeedback({
+				id: id,
 				pose: predictedPose,
 				feet_distance: feetDistanceState,
 				left_elbow: leftElbAngle,

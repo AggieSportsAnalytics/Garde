@@ -39,28 +39,14 @@ CREATE TABLE IF NOT EXISTS fencer (
     name TEXT NOT NULL,                   
     email TEXT NOT NULL UNIQUE,
     password TEXT NOT NULL,
-    is_verified BOOLEAN DEFAULT false,
-    average_time_advance REAL DEFAULT 0,   
-    average_time_retreat REAL DEFAULT 0,   
-    average_time_lunge REAL DEFAULT 0,     
-    average_time_enGuard REAL DEFAULT 0,   
-    cumulative_accuracy REAL DEFAULT 0
+    is_verified BOOLEAN DEFAULT false
 );
 """
 
 # consider changing session_id to uuid specified on client/server side rather than autoincrement
 create_fencer_sessions_table = """
 CREATE TABLE IF NOT EXISTS fencer_sessions (
-    session_id INTEGER PRIMARY KEY AUTOINCREMENT, 
-    fencer_id TEXT,                                
-    speed REAL,                                    
-    left_elbow REAL,                               
-    right_elbow REAL,                              
-    left_hip REAL,                                 
-    right_hip REAL,                                
-    left_knee REAL,                                
-    right_knee REAL,                               
-    feet_distance REAL,                            
+    fencer_id TEXT,
     accuracy REAL,                                 
     FOREIGN KEY (fencer_id) REFERENCES fencer(unique_id) ON DELETE CASCADE
 );

@@ -64,6 +64,10 @@ export default {
 					);
 				}
 
+				if (path === "/getIdealAngles") {
+					return await getIdealAngles(DB);
+				}
+
 				if (path.includes("/getCoach")) {
 					const pathName = path.split("/");
 					return await getCoach(pathName[pathName.length - 1], DB);
@@ -81,6 +85,15 @@ export default {
 
 				const body = await request.json();
 
+				if (path.includes("/putUserAngles")) {
+					const pathName = path.split("/");
+					return await putAngleData(
+						pathName[pathName.length - 1],
+						body.accuracy,
+						DB,
+					);
+				}
+
 				if (path === "/putCoachFencer") {
 					return await putCoachFencer(
 						body.fencerId,
@@ -89,10 +102,6 @@ export default {
 						body.fencerEmail,
 						DB,
 					);
-				}
-
-				if (path === "/putAngleData") {
-					return await putAngleData(body.fencerId, body.angleData, DB);
 				}
 			}
 			return addCorsHeaders(
@@ -194,24 +203,11 @@ async function putCoachFencer(fencerId, coachId, fencerName, fencerEmail, DB) {
 	return addCorsHeaders(res);
 }
 
-async function putAngleData(fencerId, angleData, DB) {
-	const query =
-		"INSERT OR REPLACE INTO fencer_sessions (fencer_id, speed, left_elbow, right_elbow, left_hip, right_hip, left_knee, right_knee, feet_distance, accuracy) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
+async function putAngleData(fencerId, accuracy, DB) {
+	const queryPut =
+		"INSERT OR REPLACE INTO fencer_sessions (fencer_id, accuracy) VALUES (?);";
 
-	await DB.prepare(query)
-		.bind(
-			fencerId,
-			angleData.speed,
-			angleData.left_elbow,
-			angleData.right_elbow,
-			angleData.left_hip,
-			angleData.right_hip,
-			angleData.left_knee,
-			angleData.right_knee,
-			angleData.feet_distance,
-			angleData.accuracy,
-		)
-		.run();
+	await DB.prepare(queryPut).bind(fencerId, accuracy).run();
 
 	const res = new Response(
 		JSON.stringify({ message: "Successfully added angle data" }),
@@ -610,6 +606,25 @@ async function deleteUser(id, type, DB, BUCKET) {
 			"Content-Type": "application/json",
 		},
 	});
+
+	return addCorsHeaders(res);
+}
+
+async function getIdealAngles(DB) {
+	const query = "SELECT * FROM ideal_angles";
+	const angles = await DB.prepare(query).run();
+
+	const res = new Response(
+		JSON.stringify(
+			{ message: "Successfully got angles", angles: angles },
+			{
+				status: 200,
+				headers: {
+					"Content-Type": "application/json",
+				},
+			},
+		),
+	);
 
 	return addCorsHeaders(res);
 }

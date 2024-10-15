@@ -220,7 +220,7 @@ const WebcamPose = ({
 
 	useEffect(() => {
 		// video/webm; codecs=vp9 is more space efficient but less compatible
-		const options = { mimeType: "video/mp4" };
+		const options = { mimeType: "video/webm" };
 
 		if (videoSource || isRecording) {
 			runPoseDetection();
@@ -313,7 +313,7 @@ const WebcamPose = ({
 
 			const uploadResponse = await axios.put(presignedUrl, event.data, {
 				headers: {
-					"Content-Type": "video/mp4",
+					"Content-Type": "video/webm",
 				},
 			});
 
@@ -615,6 +615,47 @@ export function displayFeetDistance(keypoints) {
 	return { feetDistance, predictedPose };
 }
 
+const putUserAngles = async (id, accuracy) => {
+	const putWorkerUrl = `${process.env.NEXT_PUBLIC_GARDE_WORKER}/putUserAngles/${id}`;
+
+	try {
+		const response = await axios.put(
+			putWorkerUrl,
+			{ accuracy: accuracy },
+			{
+				headers: { "Content-Type": "application/json" },
+			},
+		);
+
+		if (response.status >= 200 && response.status < 300) {
+			console.log("Successfully put user angles");
+			return true;
+		}
+		return false;
+	} catch (error) {
+		console.error(error);
+		return false;
+	}
+};
+
+const getIdealAngles = async () => {
+	const getWorkerUrl = `${process.env.NEXT_PUBLIC_GARDE_WORKER}/getIdealAngles`;
+
+	try {
+		const response = await axios.get(getWorkerUrl);
+		const idealAngles = response.data.angles;
+
+		if (response.status >= 200 && response.status < 300) {
+			console.log("Successfully got user angles");
+			return idealAngles;
+		}
+		return null;
+	} catch (error) {
+		console.error(error);
+		return null;
+	}
+};
+
 export async function OpenAIAPIFeedback(props) {
 	const pose = props.pose || {};
 	const userAngles = {
@@ -627,44 +668,46 @@ export async function OpenAIAPIFeedback(props) {
 		knee_right: props.right_knee,
 	};
 
-	const idealAngles = [
-		{
-			name: "en guarde",
-			elbow_left: "96",
-			hip_left: "117",
-			knee_left: "121",
-			elbow_right: "2",
-			hip_right: "170",
-			knee_right: "160",
-		},
-		{
-			name: "advance",
-			elbow_left: "87",
-			hip_left: "126",
-			knee_left: "132",
-			elbow_right: "36",
-			hip_right: "170",
-			knee_right: "160",
-		},
-		{
-			name: "retreat",
-			elbow_left: "90",
-			hip_left: "127",
-			knee_left: "144",
-			elbow_right: "8",
-			hip_right: "172",
-			knee_right: "170",
-		},
-		{
-			name: "lunge",
-			elbow_left: "178",
-			hip_left: "84",
-			knee_left: "110",
-			elbow_right: "170",
-			hip_right: "151",
-			knee_right: "165",
-		},
-	];
+	const idealAngles = getIdealAngles();
+
+	// const idealAngles = [
+	// 	{
+	// 		name: "en guarde",
+	// 		elbow_left: "96",
+	// 		hip_left: "117",
+	// 		knee_left: "121",
+	// 		elbow_right: "2",
+	// 		hip_right: "170",
+	// 		knee_right: "160",
+	// 	},
+	// 	{
+	// 		name: "advance",
+	// 		elbow_left: "87",
+	// 		hip_left: "126",
+	// 		knee_left: "132",
+	// 		elbow_right: "36",
+	// 		hip_right: "170",
+	// 		knee_right: "160",
+	// 	},
+	// 	{
+	// 		name: "retreat",
+	// 		elbow_left: "90",
+	// 		hip_left: "127",
+	// 		knee_left: "144",
+	// 		elbow_right: "8",
+	// 		hip_right: "172",
+	// 		knee_right: "170",
+	// 	},
+	// 	{
+	// 		name: "lunge",
+	// 		elbow_left: "178",
+	// 		hip_left: "84",
+	// 		knee_left: "110",
+	// 		elbow_right: "170",
+	// 		hip_right: "151",
+	// 		knee_right: "165",
+	// 	},
+	// ];
 
 	let comparison;
 
@@ -677,6 +720,9 @@ export async function OpenAIAPIFeedback(props) {
 	} else if (pose === "lunge") {
 		comparison = idealAngles[3];
 	}
+
+	const accuracy = 0; // change for accuracy later
+	putUserAngles(props.id, accuracy);
 
 	const query = `Please compare the user's angles ${JSON.stringify(userAngles)} with the ideal angles ${JSON.stringify(comparison)} for the ${userAngles.pose} position and provide a detailed analysis.`;
 	const openai = new OpenAI({

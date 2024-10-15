@@ -31,9 +31,13 @@ export default function AddFencer() {
 			} else {
 				setStatus("Failed to add fencer.");
 			}
+			setCoachToken("");
 		} catch (error) {
 			setStatus("Error adding fencer.");
 			console.error(error);
+		} finally {
+			await new Promise((r) => setTimeout(r, 2000));
+			setStatus("");
 		}
 	};
 

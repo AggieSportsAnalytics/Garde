@@ -6,14 +6,22 @@ import React, { useState } from "react";
 
 function AddFencerInstruction() {
 	const [val, setVal] = useState("");
+	const [status, setStatus] = useState("");
 
-	const onSubmit = (name) => {
-		const workerUrl = `${process.env.NEXT_PUBLIC_GARDE_WORKER}/putInstruction/${name}`; // Replace with your actual Worker URL
-		setVal("");
+	const onSubmit = async (name) => {
+		try {
+			const workerUrl = `${process.env.NEXT_PUBLIC_GARDE_WORKER}/putInstruction/${name}`; // Replace with your actual Worker URL
+			setVal("");
 
-		axios.put(workerUrl).catch((e) => console.log(e));
+			await axios.put(workerUrl).catch((e) => console.log(e));
 
-		window.alert("Successfully added instruction!");
+			setStatus("Successfully added instruction!");
+		} catch (error) {
+			setStatus("Failed to added instruction");
+		} finally {
+			await new Promise((r) => setTimeout(r, 2000));
+			setStatus("");
+		}
 	};
 
 	return (
@@ -33,6 +41,11 @@ function AddFencerInstruction() {
 					Add Instruction
 				</Button>
 			</div>
+			<p
+				className={`${status.includes("successfully") ? "text-green-500" : "text-red-500"}`}
+			>
+				{status}
+			</p>
 		</div>
 	);
 }

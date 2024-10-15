@@ -81,12 +81,6 @@ export default function Signin({ isSignUpDefault, type }) {
 			} else if (res.status >= 200 && res.status < 300 && isSignUp) {
 				setError("");
 				setSuccess("Please verify your email address...");
-				await new Promise((r) => setTimeout(r, 2000));
-				setEmail("");
-				setPassword("");
-				setName("");
-				setError("");
-				setSuccess("");
 			}
 		} catch (error) {
 			setName("");
@@ -94,7 +88,12 @@ export default function Signin({ isSignUpDefault, type }) {
 			setPassword("");
 			setSuccess("");
 			setError(error.response.data.error || "Failed to login/sign up");
+		} finally {
 			await new Promise((r) => setTimeout(r, 2000));
+			setEmail("");
+			setPassword("");
+			setName("");
+			setSuccess("");
 			setError("");
 		}
 	};

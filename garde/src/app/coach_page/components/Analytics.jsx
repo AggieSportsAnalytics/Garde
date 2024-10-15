@@ -29,15 +29,17 @@ function Analytics({ fencer }) {
 	const [fencerSessions, setFencerSessions] = useState([]);
 
 	useEffect(() => {
-		console.log(fencer);
 		const getFencerData = async () => {
-			const workerUrl = `${process.env.NEXT_PUBLIC_GARDE_WORKER}/getFencerAngles/${fencer.fencer_id}`;
-			return await axios.get(workerUrl);
+			try {
+				const workerUrl = `${process.env.NEXT_PUBLIC_GARDE_WORKER}/getFencerAngles/${fencer.fencer_id}`;
+				const response = await axios.get(workerUrl);
+				setFencerSessions(response.data.angles.results);
+			} catch (error) {
+				console.log(error);
+			}
 		};
 
-		getFencerData()
-			.then((res) => setFencerSessions(res.data.angles.results))
-			.catch((error) => console.log(error));
+		getFencerData();
 	}, [fencer]);
 
 	// Prepare the data for the chart

@@ -123,7 +123,7 @@ export default {
 					error: error.message,
 				}),
 				{
-					status: error.status,
+					status: 200 <= error.status < 300 ? 500 : error.status,
 					headers: {
 						"Content-Type": "application/json",
 					},
@@ -164,9 +164,9 @@ function addCorsHeaders(response) {
 	newHeaders.set("Access-Control-Allow-Headers", "Content-Type");
 
 	return new Response(response.body, {
-		status: response.status, // Keep the original status
-		statusText: response.statusText, // Keep the status text
-		headers: newHeaders, // Use modified headers
+		status: response.status,
+		statusText: response.statusText,
+		headers: newHeaders,
 	});
 }
 

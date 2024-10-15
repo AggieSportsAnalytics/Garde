@@ -46,15 +46,15 @@ export default function CoachPage() {
 		}
 	}, [fencers]); // Runs whenever fencers list is updated
 
-	function getInfo(queryType, id) {
+	async function getInfo(queryType, id) {
 		const workerUrl = `${process.env.NEXT_PUBLIC_GARDE_WORKER}/${queryType}/${id}`;
 
-		axios
-			.get(workerUrl)
-			.then((response) => {
-				setFencers(response.data.data); // Setting the fencers data from the response
-			})
-			.catch((error) => console.log(error));
+		try {
+			const response = await axios.get(workerUrl);
+			setFencers(response.data.data);
+		} catch (error) {
+			console.log(error);
+		}
 	}
 
 	return (

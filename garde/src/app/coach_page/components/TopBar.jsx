@@ -7,6 +7,7 @@ import Logout from "../../../components/Logout";
 import DeleteAccountButton from "../../../components/DeleteAccount";
 import { SettingOutlined } from "@ant-design/icons";
 import UuidReveal from "./UuidReveal";
+import AddFencerInstruction from "./AddFencerInstruction";
 
 function TopBar({ id, fencers, currentFencer, setCurrentFencer }) {
 	// id = id of coach
@@ -87,6 +88,7 @@ function TopBar({ id, fencers, currentFencer, setCurrentFencer }) {
 			>
 				<div className="flex flex-col items-center space-y-4">
 					<UuidReveal uuid={id} />
+					<AddFencerInstruction />
 					<Logout />
 					<DeleteAccountButton type="coach" otherId="" />
 				</div>

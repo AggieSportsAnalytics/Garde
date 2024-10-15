@@ -32,7 +32,7 @@ function UuidReveal({ uuid }) {
 			</button>
 
 			{/* Display UUID or Hidden Placeholder */}
-			<span className="mt-2 text-lg font-mono text-gray-900 bg-gray-200 px-4 py-2 rounded-lg shadow-sm mb-5">
+			<span className="mt-2 text-lg font-mono text-gray-900 bg-gray-200 px-4 py-2 rounded-lg shadow-sm">
 				{isRevealed ? uuid : "••••••••••••••••••••••••••••••••••"}
 			</span>
 		</div>

@@ -18,17 +18,17 @@ function AddFencerInstruction() {
 
 	return (
 		<div>
-			<div className="flex justify-center mt-5">
+			<div className="flex justify-center">
 				<Input
 					placeholder="Input Instruction Here"
 					value={val}
 					onChange={(e) => setVal(e.target.value)}
 					type="text"
-					className="w-[300px]"
+					className="w-[300px] my-2"
 					id="textInput"
 				/>
 			</div>
-			<div className="flex justify-center mt-2">
+			<div className="flex justify-center mb-10">
 				<Button type="dashed" onClick={() => onSubmit(val)}>
 					Add Instruction
 				</Button>

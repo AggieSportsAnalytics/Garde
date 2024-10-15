@@ -64,6 +64,11 @@ export default {
 					);
 				}
 
+				if (path.includes("/getFencerAngles")) {
+					const pathName = path.split("/");
+					return await getFencerAngles(pathName[pathName.length - 1], DB);
+				}
+
 				if (path === "/getIdealAngles") {
 					return await getIdealAngles(DB);
 				}
@@ -205,7 +210,7 @@ async function putCoachFencer(fencerId, coachId, fencerName, fencerEmail, DB) {
 
 async function putAngleData(fencerId, accuracy, DB) {
 	const queryPut =
-		"INSERT OR REPLACE INTO fencer_sessions (fencer_id, accuracy) VALUES (?);";
+		"INSERT OR REPLACE INTO fencer_sessions (fencer_id, accuracy) VALUES (?, ?);";
 
 	await DB.prepare(queryPut).bind(fencerId, accuracy).run();
 
@@ -613,6 +618,25 @@ async function deleteUser(id, type, DB, BUCKET) {
 async function getIdealAngles(DB) {
 	const query = "SELECT * FROM ideal_angles";
 	const angles = await DB.prepare(query).run();
+
+	const res = new Response(
+		JSON.stringify(
+			{ message: "Successfully got angles", angles: angles },
+			{
+				status: 200,
+				headers: {
+					"Content-Type": "application/json",
+				},
+			},
+		),
+	);
+
+	return addCorsHeaders(res);
+}
+
+async function getFencerAngles(id, DB) {
+	const query = "SELECT * FROM fencer_sessions WHERE fencer_id = ?";
+	const angles = await DB.prepare(query).bind(id).run();
 
 	const res = new Response(
 		JSON.stringify(

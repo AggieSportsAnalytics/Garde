@@ -1,10 +1,10 @@
 "use client";
 
 import "../../app/globals.css";
-import AddFencerInstruction from "./components/AddFencerInstruction";
 import TopBar from "./components/TopBar";
 import Videos from "./components/Videos";
 import Editor from "./components/Editor";
+import Analytics from "./components/Analytics";
 import { useState, useEffect } from "react";
 import { jwtDecode } from "jwt-decode"; // Corrected import for jwtDecode
 import axios from "axios";
@@ -66,7 +66,7 @@ export default function CoachPage() {
 				setCurrentFencer={setCurrentFencer}
 			/>
 			<Feedback fencer={currentFencer} coachName={coachName} />
-			<AddFencerInstruction />
+			<Analytics fencer={currentFencer} />
 		</div>
 	);
 }

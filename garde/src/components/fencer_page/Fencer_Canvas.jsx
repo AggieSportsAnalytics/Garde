@@ -8,7 +8,7 @@ import "@mediapipe/pose";
 import Plotly from "plotly.js-dist-min";
 import Modal from "react-modal";
 import FencerInstructionMenu from "./FencerInstructionMenu";
-import { CardBody, CardContainer, CardItem } from "./ui/3d-card.tsx";
+import { CardBody, CardContainer, CardItem } from "../ui/3d-card.tsx";
 import { Hammer } from "lucide-react";
 import axios from "axios";
 import { v4 as uuidv4 } from "uuid";

@@ -7,7 +7,7 @@ import {
 } from "./Fencer_Canvas";
 import { OpenAIAPIFeedback } from "./Fencer_Canvas";
 import "@mediapipe/pose";
-import { CardBody, CardContainer, CardItem } from "./ui/3d-card";
+import { CardBody, CardContainer, CardItem } from "../ui/3d-card";
 import { jwtDecode } from "jwt-decode";
 
 const Fencer_Stats = ({ pose, lastCalled, setLastCalled, setAiFeedback, height, setFeetDistance, setShoulderWidth, darkMode, onPoseSequenceDetected }) => {

@@ -1,21 +1,19 @@
 "use client";
 
 import React, { useState, useEffect, useCallback, memo, useRef } from "react";
-import * as posedetection from "@tensorflow-models/pose-detection";
-import * as tf from "@tensorflow/tfjs-core";
 import "@tensorflow/tfjs-backend-webgl";
-import Stream_Vid from "../../components/Stream_Vid";
+import Stream_Vid from "../../components/fencer_page/Stream_Vid";
 import Link from "next/link";
-import Timer from "../../components/Timer";
-import Fencer_Canvas from "../../components/Fencer_Canvas";
-import Fencer_Stats from "../../components/Fencer_Stats";
-import Instruction from "../../components/Instruction";
+import Timer from "../../components/fencer_page/Timer";
+import Fencer_Canvas from "../../components/fencer_page/Fencer_Canvas";
+import Fencer_Stats from "../../components/fencer_page/Fencer_Stats";
+import Instruction from "../../components/fencer_page/Instruction";
 import { useSpeechSynthesis } from "react-speech-kit";
 import {
 	calculateAngle,
 	displayFeetDistance,
 	calculateSpeed,
-} from "../../components/Fencer_Canvas";
+} from "../../components/fencer_page/Fencer_Canvas";
 import {
 	FaCheckCircle,
 	FaTimesCircle,
@@ -24,8 +22,8 @@ import {
 	FaVolumeMute,
 	FaVolumeUp,
 } from "react-icons/fa";
-import HeightInputModal from "../../components/HeightInputModal";
-import InstructionContext from "../../components/InstructionContext";
+import HeightInputModal from "../../components/fencer_page/HeightInputModal";
+import InstructionContext from "../../components/fencer_page/InstructionContext";
 import PropTypes from "prop-types";
 import {
 	CardBody,
@@ -33,7 +31,7 @@ import {
 	CardItem,
 } from "../../components/ui/3d-card.tsx";
 import DeleteAccountButton from "../../components/DeleteAccount";
-import AddFencer from "../../components/AddFencer";
+import AddFencer from "../../components/fencer_page/AddFencer";
 import Logout from "../../components/Logout.jsx";
 import { Modal } from "antd";
 import { SettingOutlined } from "@ant-design/icons";

@@ -1,8 +1,14 @@
-import React, { useEffect, useState, useRef } from 'react';
-import { calculateAngle, displayFeetDistance, calculateSpeed, convertPixelsToMeters } from './Fencer_Canvas';
-import { OpenAIAPIFeedback } from './Fencer_Canvas';
+import React, { useEffect, useState, useRef } from "react";
+import {
+	calculateAngle,
+	displayFeetDistance,
+	calculateSpeed,
+	convertPixelsToMeters,
+} from "./Fencer_Canvas";
+import { OpenAIAPIFeedback } from "./Fencer_Canvas";
 import "@mediapipe/pose";
 import { CardBody, CardContainer, CardItem } from "./ui/3d-card";
+import { jwtDecode } from "jwt-decode";
 
 const Fencer_Stats = ({ pose, lastCalled, setLastCalled, setAiFeedback, height, setFeetDistance, setShoulderWidth, darkMode, onPoseSequenceDetected }) => {
   const [feetDistanceState, setFeetDistanceState] = useState(null);

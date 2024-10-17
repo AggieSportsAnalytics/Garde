@@ -19,6 +19,11 @@ import { getFencerInstructions } from '../../../prisma/fencer_instructions';
 import InstructionContext from '../../components/InstructionContext';
 import PropTypes from 'prop-types';
 import { CardBody, CardContainer, CardItem } from "../../components/ui/3d-card.tsx";
+import DeleteAccountButton from "../../components/DeleteAccount";
+import AddFencer from "../../components/AddFencer";
+import Logout from "../../components/Logout.jsx";
+import { Modal } from "antd";
+import { SettingOutlined } from "@ant-design/icons";
 
 const MemoizedFencerStats = memo(Fencer_Stats);
 const MemoizedInstruction = memo(Instruction);
@@ -349,6 +354,25 @@ export default function Fencer_Page2() {
               </button>
               <UserButton />
             </div>
+
+						<div className="mx-4">
+							<SettingOutlined
+								className="text-white text-2xl cursor-pointer"
+								onClick={showModal}
+							/>
+						</div>
+						<Modal
+							title="Settings"
+							open={isModalVisible}
+							onCancel={handleCancel}
+							footer={null}
+						>
+							<div className="flex flex-col items-center space-y-4">
+								<AddFencer />
+								<Logout />
+								<DeleteAccountButton type="fencer" otherId="" />
+							</div>
+						</Modal>
           </header>
 
           <main className="flex flex-grow relative " style={{ perspective: '1000px' }}>
@@ -397,17 +421,31 @@ export default function Fencer_Page2() {
                   ))}
                 </ul>
               </div> */}
-            </div>
+						</div>
 
-            <div className="absolute left-[1070px] top-[10%]" style={{ transform: 'rotateY(-20deg)', transformOrigin: 'left center' }}>
-              <CardContainer className="inter-var w-96 h-[24rem]"> 
-                <CardBody className={`[transform-style:preserve-3d] [&>*]:[transform-style:preserve-3d] relative group/card ${darkMode ? 'bg-gray-900 text-white' : 'bg-white text-black'} h-full rounded-xl p-4 space-y-4 border ${darkMode ? 'border-gray-700' : 'border-gray-300'}`}>
-                  <CardItem translateZ="50" className="text-m font-bold mb-4 w-full text-left">
-                    AI Feedback
-                  </CardItem>
-                  <div className="rounded p-4 border shadow-lg w-[85%] h-[calc(100%-4rem)] overflow-y-auto" style={{ wordWrap: 'break-word' }}> 
-                    {/* uncomment to generate AI feedback */}
-                    {/* {(aiResult ? aiResult.split('\n') : []).map((item, key) => (
+						<div
+							className="absolute left-[1070px] top-[10%]"
+							style={{
+								transform: "rotateY(-20deg)",
+								transformOrigin: "left center",
+							}}
+						>
+							<CardContainer className="inter-var w-96 h-[24rem]">
+								<CardBody
+									className={`[transform-style:preserve-3d] [&>*]:[transform-style:preserve-3d] relative group/card ${darkMode ? "bg-gray-900 text-white" : "bg-white text-black"} h-full rounded-xl p-4 space-y-4 border ${darkMode ? "border-gray-700" : "border-gray-300"}`}
+								>
+									<CardItem
+										translateZ="50"
+										className="text-m font-bold mb-4 w-full text-left"
+									>
+										AI Feedback
+									</CardItem>
+									<div
+										className="rounded p-4 border shadow-lg w-[85%] h-[calc(100%-4rem)] overflow-y-auto"
+										style={{ wordWrap: "break-word" }}
+									>
+										{/* uncomment to generate AI feedback */}
+										{/* {(aiResult ? aiResult.split('\n') : []).map((item, key) => (
                       <CardItem key={key} translateZ="60" className={`rounded p-2 ${darkMode ? 'bg-gray-800 text-white' : 'bg-gray-100 text-black'} border ${darkMode ? 'border-gray-700' : 'border-gray-300'} shadow-lg`}>
                         <span>{item}</span><br/>
                       </CardItem>
@@ -435,3 +473,47 @@ export default function Fencer_Page2() {
     </InstructionContext.Provider>
   );
 }Fencer_Page2.propTypes = {};
+									</div>
+								</CardBody>
+							</CardContainer>
+						</div>
+
+						<div
+							className={`absolute top-0 left-0 p-4 ${darkMode ? "bg-gray-800 text-white" : "bg-gray-200 text-black"} rounded`}
+						>
+							{feedback.map((msg, index) => (
+								<div key={index}>{msg}</div>
+							))}
+						</div>
+					</main>
+
+					<HeightInputModal
+						isOpen={isHeightModalOpen}
+						onClose={() => setIsHeightModalOpen(false)}
+						onSave={handleHeightSave}
+					/>
+
+					<style jsx>{`
+            .countdown-circle {
+              width: 40px;
+              height: 40px;
+              border: 2px solid white;
+              border-radius: 50%;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              font-size: 1.5rem;
+            }
+            .pre-instruction-countdown {
+              color: white;
+            }
+          `}</style>
+				</div>
+			)}
+		</InstructionContext.Provider>
+	);
+}
+
+Fencer_Page2.propTypes = {};
+
+

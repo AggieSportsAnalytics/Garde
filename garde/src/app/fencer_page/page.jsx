@@ -7,7 +7,6 @@ import "@tensorflow/tfjs-backend-webgl";
 import Stream_Vid from "../../components/Stream_Vid";
 import Link from "next/link";
 import Timer from "../../components/Timer";
-import { UserButton } from "@clerk/nextjs";
 import Fencer_Canvas from "../../components/Fencer_Canvas";
 import Fencer_Stats from "../../components/Fencer_Stats";
 import Instruction from "../../components/Instruction";
@@ -26,7 +25,6 @@ import {
 	FaVolumeUp,
 } from "react-icons/fa";
 import HeightInputModal from "../../components/HeightInputModal";
-import { getFencerInstructions } from "../../../prisma/fencer_instructions";
 import InstructionContext from "../../components/InstructionContext";
 import PropTypes from "prop-types";
 import {
@@ -89,6 +87,15 @@ export default function Fencer_Page2() {
 	const [lastSpokenFeedbackTime, setLastSpokenFeedbackTime] = useState(0);
 	const [lastFeedbackMessage, setLastFeedbackMessage] = useState("");
 	const [isFeedbackMuted, setIsFeedbackMuted] = useState(false);
+
+  const showModal = () => {
+		setIsModalVisible(true);
+	};
+	const handleCancel = () => {
+		setIsModalVisible(false);
+	};
+
+	const [isModalVisible, setIsModalVisible] = useState(false);
 
 	useEffect(() => {
 		const userAgent =
@@ -485,7 +492,6 @@ export default function Fencer_Page2() {
 							>
 								{isFeedbackMuted ? <FaVolumeMute /> : <FaVolumeUp />}
 							</button>
-							<UserButton />
 						</div>
 
 						<div className="mx-4">

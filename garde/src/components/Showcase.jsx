@@ -1,24 +1,23 @@
 "use client";
-import Image from "next/image";
 import React from "react";
-import { Carousel, Card } from "../components/ui/apple-cards-carousel";
+import { Carousel, Card } from "./ui/apple-cards-carousel";
 
 const Showcase = () => {
-  const cards = data.map((card, index) => (
-    <Card key={card.src} card={card} index={index} />
-  ));
+	const cards = data.map((card, index) => (
+		<Card key={card.src} card={card} index={index} />
+	));
 
-  return (
-    <div id="features" className="w-full h-full py-20">
-      <h2 className="flex justify-center text-white text-6xl mt-24 font-platypi font-semibold">
-        Get to know Garde.
-      </h2>
-      <div className="mt-24">
-        <Carousel items={cards} />
-      </div>
-    </div>
-  );
-}
+	return (
+		<div id="features" className="w-full h-full py-20">
+			<h2 className="flex justify-center text-white text-4xl sm:text-5xl md:text-6xl mt-24 font-platypi font-semibold">
+				Get to know Garde.
+			</h2>
+			<div className="mt-24">
+				<Carousel items={cards} />
+			</div>
+		</div>
+	);
+};
 
 // const DummyContent = () => {
 //   return (
@@ -53,30 +52,30 @@ const Showcase = () => {
 // };
 
 const data = [
-  {
-    category: "Fencers",
-    title: "Enhance your performance.",
-    src: "/images/fencer.jpg",
-    // content: <DummyContent />,
-  },
-  {
-    category: "Coaches",
-    title: "Save time with real-time insights.",
-    src: "/images/fencing-coach.png",
-    // content: <DummyContent />,
-  },
-  {
-    category: "Artificial Intelligence",
-    title: "90% Accurate Pose Estimation. Embedded with RAG Systems",
-    src: "/images/ArtificialIntelligence.jpg",
-    // content: <DummyContent />,
-  },
-  {
-    category: "Backed by the best",
-    title: "Built with the help of Team USA Coaches and Olympic Medallists",
-    src: "/images/fencer-play.jpg",
-    // content: <DummyContent />,
-  },
+	{
+		category: "Fencers",
+		title: "Enhance your performance.",
+		src: "/images/fencer.jpg",
+		// content: <DummyContent />,
+	},
+	{
+		category: "Coaches",
+		title: "Save time with real-time insights.",
+		src: "/images/fencing-coach.png",
+		// content: <DummyContent />,
+	},
+	{
+		category: "Artificial Intelligence",
+		title: "90% Accurate Pose Estimation. Embedded with RAG Systems",
+		src: "/images/ArtificialIntelligence.jpg",
+		// content: <DummyContent />,
+	},
+	{
+		category: "Backed by the best",
+		title: "Built with the help of Team USA Coaches and Olympic Medallists",
+		src: "/images/fencer-play.jpg",
+		// content: <DummyContent />,
+	},
 ];
 
 export default Showcase;

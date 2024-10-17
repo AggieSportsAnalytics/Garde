@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback, memo } from "react";
+import React, { useState, useEffect, useCallback, memo, useRef } from "react";
 import * as posedetection from "@tensorflow-models/pose-detection";
 import * as tf from "@tensorflow/tfjs-core";
 import "@tensorflow/tfjs-backend-webgl";
@@ -12,18 +12,33 @@ import Fencer_Canvas from "../../components/Fencer_Canvas";
 import Fencer_Stats from "../../components/Fencer_Stats";
 import Instruction from "../../components/Instruction";
 import { useSpeechSynthesis } from "react-speech-kit";
-import { displayFeetDistance } from "../../components/Fencer_Canvas";
-import { FaCheckCircle, FaTimesCircle } from "react-icons/fa";
+import {
+	calculateAngle,
+	displayFeetDistance,
+	calculateSpeed,
+} from "../../components/Fencer_Canvas";
+import {
+	FaCheckCircle,
+	FaTimesCircle,
+	FaSun,
+	FaMoon,
+	FaVolumeMute,
+	FaVolumeUp,
+} from "react-icons/fa";
 import HeightInputModal from "../../components/HeightInputModal";
-// import { getFencerInstructions } from '../../../prisma/fencer_instructions';
+import { getFencerInstructions } from "../../../prisma/fencer_instructions";
 import InstructionContext from "../../components/InstructionContext";
 import PropTypes from "prop-types";
-import { calculateAngle } from "../../components/Fencer_Canvas";
 import {
 	CardBody,
 	CardContainer,
 	CardItem,
 } from "../../components/ui/3d-card.tsx";
+import DeleteAccountButton from "../../components/DeleteAccount";
+import AddFencer from "../../components/AddFencer";
+import Logout from "../../components/Logout.jsx";
+import { Modal } from "antd";
+import { SettingOutlined } from "@ant-design/icons";
 
 const MemoizedFencerStats = memo(Fencer_Stats);
 const MemoizedInstruction = memo(Instruction);
@@ -35,12 +50,9 @@ export default function Fencer_Page2() {
 	const [pose, setPose] = useState(null);
 	const [instructionIndex, setInstructionIndex] = useState(-1);
 	const [isStartDisabled, setIsStartDisabled] = useState(false);
-	const [poseStartTime, setPoseStartTime] = useState(null);
-	const [performedPose, setPerformedPose] = useState("");
 	const [hasSpoken, setHasSpoken] = useState(false);
 	const [poseResult, setPoseResult] = useState("");
 	const [countdown, setCountdown] = useState(3);
-	const [failureTimeout, setFailureTimeout] = useState(null);
 	const [hasStarted, setHasStarted] = useState(false);
 	const [resetTimer, setResetTimer] = useState(false);
 	const [countdownFinished, setCountdownFinished] = useState(false);
@@ -48,8 +60,6 @@ export default function Fencer_Page2() {
 	const [showPreInstructionCountdown, setShowPreInstructionCountdown] =
 		useState(false);
 	const [isInstructionBeingSaid, setIsInstructionBeingSaid] = useState(false);
-	const [lastCalled, setLastCalled] = useState(Date.now());
-	const [aiResult, setAiResult] = useState(null);
 	const [height, setHeight] = useState(null);
 	const [isHeightModalOpen, setIsHeightModalOpen] = useState(false);
 	const { speak, voices } = useSpeechSynthesis();
@@ -58,6 +68,34 @@ export default function Fencer_Page2() {
 	const [isRunning, setIsRunning] = useState(false);
 	const [videoInput, setVideoInput] = useState(false);
 	const [feedback, setFeedback] = useState([]);
+	const [feedbackEnabled, setFeedbackEnabled] = useState(false);
+	const [isMobile, setIsMobile] = useState(false);
+	const [feetDistance, setFeetDistance] = useState(null);
+	const [shoulderWidth, setShoulderWidth] = useState(null);
+	const previousInstructionIndex = useRef(-1);
+	const previousFeedback = useRef({ message: "", timestamp: 0 });
+	const [previousPose, setPreviousPose] = useState(null);
+	const [isTimerRunning, setIsTimerRunning] = useState(false);
+	const [darkMode, setDarkMode] = useState(false);
+	const feedbackHistory = useRef([]);
+	const heelCountRef = useRef(0);
+	const [lastFeedbackTime, setLastFeedbackTime] = useState(0);
+	const [isFeedbackBeingDelivered, setIsFeedbackBeingDelivered] =
+		useState(false);
+	const feedbackDelay = 10000; // 10 seconds delay
+	const [poseData, setPoseData] = useState(null);
+	const poseDataIntervalRef = useRef(null);
+	const feedbackBuffer = useRef([]);
+	const [lastSpokenFeedbackTime, setLastSpokenFeedbackTime] = useState(0);
+	const [lastFeedbackMessage, setLastFeedbackMessage] = useState("");
+	const [isFeedbackMuted, setIsFeedbackMuted] = useState(false);
+
+	useEffect(() => {
+		const userAgent =
+			typeof window.navigator === "undefined" ? "" : navigator.userAgent;
+		const mobileDevice = /iPhone|iPad|iPod|Android/i.test(userAgent);
+		setIsMobile(mobileDevice);
+	}, []);
 
 	useEffect(() => {
 		if (voices.length > 0 && !voice) {
@@ -70,15 +108,6 @@ export default function Fencer_Page2() {
 		setIsHeightModalOpen(false);
 	}, []);
 
-	const convertPixelsToMeters = useCallback(
-		(pixels) => {
-			if (!height) return null;
-			const pixelToMeterRatio = height / 100;
-			return pixels * pixelToMeterRatio;
-		},
-		[height],
-	);
-
 	const startPreInstructionCountdown = useCallback(() => {
 		setPreInstructionCountdown(3);
 		const interval = setInterval(() => {
@@ -87,64 +116,39 @@ export default function Fencer_Page2() {
 					return prevCountdown - 1;
 				} else {
 					clearInterval(interval);
-					startSuccessCountdown();
+					setCountdownFinished(true);
+					setFeedbackEnabled(true); // Enable feedback after countdown
 					return 0;
 				}
 			});
 		}, 1000);
 	}, []);
 
-	const startSuccessCountdown = useCallback(() => {
-		if (!videoInput) return;
-
-		const instructionTime = instructions[instructionIndex]?.time || 3;
-		setCountdown(instructionTime);
-		const interval = setInterval(() => {
-			setCountdown((prevCountdown) => {
-				if (prevCountdown > 1) {
-					return prevCountdown - 1;
-				} else {
-					clearInterval(interval);
-					setCountdownFinished(true);
-					return 0;
-				}
-			});
-		}, 1000);
-	}, [videoInput, instructions, instructionIndex]);
+	const handleInstructionChange = useCallback((newIndex) => {
+		setInstructionIndex(newIndex);
+	}, []);
 
 	const handleTimerStart = useCallback(() => {
 		setHasStarted(true);
 		setShowPreInstructionCountdown(false);
-		setInstructionIndex((prevIndex) => {
-			if (prevIndex >= instructions.length - 1) {
-				setIsStartDisabled(true);
-				return prevIndex;
-			}
-			setHasSpoken(false);
-			return prevIndex + 1;
-		});
+		setInstructionIndex(0);
 		setPoseResult("");
 		setResetTimer(false);
-		setCountdown(
-			instructions[instructionIndex]
-				? instructions[instructionIndex + 1]?.time
-				: 3,
-		);
 		setIsRunning(true);
-	}, [instructions, instructionIndex]);
+		setFeedbackEnabled(true);
+		setLastFeedbackTime(Date.now());
+	}, []);
 
 	const handleReset = useCallback(() => {
 		setInstructionIndex(-1);
 		setIsStartDisabled(false);
-		setPoseStartTime(null);
 		setHasSpoken(false);
 		setPoseResult("");
-		setCountdown(3);
 		setResetTimer(true);
 		setPreInstructionCountdown(3);
 		setShowPreInstructionCountdown(false);
-		clearTimeout(failureTimeout);
-	}, [failureTimeout]);
+		setFeedbackEnabled(false);
+	}, []);
 
 	const handleVideoChange = useCallback(
 		(newVideoSource) => {
@@ -162,156 +166,6 @@ export default function Fencer_Page2() {
 		setIsRecording((prev) => !prev);
 		setIsRunning((prev) => !prev);
 	}, [height]);
-
-	const checkPoseDuration = useCallback(
-		(predictedPose) => {
-			const currentInstruction = instructions[instructionIndex];
-			const instructionToPose = {
-				"Perform an en guarde...": "en guarde",
-				"Perform an advance...": "advance",
-				"Perform a lunge...": "lunge",
-			};
-			const expectedPose = instructionToPose[currentInstruction?.name];
-			setPerformedPose(predictedPose);
-
-			if (predictedPose && expectedPose && predictedPose === expectedPose) {
-				if (!poseStartTime) {
-					setPoseStartTime(Date.now());
-				} else {
-					const elapsedTime = Date.now() - poseStartTime;
-					setCountdown(
-						(currentInstruction?.time || 3) - Math.floor(elapsedTime / 1000),
-					);
-					if (elapsedTime >= (currentInstruction?.time || 3) * 1000) {
-						setPoseResult("Success");
-						speak({
-							text: "Success",
-							voice: voice,
-							rate: 1,
-							pitch: 1,
-							lang: "en-US",
-						});
-						setPoseStartTime(null);
-						setTimeout(handleTimerStart, 3000);
-					}
-				}
-			} else {
-				if (
-					poseStartTime &&
-					!(
-						instructionIndex === instructions.length - 1 &&
-						poseResult === "Success"
-					)
-				) {
-					setPoseResult("Failure");
-					if (!failureTimeout) {
-						speak({
-							text: "Failure",
-							voice: voice,
-							rate: 1,
-							pitch: 1,
-							lang: "en-US",
-						});
-						const timeout = setTimeout(() => {
-							setFailureTimeout(null);
-						}, 20000);
-						setFailureTimeout(timeout);
-					}
-					setPoseStartTime(null);
-				}
-			}
-		},
-		[
-			instructions,
-			instructionIndex,
-			poseStartTime,
-			poseResult,
-			speak,
-			voice,
-			handleTimerStart,
-			failureTimeout,
-		],
-	);
-
-	const checkAngles = useCallback(
-		(pose) => {
-			const feedbackMessages = [];
-			const leftKneeAngle = calculateAngle(
-				pose.keypoints[23],
-				pose.keypoints[25],
-				pose.keypoints[27],
-			);
-			const rightKneeAngle = calculateAngle(
-				pose.keypoints[24],
-				pose.keypoints[26],
-				pose.keypoints[28],
-			);
-			const leftElbowAngle = calculateAngle(
-				pose.keypoints[11],
-				pose.keypoints[13],
-				pose.keypoints[15],
-			);
-			const rightElbowAngle = calculateAngle(
-				pose.keypoints[12],
-				pose.keypoints[14],
-				pose.keypoints[16],
-			);
-
-			if (leftKneeAngle < 160 || rightKneeAngle < 160) {
-				feedbackMessages.push("Bend your knees");
-			}
-			if (Math.abs(pose.keypoints[15].x - pose.keypoints[16].x) > 50) {
-				feedbackMessages.push("Feet lined up");
-			}
-			if (Math.abs(pose.keypoints[27].x - pose.keypoints[29].x) > 50) {
-				feedbackMessages.push("Front knee and toe forward");
-			}
-			if (leftElbowAngle < 90 || rightElbowAngle < 90) {
-				feedbackMessages.push("Hands in position");
-			}
-
-			setFeedback(feedbackMessages);
-			if (feedbackMessages.length > 0) {
-				speak({
-					text: feedbackMessages.join(", "),
-					voice: voice,
-					rate: 1,
-					pitch: 1,
-					lang: "en-US",
-				});
-			}
-		},
-		[speak, voice],
-	);
-
-	useEffect(() => {
-		if (pose) {
-			const { predictedPose, feetDistance } = displayFeetDistance(
-				pose.keypoints,
-			);
-			checkPoseDuration(predictedPose);
-			checkAngles(pose);
-			const distanceInMeters = convertPixelsToMeters(feetDistance);
-			// Use distanceInMeters as needed
-		}
-	}, [pose, checkPoseDuration, checkAngles, convertPixelsToMeters]);
-
-	useEffect(() => {
-		if (countdownFinished && poseResult === "Success") {
-			const interval = setInterval(() => {
-				setCountdown((prevCountdown) => {
-					if (prevCountdown > 0) {
-						return prevCountdown - 1;
-					} else {
-						clearInterval(interval);
-						setCountdownFinished(false);
-						return 3;
-					}
-				});
-			}, 1000);
-			return () => clearInterval(interval);
-		}
-	}, [countdownFinished, poseResult]);
 
 	useEffect(() => {
 		if (
@@ -348,173 +202,453 @@ export default function Fencer_Page2() {
 		startPreInstructionCountdown,
 	]);
 
+	useEffect(() => {
+		if (!isTimerRunning) {
+			setFeedback([]);
+			previousFeedback.current = { message: "", timestamp: 0 };
+		}
+	}, [isTimerRunning]);
+
+	const toggleDarkMode = () => {
+		setDarkMode((prevMode) => !prevMode);
+	};
+
+	const handlePoseSequenceDetected = useCallback(
+		(poseDataArray) => {
+			const feedbackMessages = {
+				advance: [],
+				retreat: [],
+				lunge: [],
+			};
+
+			// Conversion factor from meters to inches
+			const metersToInches = 39.37;
+
+			// Aggregate feedback based on average angle data for 10 second intervals
+			const intervalDuration = 10;
+			const intervalCount = Math.ceil(poseDataArray.length / intervalDuration);
+
+			for (let i = 0; i < intervalCount; i++) {
+				const intervalData = poseDataArray.slice(
+					i * intervalDuration,
+					(i + 1) * intervalDuration,
+				);
+				const angleSums = {
+					advance: {
+						leftKnee: 0,
+						rightKnee: 0,
+						leftElb: 0,
+						rightElb: 0,
+						count: 0,
+					},
+					retreat: { leftKnee: 0, rightKnee: 0, count: 0 },
+					lunge: {
+						leftKnee: 0,
+						rightKnee: 0,
+						leftElb: 0,
+						rightElb: 0,
+						count: 0,
+					},
+				};
+
+				intervalData.forEach(({ poseType, angles }) => {
+					const {
+						leftKneeAngle,
+						rightKneeAngle,
+						leftElbAngle,
+						rightElbAngle,
+						feetDistance,
+					} = angles;
+
+					// Convert feetDistance from meters to inches
+					const feetDistanceInches = feetDistance * metersToInches;
+
+					if (poseType === "advance") {
+						angleSums.advance.leftKnee += leftKneeAngle;
+						angleSums.advance.rightKnee += rightKneeAngle;
+						angleSums.advance.leftElb += leftElbAngle;
+						angleSums.advance.rightElb += rightElbAngle;
+						angleSums.advance.count++;
+
+						// Feedback for Advances
+						if (feetDistanceInches < 12 || feetDistanceInches > 15) {
+							feedbackMessages.advance.push("Fix your feet distance.");
+						}
+						if (rightElbAngle < 85 || rightElbAngle > 95) {
+							feedbackMessages.advance.push(
+								"Keep your right elbow more upright.",
+							);
+						}
+						if (leftElbAngle < 40 || leftElbAngle > 50) {
+							feedbackMessages.advance.push(
+								"Left elbow should be bent at 45 degrees.",
+							);
+						}
+						if (
+							leftKneeAngle < 100 ||
+							leftKneeAngle > 170 ||
+							rightKneeAngle < 100 ||
+							rightKneeAngle > 170
+						) {
+							feedbackMessages.advance.push("Adjust your knees a bit");
+						}
+					} else if (poseType === "retreat") {
+						angleSums.retreat.leftKnee += leftKneeAngle;
+						angleSums.retreat.rightKnee += rightKneeAngle;
+						angleSums.retreat.count++;
+
+						// Feedback for Retreats
+						if (feetDistanceInches < 12 || feetDistanceInches > 15) {
+							feedbackMessages.retreat.push(
+								"Maintain feet distance between 12 to 15 inches.",
+							);
+						}
+						if (
+							leftKneeAngle < 70 ||
+							leftKneeAngle > 80 ||
+							rightKneeAngle < 70 ||
+							rightKneeAngle > 80
+						) {
+							feedbackMessages.retreat.push(
+								"Knees should be bent between 70 to 80 degrees.",
+							);
+						}
+					} else if (poseType === "lunge") {
+						angleSums.lunge.leftKnee += leftKneeAngle;
+						angleSums.lunge.rightKnee += rightKneeAngle;
+						angleSums.lunge.leftElb += leftElbAngle;
+						angleSums.lunge.rightElb += rightElbAngle;
+						angleSums.lunge.count++;
+
+						// Feedback for Lunges
+						if (feetDistanceInches < 20 || feetDistanceInches > 24) {
+							feedbackMessages.lunge.push(
+								"Front foot should move forward by 20 to 24 inches.",
+							);
+						}
+						if (rightElbAngle < 175 || rightElbAngle > 185) {
+							feedbackMessages.lunge.push(
+								"Right elbow should be fully extended at 180 degrees.",
+							);
+						}
+						if (leftKneeAngle < 85 || leftKneeAngle > 95) {
+							feedbackMessages.lunge.push(
+								"Front knee should be bent at 90 degrees.",
+							);
+						}
+						if (rightKneeAngle < 175 || rightKneeAngle > 185) {
+							feedbackMessages.lunge.push(
+								"Back knee should straighten completely at 180 degrees.",
+							);
+						}
+					}
+				});
+
+				const averageAngles = {
+					advance: {
+						leftKnee: angleSums.advance.count
+							? angleSums.advance.leftKnee / angleSums.advance.count
+							: 0,
+						rightKnee: angleSums.advance.count
+							? angleSums.advance.rightKnee / angleSums.advance.count
+							: 0,
+						leftElb: angleSums.advance.count
+							? angleSums.advance.leftElb / angleSums.advance.count
+							: 0,
+						rightElb: angleSums.advance.count
+							? angleSums.advance.rightElb / angleSums.advance.count
+							: 0,
+					},
+					retreat: {
+						leftKnee: angleSums.retreat.count
+							? angleSums.retreat.leftKnee / angleSums.retreat.count
+							: 0,
+						rightKnee: angleSums.retreat.count
+							? angleSums.retreat.rightKnee / angleSums.retreat.count
+							: 0,
+					},
+					lunge: {
+						leftKnee: angleSums.lunge.count
+							? angleSums.lunge.leftKnee / angleSums.lunge.count
+							: 0,
+						rightKnee: angleSums.lunge.count
+							? angleSums.lunge.rightKnee / angleSums.lunge.count
+							: 0,
+						leftElb: angleSums.lunge.count
+							? angleSums.lunge.leftElb / angleSums.lunge.count
+							: 0,
+						rightElb: angleSums.lunge.count
+							? angleSums.lunge.rightElb / angleSums.lunge.count
+							: 0,
+					},
+				};
+
+				// Determine the most common feedback for each pose type
+				const mostCommonFeedback = (feedbackArray) => {
+					if (feedbackArray.length === 0) return "";
+					const frequency = {};
+					feedbackArray.forEach(
+						(msg) => (frequency[msg] = (frequency[msg] || 0) + 1),
+					);
+					return Object.keys(frequency).reduce((a, b) =>
+						frequency[a] > frequency[b] ? a : b,
+					);
+				};
+
+				const feedbackMessage = [
+					mostCommonFeedback(feedbackMessages.advance),
+					mostCommonFeedback(feedbackMessages.retreat),
+					mostCommonFeedback(feedbackMessages.lunge),
+				].filter(Boolean)[0]; // Get the most relevant feedback
+
+				if (feedbackMessage && !isFeedbackMuted) {
+					const now = Date.now();
+					if (now - lastSpokenFeedbackTime >= 10000) {
+						// Ensure at least 10 seconds between feedback
+						setFeedback([feedbackMessage]);
+						speak({
+							text: feedbackMessage,
+							voice: voice,
+							rate: 1.2,
+							pitch: 1.1,
+							lang: "en-US",
+						});
+						setLastSpokenFeedbackTime(now);
+					}
+				}
+			}
+		},
+		[speak, voice, lastSpokenFeedbackTime, isFeedbackMuted],
+	);
+
+	const toggleFeedbackMute = () => {
+		setIsFeedbackMuted((prevState) => !prevState);
+	};
+
 	return (
 		<InstructionContext.Provider value={{ instructions, setInstructions }}>
-			<div className="flex flex-col h-screen font-sans bg-black text-white overflow-hidden">
-				<header className="flex items-center justify-between p-4 bg-gray-900 border-b border-gray-800 z-10">
+			{isMobile ? (
+				<div
+					className={`flex flex-col items-center justify-center h-screen ${darkMode ? "bg-black text-white" : "bg-white text-black"} p-4`}
+				>
+					<p className="text-center text-xl mb-4">
+						For a better viewing experience, please visit this website on a
+						computer.
+					</p>
 					<Link href="/">
 						<button
-							className="bg-white text-black py-2 px-4 rounded text-lg font-semibold hover:bg-gray-300"
-							aria-label="Go back"
+							className={`${darkMode ? "bg-white text-black" : "bg-black text-white"} py-2 px-4 rounded text-lg font-semibold hover:bg-gray-300`}
 						>
-							&#8592;
+							Go Back
 						</button>
 					</Link>
-					<div className="flex-grow flex justify-center">
-						<Stream_Vid
-							onVideoChange={handleVideoChange}
-							isRecording={isRecording}
-							toggleRecording={toggleRecording}
-							videoSource={videoSource}
-						/>
-					</div>
-					<UserButton />
-				</header>
-
-				<main
-					className="flex flex-grow relative"
-					style={{ perspective: "1000px" }}
+				</div>
+			) : (
+				<div
+					className={`flex flex-col h-screen font-sans ${darkMode ? "bg-black text-white" : "bg-white text-black"} overflow-hidden`}
 				>
-					<div
-						className="w-1/8 absolute left-0 top-0 bottom-0 shadow-2xl"
-						style={{
-							transform: "rotateY(15deg)",
-							transformOrigin: "left center",
-							height: "100%",
-							scale: "60%",
-							top: "0px",
-						}}
+					<header
+						className={`flex items-center justify-between p-4 ${darkMode ? "bg-gray-900 border-b border-gray-800" : "bg-gray-100 border-b border-gray-300"} z-10`}
 					>
-						<div className="h-full p-6 overflow-auto hide-scrollbar">
-							<MemoizedFencerStats
-								pose={pose}
-								lastCalled={lastCalled}
-								setLastCalled={setLastCalled}
-								setAiFeedback={setAiResult}
-								height={height}
-							/>
-						</div>
-					</div>
-
-					<div
-						className="flex-1 flex flex-col items-center justify-center px-2.8 space-y-4 z-10"
-						style={{ transform: "scale(0.7)", marginTop: "-100px" }}
-					>
-						<div className="w-2/3 mt-10">
-							<MemoizedInstruction
-								isRunning={isRunning}
-								instructionIndex={instructionIndex}
-								instructions={instructions}
-								performedPose={performedPose}
-							/>
-							<div style={{ marginBottom: "20px" }}></div>{" "}
-							{/* Added space between the Timer and Instruction */}
-							<MemoizedTimer
-								onTimerStart={handleTimerStart}
-								onReset={handleReset}
-								isStartDisabled={isStartDisabled}
-								resetTimer={resetTimer}
-								data={instructions}
-								instructionIndex={instructionIndex}
-								initialTime={instructions[instructionIndex]?.time}
-							/>
-						</div>
-
-						{/* Fencer Canvas Component */}
-						<div
-							className="w-2/3 aspect-video bg-black flex items-center justify-center rounded-lg relative border border-gray-600"
-							style={{ marginTop: "50px" }}
-						>
-							<Fencer_Canvas
-								videoSource={videoSource}
-								isRecording={isRecording}
-								setPose={setPose}
-								containerWidth="100%"
-								containerHeight="100%"
-							/>
-						</div>
-
-						<div className="flex justify-center items-center">
-							<div
-								id="poseResult"
-								className="text-2xl font-semibold text-white flex items-center"
+						<Link href="/">
+							<button
+								className={`${darkMode ? "bg-white text-black" : "bg-black text-white"} py-2 px-4 rounded text-lg font-semibold hover:bg-gray-300`}
+								aria-label="Go back"
 							>
-								{poseResult === "Success" && (
-									<FaCheckCircle className="text-green-400 mr-2" />
-								)}
-								{poseResult === "Failure" && (
-									<FaTimesCircle className="text-red-400 mr-2" />
-								)}
-								{hasSpoken && (
-									<div className="countdown-circle">{countdown}</div>
-								)}
+								&#8592;
+							</button>
+						</Link>
+						<div className="flex-grow flex justify-center">
+							<Stream_Vid
+								onVideoChange={handleVideoChange}
+								isRecording={isRecording}
+								toggleRecording={toggleRecording}
+								videoSource={videoSource}
+							/>
+						</div>
+						<div className="flex items-center space-x-4">
+							<button
+								className={`${darkMode ? "bg-white text-black" : "bg-black text-white"} p-2 rounded-full text-lg font-semibold hover:bg-gray-300`}
+								onClick={toggleDarkMode}
+								aria-label={
+									darkMode ? "Switch to Light Mode" : "Switch to Dark Mode"
+								}
+							>
+								{darkMode ? <FaSun /> : <FaMoon />}
+							</button>
+							<button
+								className={`${darkMode ? "bg-white text-black" : "bg-black text-white"} p-2 rounded-full text-lg font-semibold hover:bg-gray-300`}
+								onClick={toggleFeedbackMute}
+								aria-label={
+									isFeedbackMuted ? "Unmute Feedback" : "Mute Feedback"
+								}
+							>
+								{isFeedbackMuted ? <FaVolumeMute /> : <FaVolumeUp />}
+							</button>
+							<UserButton />
+						</div>
+
+						<div className="mx-4">
+							<SettingOutlined
+								className="text-white text-2xl cursor-pointer"
+								onClick={showModal}
+							/>
+						</div>
+						<Modal
+							title="Settings"
+							open={isModalVisible}
+							onCancel={handleCancel}
+							footer={null}
+						>
+							<div className="flex flex-col items-center space-y-4">
+								<AddFencer />
+								<Logout />
+								<DeleteAccountButton type="fencer" otherId="" />
+							</div>
+						</Modal>
+					</header>
+
+					<main
+						className="flex flex-grow relative "
+						style={{ perspective: "1000px" }}
+					>
+						<div
+							className="w-1/8 absolute left-0 top-0 bottom-0"
+							style={{
+								transform: "rotateY(15deg)",
+								transformOrigin: "left center",
+								height: "100%",
+								scale: "65%",
+								top: "-60px",
+							}}
+						>
+							<div className="h-[full] p-6 flex flex-col justify-center items-center">
+								<MemoizedFencerStats
+									pose={pose}
+									// setAiFeedback={setAiResult}
+									height={height}
+									setFeetDistance={setFeetDistance}
+									setShoulderWidth={setShoulderWidth}
+									darkMode={darkMode}
+									onPoseSequenceDetected={handlePoseSequenceDetected}
+								/>
 							</div>
 						</div>
-					</div>
-					<CardContainer
-						className="w-[700px] h-[400px] absolute right-[-100px] top-[25%] shadow-2xl"
-						style={{
-							transform: "rotateY(-40deg) rotateX(5deg)",
-							transformOrigin: "right center",
-							scale: "100%",
-						}}
-					>
-						<div className="h-full p-6 overflow-auto hide-scrollbar">
-							<CardBody className="bg-gray-50 relative group/card dark:hover:shadow-2xl dark:hover:shadow-emerald-500/[0.1] dark:bg-black dark:border-white/[0.2] border-black/[0.1] w-full h-full rounded-xl p-8 space-y-4 border">
-								<CardItem
-									translateZ="50"
-									className="text-xl font-bold text-neutral-600 dark:text-white mb-4"
-								>
-									AI Feedback
-								</CardItem>
-								<div className="grid grid-rows-1 grid-cols-1 gap-4">
-									<CardItem
-										translateZ="60"
-										className="rounded p-4 bg-gray-800 bg-opacity-50 border border-gray-700 shadow-lg w-auto text-white"
-									>
-										{(aiResult ? aiResult.split("\n") : []).map((item, key) => (
-											<span key={key}>
-												{item}
-												<br />
-											</span>
-										))}
-									</CardItem>
-								</div>
-							</CardBody>
+
+						<div
+							className="flex-1 flex flex-col items-center justify-center px-2.8 space-y-4 z-10"
+							style={{ transform: "scale(0.7)", marginTop: "-150px" }}
+						>
+							<div className="w-2/3 mt-10">
+								<MemoizedInstruction
+									isRunning={isRunning}
+									instructionIndex={instructionIndex}
+								/>
+								<div style={{ marginBottom: "20px" }}></div>{" "}
+								{/* Added space between the Timer and Instruction */}
+								<MemoizedTimer
+									onTimerStart={handleTimerStart}
+									onReset={handleReset}
+									isStartDisabled={isStartDisabled}
+									resetTimer={resetTimer}
+									initialTime={instructions[instructionIndex]?.time}
+									onRunningChange={setIsTimerRunning}
+									darkMode={darkMode}
+									instructions={instructions}
+									instructionIndex={instructionIndex}
+									setInstructionIndex={handleInstructionChange}
+								/>
+							</div>
+
+							{/* Fencer Canvas Component */}
+							<div
+								className="w-2/3 aspect-video bg-black flex items-center justify-center rounded-lg relative border border-gray-600"
+								style={{ marginTop: "50px" }}
+							>
+								<Fencer_Canvas
+									videoSource={height ? videoSource : null}
+									isRecording={isRecording}
+									setPose={setPose}
+									containerWidth="100%"
+									containerHeight="100%"
+									darkMode={darkMode}
+								/>
+							</div>
+
+							{/* <div className="mt-4">
+                <h3 className="text-xl font-semibold mb-2">Feedback</h3>
+                <ul className="list-disc pl-5">
+                  {feedback.map((item, index) => (
+                    <li key={index} className="text-white">{item}</li>
+                  ))}
+                </ul>
+              </div> */}
 						</div>
-					</CardContainer>
 
-					<div className="absolute top-0 left-0 p-4 bg-gray-800 text-white rounded">
-						{feedback.map((msg, index) => (
-							<div key={index}>{msg}</div>
-						))}
-					</div>
-				</main>
+						<div
+							className="absolute left-[1070px] top-[10%]"
+							style={{
+								transform: "rotateY(-20deg)",
+								transformOrigin: "left center",
+							}}
+						>
+							<CardContainer className="inter-var w-96 h-[24rem]">
+								<CardBody
+									className={`[transform-style:preserve-3d] [&>*]:[transform-style:preserve-3d] relative group/card ${darkMode ? "bg-gray-900 text-white" : "bg-white text-black"} h-full rounded-xl p-4 space-y-4 border ${darkMode ? "border-gray-700" : "border-gray-300"}`}
+								>
+									<CardItem
+										translateZ="50"
+										className="text-m font-bold mb-4 w-full text-left"
+									>
+										AI Feedback
+									</CardItem>
+									<div
+										className="rounded p-4 border shadow-lg w-[85%] h-[calc(100%-4rem)] overflow-y-auto"
+										style={{ wordWrap: "break-word" }}
+									>
+										{/* uncomment to generate AI feedback */}
+										{/* {(aiResult ? aiResult.split('\n') : []).map((item, key) => (
+                      <CardItem key={key} translateZ="60" className={`rounded p-2 ${darkMode ? 'bg-gray-800 text-white' : 'bg-gray-100 text-black'} border ${darkMode ? 'border-gray-700' : 'border-gray-300'} shadow-lg`}>
+                        <span>{item}</span><br/>
+                      </CardItem>
+                    ))} */}
+									</div>
+								</CardBody>
+							</CardContainer>
+						</div>
 
-				<HeightInputModal
-					isOpen={isHeightModalOpen}
-					onClose={() => setIsHeightModalOpen(false)}
-					onSave={handleHeightSave}
-				/>
+						<div
+							className={`absolute top-0 left-0 p-4 ${darkMode ? "bg-gray-800 text-white" : "bg-gray-200 text-black"} rounded`}
+						>
+							{feedback.map((msg, index) => (
+								<div key={index}>{msg}</div>
+							))}
+						</div>
+					</main>
 
-				<style jsx>{`
-          .countdown-circle {
-            width: 40px;
-            height: 40px;
-            border: 2px solid white;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.5rem;
-          }
-          .pre-instruction-countdown {
-            color: white;
-          }
-        `}</style>
-			</div>
+					<HeightInputModal
+						isOpen={isHeightModalOpen}
+						onClose={() => setIsHeightModalOpen(false)}
+						onSave={handleHeightSave}
+					/>
+
+					<style jsx>{`
+            .countdown-circle {
+              width: 40px;
+              height: 40px;
+              border: 2px solid white;
+              border-radius: 50%;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              font-size: 1.5rem;
+            }
+            .pre-instruction-countdown {
+              color: white;
+            }
+          `}</style>
+				</div>
+			)}
 		</InstructionContext.Provider>
 	);
 }
-
-Fencer_Page2.propTypes = {};

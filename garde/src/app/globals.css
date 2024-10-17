@@ -7,6 +7,10 @@
   background: rgb(0, 0, 0)
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 .editor-content .ProseMirror {
   min-height: 380px;
   background-color: white;

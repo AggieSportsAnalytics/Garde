@@ -1,5 +1,5 @@
 import React from "react";
-import "../app/globals.css";
+import "../../app/globals.css";
 import { LampContainer } from "../ui/lamp";
 import { AnimatedTooltip } from "../ui/animated-tooltip";
 import { TypewriterEffectSmooth } from "../ui/typewriter-effect";

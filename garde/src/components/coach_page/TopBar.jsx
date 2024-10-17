@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { Modal } from "antd";
 import Logout from "../auth/Logout";
-import DeleteAccountButton from "../DeleteAccount";
+import DeleteAccountButton from "../auth/DeleteAccount";
 import { SettingOutlined } from "@ant-design/icons";
 import UuidReveal from "./UuidReveal";
 import AddFencerInstruction from "./AddFencerInstruction";

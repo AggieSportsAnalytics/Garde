@@ -30,9 +30,9 @@ import {
 	CardContainer,
 	CardItem,
 } from "../../components/ui/3d-card.tsx";
-import DeleteAccountButton from "../../components/DeleteAccount";
+import DeleteAccountButton from "../../components/auth/DeleteAccount";
 import AddFencer from "../../components/fencer_page/AddFencer";
-import Logout from "../../components/Logout.jsx";
+import Logout from "../../components/auth/Logout.jsx";
 import { Modal } from "antd";
 import { SettingOutlined } from "@ant-design/icons";
 
@@ -86,7 +86,7 @@ export default function Fencer_Page2() {
 	const [lastFeedbackMessage, setLastFeedbackMessage] = useState("");
 	const [isFeedbackMuted, setIsFeedbackMuted] = useState(false);
 
-  const showModal = () => {
+	const showModal = () => {
 		setIsModalVisible(true);
 	};
 	const handleCancel = () => {

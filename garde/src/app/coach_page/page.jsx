@@ -1,10 +1,10 @@
 "use client";
 
-import "../../app/globals.css";
-import TopBar from "./components/TopBar";
-import Videos from "./components/Videos";
-import Editor from "./components/Editor";
-import Analytics from "./components/Analytics";
+import "../globals.css";
+import TopBar from "../../components/coach_page/TopBar";
+import Videos from "../../components/coach_page/Videos";
+import Editor from "../../components/coach_page/Editor";
+import Analytics from "../../components/coach_page/Analytics";
 import { useState, useEffect } from "react";
 import { jwtDecode } from "jwt-decode"; // Corrected import for jwtDecode
 import axios from "axios";

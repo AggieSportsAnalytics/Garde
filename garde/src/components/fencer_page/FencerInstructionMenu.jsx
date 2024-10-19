@@ -1,8 +1,8 @@
 import { SquareX, X } from 'lucide-react';
-import { Select, Input, Button, Table, Card } from "antd";
+import { Select, Input, Button, Table, Card, Row, Col } from "antd";
 import React, { useEffect, useState, useContext } from 'react';
 import InstructionContext from './InstructionContext';
-import { FaWalking, FaCheck, FaBalanceScale, FaTimes } from 'react-icons/fa';
+import { FaWalking, FaCheck, FaBalanceScale, FaTimes, FaHandPaper } from 'react-icons/fa';
 
 const predefinedRoutines = {
   "Footwork Routine": [
@@ -10,6 +10,12 @@ const predefinedRoutines = {
     { name: "Controlled Retreat", time: 5 },
     { name: "Fast Advance", time: 5 },
     { name: "Controlled Retreat", time: 5 }
+  ],
+  "Parry-Riposte Drill": [
+    { name: "Parry Quarte", time: 3 },
+    { name: "Riposte", time: 2 },
+    { name: "Parry Sixte", time: 3 },
+    { name: "Riposte", time: 2 }
   ]
 };
 
@@ -110,6 +116,13 @@ const FencerInstructionMenu = ({ setInstructionMenu, onSave }) => {
     })));
   };
 
+  const handleRoutineClick = (routine) => {
+    setData(predefinedRoutines[routine].map((item, index) => ({
+      key: index + 1,
+      ...item
+    })));
+  };
+
   return (
     <div className="fixed inset-0 flex items-center justify-center z-50 bg-opacity-0">
       <div className="bg-white rounded-lg shadow-lg p-8 w-[800px] max-w-[90%] mx-auto relative">
@@ -120,22 +133,46 @@ const FencerInstructionMenu = ({ setInstructionMenu, onSave }) => {
           <X size={24} />
         </button>
         <h2 className="text-2xl font-semibold mb-6" style={{ color: 'black' }}>Fencer Instructions</h2>
-        <Card 
-          title={<span><FaWalking className="inline-block mr-2" />Footwork Routine</span>} 
-          bordered={true} 
-          style={{ marginBottom: '20px', cursor: 'pointer' }}
-          onClick={handleFootworkRoutineClick}
-          hoverable
-        >
-          <p><strong>Purpose:</strong> To build agility, speed, and control in footwork.</p>
-          <ul className="list-disc pl-5">
-            <li>Set a marker on the floor.</li>
-            <li>Start in the on-guard position and perform two rapid advances, then one controlled retreat.</li>
-            <li>Continue with three fast advances, then four controlled retreats.</li>
-            <li>Alternate advance and retreat quickly between the lines, focusing on smooth transitions.</li>
-          </ul>
-          <p><FaBalanceScale className="inline-block mr-2" />Maintain a low center of gravity and proper stance, avoiding upper body leaning. Make each movement distinct and purposeful.</p>
-        </Card>
+        <Row gutter={[16, 16]}>
+          <Col span={12}>
+            <Card 
+              title={<span><FaWalking className="inline-block mr-2" />Footwork Routine</span>} 
+              bordered={true} 
+              style={{ height: '100%', cursor: 'pointer' }}
+              onClick={() => handleRoutineClick("Footwork Routine")}
+              hoverable
+            >
+              <p><strong>Purpose:</strong> To build agility, speed, and control in footwork.</p>
+              <ul className="list-disc pl-5">
+                <li>Set a marker on the floor.</li>
+                <li>Start in the on-guard position and perform two rapid advances, then one controlled retreat.</li>
+                <li>Continue with three fast advances, then four controlled retreats.</li>
+                <li>Alternate advance and retreat quickly between the lines, focusing on smooth transitions.</li>
+              </ul>
+              <p><FaBalanceScale className="inline-block mr-2" />Maintain a low center of gravity and proper stance, avoiding upper body leaning. Make each movement distinct and purposeful.</p>
+            </Card>
+          </Col>
+          <Col span={12}>
+            <Card 
+              title={<span><FaHandPaper className="inline-block mr-2" />Parry-Riposte Drill</span>} 
+              bordered={true} 
+              style={{ height: '100%', cursor: 'pointer' }}
+              onClick={() => handleRoutineClick("Parry-Riposte Drill")}
+              hoverable
+            >
+              <p><strong>Purpose:</strong> To practice quick parries and ripostes.</p>
+              <ul className="list-disc pl-5">
+                <li>Start in the on-guard position.</li>
+                <li>Coach attacks with a straight thrust to the chest.</li>
+                <li>Quickly parry in quarte and immediately riposte with a straight thrust.</li>
+                <li>Reset to on-guard position.</li>
+                <li>Coach attacks again, now to the outside line.</li>
+                <li>Parry in sixte and riposte with a straight thrust.</li>
+              </ul>
+              <p><FaCheck className="inline-block mr-2" />Focus on speed and precision in both the parry and the riposte. Maintain proper distance and blade control throughout.</p>
+            </Card>
+          </Col>
+        </Row>
 
         <div className="flex items-center mb-6">
           <Select

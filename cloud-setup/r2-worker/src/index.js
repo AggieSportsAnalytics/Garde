@@ -120,7 +120,7 @@ async function getVideoChunks(videoId, range, BUCKET) {
 	const res = new Response(stream, {
 		status: 200,
 		headers: {
-			"Content-Type": "video/webm",
+			"Content-Type": "video/webm; codecs=vp9",
 		},
 	});
 	return addCorsHeaders(res);

@@ -107,7 +107,7 @@ const handleVideoUpload = async (file) => {
 
 		const uploadResponse = await axios.put(presignedUrl, file, {
 			headers: {
-				"Content-Type": "video/webm",
+				"Content-Type": "video/webm; codecs=vp9",
 			},
 		});
 
@@ -130,7 +130,7 @@ const convertFile = async (selectedFile) => {
 		const response = await axios.post("/api/convert-video", formData, {
 			headers: {
 				// "Content-Type": "multipart/form-data", // Correct header for FormData
-				"Content-Type": "video/webm",
+				"Content-Type": "video/webm; codecs=vp9",
 			},
 		});
 
@@ -141,7 +141,7 @@ const convertFile = async (selectedFile) => {
 				[fileBlob],
 				`converted_${selectedFile.name}.webm`,
 				{
-					type: "video/webm",
+					type: "video/webm; codecs=vp9",
 				},
 			);
 

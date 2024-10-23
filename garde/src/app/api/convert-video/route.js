@@ -59,7 +59,7 @@ export async function POST(req) {
 		// Return the WebM file as a Buffer (automatically sent as binary data)
 		return new NextResponse(convertedFileBuffer, {
 			headers: {
-				"Content-Type": "video/webm",
+				"Content-Type": "video/webm; codecs=vp9",
 			},
 		});
 	} catch (error) {

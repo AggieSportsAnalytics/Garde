@@ -220,7 +220,7 @@ const WebcamPose = ({
 
 	useEffect(() => {
 		// video/webm; codecs=vp9 is more space efficient but less compatible
-		const options = { mimeType: "video/webm" };
+		const options = { mimeType: "video/webm; codecs=vp9" };
 
 		if (videoSource || isRecording) {
 			runPoseDetection();
@@ -313,7 +313,7 @@ const WebcamPose = ({
 
 			const uploadResponse = await axios.put(presignedUrl, event.data, {
 				headers: {
-					"Content-Type": "video/webm",
+					"Content-Type": "video/webm; codecs=vp9",
 				},
 			});
 

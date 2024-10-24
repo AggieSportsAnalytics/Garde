@@ -5,11 +5,10 @@ import path from "node:path";
 
 ffmpeg.setFfmpegPath(process.env.FFMPEG_PATH); // global ffmpeg path
 
-export const config = {
-	api: {
-		bodyParser: false, // Disable the default body parser to handle FormData manually
-	},
+export const metadata = {
+    bodyParser: false, // Disable the default body parser to handle FormData manually
 };
+
 
 // Helper function to convert video
 const convertFile = (inputFilePath, outputFilePath) => {

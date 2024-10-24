@@ -613,7 +613,6 @@ export default function Fencer_Page2() {
 									containerWidth="100%"
 									containerHeight="100%"
 									darkMode={darkMode}
-									darkMode={darkMode}
 								/>
 							</div>
 

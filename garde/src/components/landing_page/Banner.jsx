@@ -1,5 +1,4 @@
 import React from "react";
-import { useTheme } from "next-themes"; // Assuming you are using next-themes for theme management
 import { MagicCard } from "../ui/MagicCard"; // Import MagicCard component
 
 const Banner = () => {

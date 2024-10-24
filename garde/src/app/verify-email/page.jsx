@@ -7,10 +7,10 @@ import axios from "axios";
 
 export default function VerifyEmail() {
 	const [message, setMessage] = useState("Verifying...");
+	const searchParams = useSearchParams();
+	const router = useRouter();
 
 	useEffect(() => {
-		const searchParams = useSearchParams();
-		const router = useRouter();
 		const workerUrl = `${process.env.NEXT_PUBLIC_GARDE_WORKER}/verifyEmail`;
 		const token = searchParams.get("token"); // Get the token from the URL
 

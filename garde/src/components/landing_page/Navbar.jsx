@@ -39,10 +39,10 @@ const navbar = () => {
 			<div className="flex justify-between items-center w-full h-full px-2 2xl:px-16">
 				<Link href="/#home">
 					<Image
-						src="/images/logo.png"
+						src="/images/garde.png"
 						alt="logo"
-						width={45}
-						height={45}
+						width={100}
+						height={100}
 						quality={100}
 						className="rounded-full hover:animate-pulse"
 					/>
@@ -65,13 +65,15 @@ const navbar = () => {
 							</li>
 						</Link>
 						<Link href="/fencer_signin">
-							<button class="login ml-10 hover:text-[#5bb1d5] transition-colors duration-500 text-md">
+							<button className="login ml-10 hover:text-[#5bb1d5] transition-colors duration-500 text-md">
 								Fencer Login/signup
 							</button>
 						</Link>
 						<Link href="/coach_signin">
-							<button class="button ml-3">
-								<span class="button-content font-bold">Coach Login/Signup</span>
+							<button className="button ml-3">
+								<span className="button-content font-bold">
+									Coach Login/Signup
+								</span>
 							</button>
 						</Link>
 					</ul>
@@ -80,10 +82,10 @@ const navbar = () => {
 							<input type="checkbox" ref={hamburgerRef} onClick={handleNav} />
 							<svg viewBox="0 0 32 32">
 								<path
-									class="line line-top-bottom"
+									className="line line-top-bottom"
 									d="M27 10 13 10C10.8 10 9 8.2 9 6 9 3.5 10.8 2 13 2 15.2 2 17 3.8 17 6L17 26C17 28.2 18.8 30 21 30 23.2 30 25 28.2 25 26 25 23.8 23.2 22 21 22L7 22"
 								></path>
-								<path class="line" d="M7 16 27 16"></path>
+								<path className="line" d="M7 16 27 16"></path>
 							</svg>
 						</label>
 					</div>
@@ -121,11 +123,11 @@ const navbar = () => {
 									Contact
 								</li>
 							</Link>
-							<button class="login mt-4 hover:text-[#ac4bac] transition-colors duration-500 text-md">
+							<button className="login mt-4 hover:text-[#ac4bac] transition-colors duration-500 text-md">
 								Login
 							</button>
-							<button class="button mt-2">
-								<span class="button-content font-bold">Get Started</span>
+							<button className="button mt-2">
+								<span className="button-content font-bold">Get Started</span>
 							</button>
 						</ul>
 					</div>

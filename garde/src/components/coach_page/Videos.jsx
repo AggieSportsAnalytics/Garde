@@ -12,6 +12,9 @@ const Videos = ({ fencer }) => {
 
 	useEffect(() => {
 		const fetchVideos = async () => {
+			if (!fencer || !fencer.fencer_id) {
+				return;
+			}
 			try {
 				setVideoUrl(null);
 				const listUrl = `${process.env.NEXT_PUBLIC_R2_WORKER}/listBucket/${fencer.fencer_id}`;

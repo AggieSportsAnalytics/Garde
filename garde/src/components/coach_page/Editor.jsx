@@ -20,6 +20,7 @@ function Editor({ fencer, coachName }) {
 		],
 		content: "",
 		placeholder: "Enter your feedback here...",
+		immediatelyRender: false,
 	});
 
 	const handleSubmit = async () => {

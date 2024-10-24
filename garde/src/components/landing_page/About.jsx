@@ -58,6 +58,7 @@ const About = () => {
 						<WobbleCard className="h-72 md:h-96">
 							<div className="flex justify-center">
 								<Image
+									alt="Coach page image"
 									src="/images/CoachPage.png"
 									width={500}
 									height={500}

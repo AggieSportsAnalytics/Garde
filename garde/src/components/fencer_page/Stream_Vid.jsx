@@ -83,11 +83,11 @@ const handleVideoUpload = async (file) => {
 		try {
 			decoded = jwtDecode(token);
 		} catch (error) {
-			console.log("Invalid JWT token");
+			console.error("Invalid JWT token");
 			return;
 		}
 	} else {
-		console.log("No cookies found");
+		console.error("No cookies found");
 		return;
 	}
 
@@ -112,7 +112,6 @@ const handleVideoUpload = async (file) => {
 		});
 
 		if (uploadResponse.status >= 200 && uploadResponse.status <= 300) {
-			console.log("File uploaded successfully!");
 		} else {
 			console.error("Failed to upload file");
 		}
@@ -130,22 +129,23 @@ const convertFile = async (selectedFile) => {
 		const response = await axios.post("/api/convert-video", formData, {
 			headers: {
 				// "Content-Type": "multipart/form-data", // Correct header for FormData
-				"Content-Type": "video/webm; codecs=vp9",
+				"Content-Type": "video/*",
 			},
+			responseType: "blob",
 		});
 
 		if (response.status >= 200 && response.status < 300) {
 			// Receive the blob from the response and convert it into a File object
 			const fileBlob = response.data;
+
 			const convertedFile = new File(
 				[fileBlob],
-				`converted_${selectedFile.name}.webm`,
+				`converted_${selectedFile.name}.webm; codecs=vp9`,
 				{
 					type: "video/webm; codecs=vp9",
 				},
 			);
 
-			console.log("File converted successfully!");
 			return convertedFile; // Return the converted file as a File object
 		}
 

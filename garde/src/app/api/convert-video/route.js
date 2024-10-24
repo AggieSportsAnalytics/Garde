@@ -1,11 +1,8 @@
 import { NextResponse } from "next/server";
 import ffmpeg from "fluent-ffmpeg";
-// import ffmpegPath from "ffmpeg-static";
 import { promises as fsPromises } from "node:fs";
 import path from "node:path";
 
-// console.log("Resolved FFmpeg path:", ffmpegPath);
-// ffmpeg.setFfmpegPath(ffmpegPath);
 ffmpeg.setFfmpegPath(process.env.FFMPEG_PATH); // global ffmpeg path
 
 export const config = {
@@ -14,8 +11,8 @@ export const config = {
 	},
 };
 
-// Helper function to convert video to WebM
-const convertToWebM = (inputFilePath, outputFilePath) => {
+// Helper function to convert video
+const convertFile = (inputFilePath, outputFilePath) => {
 	return new Promise((resolve, reject) => {
 		ffmpeg(inputFilePath)
 			.output(outputFilePath)
@@ -37,8 +34,12 @@ export async function POST(req) {
 		);
 	}
 
-	// Create a temporary file to store the uploaded video
-	const tempInputFilePath = path.join("/tmp", `${Date.now()}.mp4`); // Assuming original video is mp4
+	// Determine the original MIME type
+	const originalMimeType = videoFile.type;
+
+	// Create a temporary file path for the uploaded video
+	const fileExtension = originalMimeType.split("/")[1]; // Extract file extension
+	const tempInputFilePath = path.join("/tmp", `${Date.now()}.${fileExtension}`);
 	const tempOutputFilePath = path.join("/tmp", `converted_${Date.now()}.webm`);
 
 	// Write the uploaded video file to the temporary path
@@ -46,20 +47,31 @@ export async function POST(req) {
 	await fsPromises.writeFile(tempInputFilePath, Buffer.from(arrayBuffer));
 
 	try {
-		// Convert the video to WebM
-		await convertToWebM(tempInputFilePath, tempOutputFilePath);
+		let finalFileBuffer;
+		let finalMimeType;
 
-		// Read the converted WebM file (as Buffer)
-		const convertedFileBuffer = await fsPromises.readFile(tempOutputFilePath);
+		// Check if the file needs conversion
+		if (originalMimeType === "video/webm; codecs=vp9") {
+			// If the file is already webm, return the original file
+			finalFileBuffer = await fsPromises.readFile(tempInputFilePath);
+			finalMimeType = originalMimeType;
+		} else {
+			// Convert the video
+			await convertFile(tempInputFilePath, tempOutputFilePath);
+
+			// Read the converted webm file (as Buffer)
+			finalFileBuffer = await fsPromises.readFile(tempOutputFilePath);
+			finalMimeType = "video/webm; codecs=vp9";
+		}
 
 		// Clean up the temporary files
 		await fsPromises.unlink(tempInputFilePath);
 		await fsPromises.unlink(tempOutputFilePath);
 
-		// Return the WebM file as a Buffer (automatically sent as binary data)
-		return new NextResponse(convertedFileBuffer, {
+		// Return the video file buffer
+		return new NextResponse(finalFileBuffer, {
 			headers: {
-				"Content-Type": "video/webm; codecs=vp9",
+				"Content-Type": finalMimeType,
 			},
 		});
 	} catch (error) {

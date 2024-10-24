@@ -1,28 +1,43 @@
 "use client";
-import React, { useRef } from "react";
-import emailjs from "@emailjs/browser";
-import { Instagram, Linkedin, Youtube } from "lucide-react"; // bro this's genuinely not needed, just use an SVG or image
+import React, { useRef, useState } from "react";
+import axios from "axios";
+import { Instagram, Linkedin, Youtube } from "lucide-react";
 
 const Contact = () => {
 	const form = useRef();
+	const [loading, setLoading] = useState(false);
+	const [success, setSuccess] = useState(null);
 
-	const sendEmail = (e) => {
+	const sendEmail = async (e) => {
 		e.preventDefault();
+		setLoading(true);
 
-		emailjs
-			.sendForm("service_6hhjowg", "template_xopgjqe", form.current, {
-				publicKey: "XaISIO8Cw7CG8l8aj",
-			})
-			.then(
-				() => {
-					console.log("SUCCESS!");
-					form.current.reset();
-				},
-				(error) => {
-					console.log("FAILED...", error.text);
-					form.current.reset();
-				},
-			);
+		// Collect form data
+		const formData = {
+			name: form.current.user_name.value,
+			email: form.current.user_email.value,
+			message: form.current.message.value,
+		};
+
+		try {
+			// Send a POST request to the backend
+			const response = await axios.put("/api/contact_us", formData);
+
+			if (response.status === 200) {
+				setSuccess("Email sent successfully!");
+				form.current.reset();
+				await new Promise((r) => setTimeout(r, 2000));
+				setSuccess("");
+			} else {
+				console.error("Failed to send email");
+				setSuccess("Failed to send email. Please try again.");
+			}
+		} catch (error) {
+			console.error("Error sending email:", error);
+			setSuccess("Error sending email. Please try again.");
+		}
+
+		setLoading(false);
 	};
 
 	return (
@@ -68,9 +83,17 @@ const Contact = () => {
 							/>
 							<input
 								type="submit"
-								className="h-12 text-lg p-2.5 bg-gray-900 rounded-xl text-gray-300 hover:bg-gray-800 w-full mt-6 font-bold"
-								value="Submit"
+								className={`h-12 text-lg p-2.5 rounded-xl w-full mt-6 font-bold ${
+									loading
+										? "bg-gray-500"
+										: "bg-gray-900 hover:bg-gray-800 text-gray-300"
+								}`}
+								value={loading ? "Sending..." : "Submit"}
+								disabled={loading}
 							/>
+							{success && (
+								<p className="text-center mt-4 text-white">{success}</p>
+							)}
 						</div>
 					</form>
 

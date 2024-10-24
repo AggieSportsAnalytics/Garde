@@ -35,6 +35,7 @@ import AddFencer from "../../components/fencer_page/AddFencer";
 import Logout from "../../components/auth/Logout.jsx";
 import { Modal } from "antd";
 import { SettingOutlined } from "@ant-design/icons";
+import HeightInput from "../../components/fencer_page/HeightChange";
 
 const MemoizedFencerStats = memo(Fencer_Stats);
 const MemoizedInstruction = memo(Instruction);
@@ -111,6 +112,12 @@ export default function Fencer_Page2() {
 	const handleHeightSave = useCallback((heightInMeters) => {
 		setHeight(heightInMeters);
 		setIsHeightModalOpen(false);
+		setIsRecording((prev) => !prev);
+		setIsRunning((prev) => !prev);
+	}, []);
+
+	const handleHeightInput = useCallback((heightInMeters) => {
+		setHeight(heightInMeters);
 	}, []);
 
 	const startPreInstructionCountdown = useCallback(() => {
@@ -167,9 +174,10 @@ export default function Fencer_Page2() {
 	const toggleRecording = useCallback(() => {
 		if (!height) {
 			setIsHeightModalOpen(true);
+		} else {
+			setIsRecording((prev) => !prev);
+			setIsRunning((prev) => !prev);
 		}
-		setIsRecording((prev) => !prev);
-		setIsRunning((prev) => !prev);
 	}, [height]);
 
 	useEffect(() => {
@@ -492,12 +500,16 @@ export default function Fencer_Page2() {
 							</button>
 						</div>
 
-						<div className="mx-4">
+						<div
+							className={`mx-4 w-9 h-9 rounded-full ${darkMode ? "bg-white" : "bg-black"} 
+    flex items-center justify-center cursor-pointer hover:bg-gray-300`}
+							onClick={showModal}
+						>
 							<SettingOutlined
-								className="text-white text-2xl cursor-pointer"
-								onClick={showModal}
+								className={`${darkMode ? "text-black" : "text-white"} text-2xl`}
 							/>
 						</div>
+
 						<Modal
 							title="Settings"
 							open={isModalVisible}
@@ -506,6 +518,13 @@ export default function Fencer_Page2() {
 						>
 							<div className="flex flex-col items-center space-y-4">
 								<AddFencer />
+								<HeightInput handleHeightSave={handleHeightInput} />
+								{height ? (
+									<p>Current Height: {height}</p>
+								) : (
+									<p>Current Height: Not Set</p>
+								)}
+								<div className="h-10"></div>
 								<Logout />
 								<DeleteAccountButton type="fencer" otherId="" />
 							</div>

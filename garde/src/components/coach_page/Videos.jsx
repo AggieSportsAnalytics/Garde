@@ -37,13 +37,8 @@ const Videos = ({ fencer }) => {
 			const response = await axios.get(url, { responseType: "blob" });
 			const videoObjectUrl = URL.createObjectURL(response.data);
 
-			// Set video URL to play it in ReactPlayer
 			setVideoUrl(videoObjectUrl);
 		} catch (error) {
-			// if (error.response.data) {
-			// 	const videoObjectUrl = URL.createObjectURL(error.response.data);
-			// 	setVideoUrl(videoObjectUrl);
-			// }
 			console.error("Failed to fetch video:", error.message);
 		}
 	};

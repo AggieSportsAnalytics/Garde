@@ -14,7 +14,6 @@ export async function POST(req) {
 
 		// Check the worker API to validate credentials
 		const response = await axios.get(workerUrl);
-		console.log(response);
 
 		const data = response?.data?.data; // Safeguard check
 

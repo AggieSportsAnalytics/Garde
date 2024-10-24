@@ -35,7 +35,7 @@ function Analytics({ fencer }) {
 				const response = await axios.get(workerUrl);
 				setFencerSessions(response.data.angles.results);
 			} catch (error) {
-				console.log(error);
+				console.error(error);
 			}
 		};
 

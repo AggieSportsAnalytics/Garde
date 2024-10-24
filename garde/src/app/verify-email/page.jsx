@@ -48,7 +48,7 @@ export default function VerifyEmail() {
 					setMessage("Error verifying email. Please try again.");
 				}
 			} catch (error) {
-				console.log(error);
+				console.error(error);
 				setMessage("Invalid or expired token.");
 			}
 		};

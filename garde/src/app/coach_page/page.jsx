@@ -17,7 +17,6 @@ export default function CoachPage() {
 
 	// Fetch the coach ID and fencers
 	useEffect(() => {
-		console.log(document.cookie);
 		const token = document.cookie
 			.split("; ")
 			.find((row) => row.startsWith("token="))
@@ -29,7 +28,7 @@ export default function CoachPage() {
 			setCoachName(decoded.name);
 			getInfo("getCoach", decoded.id);
 		} else {
-			console.log("No cookies found");
+			console.error("No cookies found");
 		}
 	}, []); // Runs only once on mount
 
@@ -53,7 +52,7 @@ export default function CoachPage() {
 			const response = await axios.get(workerUrl);
 			setFencers(response.data.data);
 		} catch (error) {
-			console.log(error);
+			console.error(error);
 		}
 	}
 

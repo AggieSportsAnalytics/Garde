@@ -243,7 +243,6 @@ const WebcamPose = ({
 
 				if (isRecording && mediaRecorderRef.current.state === "inactive") {
 					mediaRecorderRef.current.start();
-					console.log("Recording started");
 				}
 			} else {
 				console.error("Webcam stream is not ready.");
@@ -254,7 +253,6 @@ const WebcamPose = ({
 
 		if (webcamVideo) {
 			if (webcamVideo.readyState === 0) {
-				console.log("Waiting for webcam to be ready...");
 				webcamVideo.addEventListener("canplay", startRecording);
 			} else {
 				startRecording();
@@ -271,7 +269,6 @@ const WebcamPose = ({
 				mediaRecorderRef.current.state === "recording"
 			) {
 				mediaRecorderRef.current.stop();
-				console.log("Recording stopped");
 			}
 
 			clearInterval(intervalId.current);
@@ -289,11 +286,11 @@ const WebcamPose = ({
 			try {
 				decoded = jwtDecode(token);
 			} catch (error) {
-				console.log("Invalid JWT token");
+				console.error("Invalid JWT token");
 				return;
 			}
 		} else {
-			console.log("No cookies found");
+			console.error("No cookies found");
 			return;
 		}
 
@@ -318,7 +315,6 @@ const WebcamPose = ({
 			});
 
 			if (uploadResponse.status >= 200 && uploadResponse.status <= 300) {
-				console.log("File uploaded successfully!");
 			} else {
 				console.error("Failed to upload file");
 			}
@@ -628,7 +624,6 @@ const putUserAngles = async (id, accuracy) => {
 		);
 
 		if (response.status >= 200 && response.status < 300) {
-			console.log("Successfully put user angles");
 			return true;
 		}
 		return false;
@@ -646,7 +641,6 @@ const getIdealAngles = async () => {
 		const idealAngles = response.data.angles;
 
 		if (response.status >= 200 && response.status < 300) {
-			console.log("Successfully got user angles");
 			return idealAngles;
 		}
 		return null;
@@ -747,7 +741,6 @@ export async function OpenAIAPIFeedback(props) {
 		],
 		model: "gpt-4o-mini",
 	});
-	console.log(chatCompletion.choices[0].message.content);
 	return chatCompletion.choices[0].message.content;
 }
 

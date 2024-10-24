@@ -34,7 +34,6 @@ function Editor({ fencer, coachName }) {
 
 		editor.commands.setContent(""); // Clear content after submission
 		setErrorMessage("");
-		console.log("Submitting feedback:", content);
 
 		const queryData = {
 			data: content,

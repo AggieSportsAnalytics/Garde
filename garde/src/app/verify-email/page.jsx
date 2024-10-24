@@ -5,7 +5,7 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { jwtDecode } from "jwt-decode"; // If you are verifying the token client-side
 import axios from "axios";
 
-export default function VerifyEmail() {
+function VerifyEmailContent() {
 	const [message, setMessage] = useState("Verifying...");
 	const searchParams = useSearchParams();
 	const router = useRouter();
@@ -57,10 +57,16 @@ export default function VerifyEmail() {
 	}, []);
 
 	return (
+		<div className="min-h-screen flex items-center justify-center text-white">
+			<p>{message}</p>
+		</div>
+	);
+}
+
+export default function VerifyEmail() {
+	return (
 		<Suspense fallback={<div>Loading...</div>}>
-			<div className="min-h-screen flex items-center justify-center text-white">
-				<p>{message}</p>
-			</div>
+			<VerifyEmailContent />
 		</Suspense>
 	);
 }

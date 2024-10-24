@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import React, { Suspense, useEffect, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { jwtDecode } from "jwt-decode"; // If you are verifying the token client-side
 import axios from "axios";
@@ -57,8 +57,10 @@ export default function VerifyEmail() {
 	}, []);
 
 	return (
-		<div className="min-h-screen flex items-center justify-center text-white">
-			<p>{message}</p>
-		</div>
+		<Suspense fallback={<div>Loading...</div>}>
+			<div className="min-h-screen flex items-center justify-center text-white">
+				<p>{message}</p>
+			</div>
+		</Suspense>
 	);
 }

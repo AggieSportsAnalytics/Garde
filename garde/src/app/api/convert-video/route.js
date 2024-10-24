@@ -5,11 +5,6 @@ import path from "node:path";
 
 ffmpeg.setFfmpegPath(process.env.FFMPEG_PATH); // global ffmpeg path
 
-export const metadata = {
-    bodyParser: false, // Disable the default body parser to handle FormData manually
-};
-
-
 // Helper function to convert video
 const convertFile = (inputFilePath, outputFilePath) => {
 	return new Promise((resolve, reject) => {
@@ -23,6 +18,7 @@ const convertFile = (inputFilePath, outputFilePath) => {
 
 // API handler for video conversion
 export async function POST(req) {
+	// Manually disable body parsing (handled via formData)
 	const formData = await req.formData();
 	const videoFile = formData.get("video");
 

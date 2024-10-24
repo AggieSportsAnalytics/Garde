@@ -85,10 +85,11 @@ export default function Fencer_Page2() {
 	const [isModalVisible, setIsModalVisible] = useState(false);
 
 	useEffect(() => {
-		const userAgent =
-			typeof window.navigator === "undefined" ? "" : navigator.userAgent;
-		const mobileDevice = /iPhone|iPad|iPod|Android/i.test(userAgent);
-		setIsMobile(mobileDevice);
+		if (typeof window !== 'undefined') {
+			const userAgent = navigator.userAgent;
+			const mobileDevice = /iPhone|iPad|iPod|Android/i.test(userAgent);
+			setIsMobile(mobileDevice);
+		}
 	}, []);
 
 	useEffect(() => {
@@ -611,6 +612,7 @@ export default function Fencer_Page2() {
 									setPose={setPose}
 									containerWidth="100%"
 									containerHeight="100%"
+									darkMode={darkMode}
 									darkMode={darkMode}
 								/>
 							</div>

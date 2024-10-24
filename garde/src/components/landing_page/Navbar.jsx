@@ -36,59 +36,57 @@ const navbar = () => {
 					: "fixed md:w-[850px] w-[340px] mt-4 md:mt-12 left-1/2 transform -translate-x-1/2 h-16 z-[100]"
 			}
 		>
-			<div className="flex justify-between items-center w-full h-full px-2 2xl:px-16">
+			<div className="flex justify-between items-center w-full h-full px-4">
 				<Link href="/#home">
 					<Image
 						src="/images/garde.png"
 						alt="logo"
-						width={100}
-						height={100}
+						width={120}
+						height={120}
 						quality={100}
-						className="rounded-full hover:animate-pulse"
+						className="rounded-3xl hover:animate-pulse object-contain"
 					/>
 				</Link>
-				<div>
-					<ul className="hidden items-center md:flex">
-						<Link href="/#about">
-							<li className="ml-10 text-md text-[#6e7273] hover:text-[#5bb1d5] transition-colors duration-500">
-								About
-							</li>
-						</Link>
-						<Link href="/#features">
-							<li className="ml-10 text-md text-[#6e7273] hover:text-[#5bb1d5] transition-colors duration-500">
-								Features
-							</li>
-						</Link>
-						<Link href="/#contact">
-							<li className="ml-10 text-md text-[#6e7273] hover:text-[#5bb1d5] transition-colors duration-500">
-								Contact
-							</li>
-						</Link>
-						<Link href="/fencer_signin">
-							<button className="login ml-10 hover:text-[#5bb1d5] transition-colors duration-500 text-md">
-								Fencer Login/signup
-							</button>
-						</Link>
-						<Link href="/coach_signin">
-							<button className="button ml-3">
-								<span className="button-content font-bold">
-									Coach Login/Signup
-								</span>
-							</button>
-						</Link>
-					</ul>
-					<div className="md:hidden flex items-center justify-center">
-						<label className="hamburger">
-							<input type="checkbox" ref={hamburgerRef} onClick={handleNav} />
-							<svg viewBox="0 0 32 32">
-								<path
-									className="line line-top-bottom"
-									d="M27 10 13 10C10.8 10 9 8.2 9 6 9 3.5 10.8 2 13 2 15.2 2 17 3.8 17 6L17 26C17 28.2 18.8 30 21 30 23.2 30 25 28.2 25 26 25 23.8 23.2 22 21 22L7 22"
-								></path>
-								<path className="line" d="M7 16 27 16"></path>
-							</svg>
-						</label>
-					</div>
+				<div className="hidden md:flex items-center justify-center space-x-4">
+					<Link href="/#about">
+						<span className="text-sm text-[#6e7273] hover:text-[#5bb1d5] transition-colors duration-500">
+							About
+						</span>
+					</Link>
+					<Link href="/#features">
+						<span className="text-sm text-[#6e7273] hover:text-[#5bb1d5] transition-colors duration-500">
+							Features
+						</span>
+					</Link>
+					<Link href="/#contact">
+						<span className="text-sm text-[#6e7273] hover:text-[#5bb1d5] transition-colors duration-500">
+							Contact
+						</span>
+					</Link>
+					<Link href="/fencer_signin">
+						<button className="login text-sm hover:text-[#5bb1d5] transition-colors duration-500">
+							Fencer Login/Signup
+						</button>
+					</Link>
+					<Link href="/coach_signin">
+						<button className="button text-sm">
+							<span className="button-content font-bold">
+								Coach Login/Signup
+							</span>
+						</button>
+					</Link>
+				</div>
+				<div className="md:hidden flex items-center">
+					<label className="hamburger">
+						<input type="checkbox" ref={hamburgerRef} onClick={handleNav} />
+						<svg viewBox="0 0 32 32">
+							<path
+								className="line line-top-bottom"
+								d="M27 10 13 10C10.8 10 9 8.2 9 6 9 3.5 10.8 2 13 2 15.2 2 17 3.8 17 6L17 26C17 28.2 18.8 30 21 30 23.2 30 25 28.2 25 26 25 23.8 23.2 22 21 22L7 22"
+							></path>
+							<path className="line" d="M7 16 27 16"></path>
+						</svg>
+					</label>
 				</div>
 			</div>
 
@@ -102,24 +100,20 @@ const navbar = () => {
 							: "fixed right-[-100%] top-0 p-10 transition-transform duration-500 transform translate-x-full"
 					}
 				>
-					<div className="items-center text-center py-2 mx-auto mb-6 flex flex-col">
-						<ul>
+					<div className="text-center py-2 mx-auto mb-6 flex flex-col">
+						<ul className="space-y-2">
 							<Link href="/#about">
-								<li className="py-2 text-[17px] text-[#6e7273] hover:text-[#ac4bac] transition-colors duration-500">
-									<br />
-									Features
-								</li>
-							</Link>
-
-							<Link href="/#projects">
-								<li className="py-2 text-[17px] text-[#6e7273] hover:text-[#ac4bac] transition-colors duration-500">
-									<br />
+								<li className="text-[17px] text-[#6e7273] hover:text-[#ac4bac] transition-colors duration-500">
 									About
 								</li>
 							</Link>
+							<Link href="/#features">
+								<li className="text-[17px] text-[#6e7273] hover:text-[#ac4bac] transition-colors duration-500">
+									Features
+								</li>
+							</Link>
 							<Link href="/#contact">
-								<li className="py-2 text-[17px] text-[#6e7273] hover:text-[#ac4bac] transition-colors duration-500">
-									<br />
+								<li className="text-[17px] text-[#6e7273] hover:text-[#ac4bac] transition-colors duration-500">
 									Contact
 								</li>
 							</Link>

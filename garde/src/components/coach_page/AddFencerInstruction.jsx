@@ -1,8 +1,8 @@
 "use client";
 
-import { Button, Input } from "antd";
-import axios from "axios";
 import React, { useState } from "react";
+import { AiOutlinePlus } from "react-icons/ai";
+import axios from "axios";
 
 function AddFencerInstruction() {
 	const [val, setVal] = useState("");
@@ -17,7 +17,7 @@ function AddFencerInstruction() {
 
 			setStatus("Successfully added instruction!");
 		} catch (error) {
-			setStatus("Failed to added instruction");
+			setStatus("Failed to add instruction");
 		} finally {
 			await new Promise((r) => setTimeout(r, 2000));
 			setStatus("");
@@ -27,19 +27,24 @@ function AddFencerInstruction() {
 	return (
 		<div>
 			<div className="flex justify-center">
-				<Input
+				<input
 					placeholder="Input Instruction Here"
 					value={val}
 					onChange={(e) => setVal(e.target.value)}
 					type="text"
-					className="w-[300px] my-2"
+					className="w-[300px] my-2 p-2 border rounded"
 					id="textInput"
 				/>
 			</div>
 			<div className="flex justify-center mb-10">
-				<Button type="dashed" onClick={() => onSubmit(val)}>
+				<button
+					type="button"
+					onClick={() => onSubmit(val)}
+					className="flex items-center bg-gray-100 px-4 py-2 rounded shadow-md hover:bg-gray-200"
+				>
+					<AiOutlinePlus className="mr-2" />
 					Add Instruction
-				</Button>
+				</button>
 			</div>
 			<p
 				className={`${status.includes("successfully") ? "text-green-500" : "text-red-500"}`}

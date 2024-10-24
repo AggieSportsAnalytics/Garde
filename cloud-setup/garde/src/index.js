@@ -73,6 +73,10 @@ export default {
 					return await getIdealAngles(DB);
 				}
 
+				if (path === "/getFencerInstructions") {
+					return await getFencerInstructions(DB);
+				}
+
 				if (path.includes("/getCoach")) {
 					const pathName = path.split("/");
 					return await getCoach(pathName[pathName.length - 1], DB);
@@ -369,6 +373,26 @@ async function authGoogle(id, email, name, type, DB) {
 	);
 
 	return addCorsHeaders(res);
+}
+
+async function getFencerInstructions(DB) {
+	const instructions = await DB.prepare(
+		"SELECT * FROM fencer_instructions",
+	).all();
+	return addCorsHeaders(
+		new Response(
+			JSON.stringify({
+				message: "Successfully retrieved fencer instructions",
+				instructions: instructions.results,
+			}),
+			{
+				status: 200,
+				headers: {
+					"Content-Type": "application/json",
+				},
+			},
+		),
+	);
 }
 
 // remove this code once Garde goes public

@@ -3,7 +3,7 @@
 import { useEditor, EditorContent } from "@tiptap/react";
 import { useState } from "react";
 import StarterKit from "@tiptap/starter-kit";
-import { BoldOutlined, ItalicOutlined } from "@ant-design/icons"; // Ant Design icons
+import { FaBold, FaItalic } from "react-icons/fa";
 import ListItem from "@tiptap/extension-list-item";
 import axios from "axios";
 
@@ -63,14 +63,14 @@ function Editor({ fencer, coachName }) {
 					onClick={handleBold}
 					className={`px-4 py-2 rounded ${editor?.isActive("bold") ? "bg-blue-500 text-white" : "bg-gray-200 text-black"}`}
 				>
-					<BoldOutlined />
+					<FaBold />
 				</button>
 				<button
 					type="button"
 					onClick={handleItalic}
 					className={`px-4 py-2 rounded ${editor?.isActive("italic") ? "bg-blue-500 text-white" : "bg-gray-200 text-black"}`}
 				>
-					<ItalicOutlined />
+					<FaItalic />
 				</button>
 			</div>
 			{/* Editor */}

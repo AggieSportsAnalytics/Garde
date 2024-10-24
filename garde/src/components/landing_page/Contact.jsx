@@ -1,7 +1,7 @@
 "use client";
 import React, { useRef, useState } from "react";
 import axios from "axios";
-import { Instagram, Linkedin, Youtube } from "lucide-react";
+import { FaLinkedin, FaYoutube } from "react-icons/fa";
 
 const Contact = () => {
 	const form = useRef();
@@ -105,7 +105,7 @@ const Contact = () => {
 								target="_blank"
 								rel="noreferrer"
 							>
-								<Linkedin className="w-6 h-6 text-white" />
+								<FaLinkedin className="w-6 h-6 text-white" />
 							</a>
 						</div>
 						{/* <div className="bg-slate-500 w-12 h-12 rounded-xl hover:bg-slate-400 flex items-center justify-center">
@@ -117,7 +117,7 @@ const Contact = () => {
 								target="_blank"
 								rel="noreferrer"
 							>
-								<Youtube className="w-6 h-6 text-white" />
+								<FaYoutube className="w-6 h-6 text-white" />
 							</a>
 						</div>
 					</div>

@@ -3,22 +3,20 @@ import Webcam from "react-webcam";
 import * as poseDetection from "@tensorflow-models/pose-detection";
 import "@tensorflow/tfjs-core";
 import "@tensorflow/tfjs-backend-webgl";
-import dynamic from 'next/dynamic';
 
 // Conditionally import OpenAI only on the client-side
-let OpenAI;
-if (typeof window !== 'undefined') {
-    const { OpenAI: OpenAIClient } = require("openai");
-    OpenAI = OpenAIClient;
-}
+// let OpenAI;
+// if (typeof window !== "undefined") {
+// 	const { OpenAI: OpenAIClient } = require("openai");
+// 	OpenAI = OpenAIClient;
+// }
 
-const { Configuration, OpenAIApi } = require("openai");
+// const { Configuration, OpenAIApi } = require("openai");
 import "@mediapipe/pose";
 import Plotly from "plotly.js-dist-min";
 import Modal from "react-modal";
 import FencerInstructionMenu from "./FencerInstructionMenu";
-import { CardBody, CardContainer, CardItem } from "../ui/3d-card.tsx";
-import { Hammer } from "lucide-react";
+import { MdBuild } from "react-icons/md";
 import axios from "axios";
 import { v4 as uuidv4 } from "uuid";
 import { jwtDecode } from "jwt-decode";
@@ -418,7 +416,7 @@ const WebcamPose = ({
 			<div
 				style={{ position: "absolute", top: "-10%", left: "90%", zIndex: 20 }}
 			>
-				<Hammer
+				<MdBuild
 					className="w-10 h-10 hover:bg-slate-700 rounded-md"
 					onClick={ShowInstructionMenu}
 				/>{" "}
@@ -742,34 +740,34 @@ export async function OpenAIAPIFeedback(props) {
 	const accuracy = 0; // change for accuracy later
 	putUserAngles(props.id, accuracy);
 
-	if (typeof window === 'undefined') {
-		console.error("OpenAI API can only be called on the client-side.");
-		return;
-	}
+	// if (typeof window === 'undefined') {
+	// 	console.error("OpenAI API can only be called on the client-side.");
+	// 	return;
+	// }
 
-	const openai = new OpenAI({
-		apiKey: process.env.NEXT_PUBLIC_OPENAI_KEY,
-		dangerouslyAllowBrowser: true,
-	});
+	// const openai = new OpenAI({
+	// 	apiKey: process.env.NEXT_PUBLIC_OPENAI_KEY,
+	// 	dangerouslyAllowBrowser: true,
+	// });
 
-	const chatCompletion = await openai.chat.completions.create({
-		messages: [
-			{
-				role: "system",
-				content: `You are a helpful AI assistant embedded in an automated fencing coach
-        program. You possess expert knowledge about the fencing sport and are very 
-        articulate when giving feedback on how a fencer can improve their form. 
-        You keep your feedback to 3 short, helpful bullet points, concise and snappy and don't stray too far away from the point.
-        You are professional, inspiring and helpful.`,
-			},
-			{
-				role: "user",
-				content: query,
-			},
-		],
-		model: "gpt-4o-mini",
-	});
-	return chatCompletion.choices[0].message.content;
+	// const chatCompletion = await openai.chat.completions.create({
+	// 	messages: [
+	// 		{
+	// 			role: "system",
+	// 			content: `You are a helpful AI assistant embedded in an automated fencing coach
+	//       program. You possess expert knowledge about the fencing sport and are very
+	//       articulate when giving feedback on how a fencer can improve their form.
+	//       You keep your feedback to 3 short, helpful bullet points, concise and snappy and don't stray too far away from the point.
+	//       You are professional, inspiring and helpful.`,
+	// 		},
+	// 		{
+	// 			role: "user",
+	// 			content: query,
+	// 		},
+	// 	],
+	// 	model: "gpt-4o-mini",
+	// });
+	// return chatCompletion.choices[0].message.content;
 }
 
 export const convertPixelsToMeters = (pixels, height, fencerHeightPixels) => {
@@ -824,4 +822,3 @@ export const convertPixelsToMeters = (pixels, height, fencerHeightPixels) => {
 // 		window.URL.revokeObjectURL(url);
 // 	}
 // }
-

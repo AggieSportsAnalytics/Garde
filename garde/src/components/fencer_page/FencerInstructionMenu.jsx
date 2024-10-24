@@ -1,5 +1,3 @@
-import { SquareX, X } from "lucide-react";
-import { Select, Input, Button, Table, Card, Row, Col } from "antd";
 import React, { useEffect, useState, useContext } from "react";
 import InstructionContext from "./InstructionContext";
 import {
@@ -9,6 +7,8 @@ import {
 	FaTimes,
 	FaHandPaper,
 } from "react-icons/fa";
+import { FiX } from "react-icons/fi";
+import axios from "axios";
 
 const predefinedRoutines = {
 	"Footwork Routine": [
@@ -26,9 +26,15 @@ const predefinedRoutines = {
 };
 
 async function GetFencerInstructions() {
-	const response = await fetch("/api/fencer_instructions");
-	const data = await response.json();
-	return data.map((item) => item.name);
+	try {
+		const response = await axios.get(
+			`${process.env.NEXT_PUBLIC_GARDE_WORKER}/getFencerInstructions`,
+		);
+		return response.data.instructions.map((item) => item.name);
+	} catch (error) {
+		console.error("Failed to fetch fencer instructions:", error);
+		return [];
+	}
 }
 
 const FencerInstructionMenu = ({ setInstructionMenu, onSave }) => {
@@ -64,7 +70,7 @@ const FencerInstructionMenu = ({ setInstructionMenu, onSave }) => {
 			dataIndex: "time",
 			key: "time",
 			render: (text, record) => (
-				<Input
+				<input
 					value={text}
 					onChange={(e) => handleTimeChange(record.key, e.target.value)}
 					style={{ width: "60px" }}
@@ -75,9 +81,9 @@ const FencerInstructionMenu = ({ setInstructionMenu, onSave }) => {
 			title: "Action",
 			key: "action",
 			render: (_, record) => (
-				<Button type="link" onClick={() => handleDelete(record.key)}>
+				<button type="button" onClick={() => handleDelete(record.key)}>
 					<FaTimes />
-				</Button>
+				</button>
 			),
 		},
 	];
@@ -100,7 +106,11 @@ const FencerInstructionMenu = ({ setInstructionMenu, onSave }) => {
 				name: fencerInstructionInputValue,
 				time: timeValue,
 			};
+			if (!fencerInstructionInputValue || !timeValue) {
+				return;
+			}
 			setData([...data, newDataItem]);
+			setTimeValue("");
 		}
 	};
 
@@ -116,7 +126,6 @@ const FencerInstructionMenu = ({ setInstructionMenu, onSave }) => {
 		setData(newData);
 	};
 
-	const changeTimeValue = (event) => setTimeValue(event.target.value);
 	const changeFencerInstructionValue = (value) =>
 		setFencerInstructionInputValue(value);
 	const { setInstructions } = useContext(InstructionContext);
@@ -140,31 +149,30 @@ const FencerInstructionMenu = ({ setInstructionMenu, onSave }) => {
 	};
 
 	return (
-		<div className="fixed inset-0 flex items-center justify-center z-50 bg-opacity-0">
-			<div className="bg-white rounded-lg shadow-lg p-8 w-[800px] max-w-[90%] mx-auto relative">
+		<div
+			className="fixed inset-0 flex items-center justify-center z-50 bg-opacity-0"
+			style={{ paddingTop: "80px" }}
+		>
+			<div className="max-h-[850px] overflow-y-auto bg-white rounded-lg shadow-lg p-8 w-[800px] max-w-[90%] mx-auto relative">
 				<button
 					className="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
 					onClick={() => setInstructionMenu(false)}
 				>
-					<X size={24} />
+					<FiX size={24} />
 				</button>
 				<h2 className="text-2xl font-semibold mb-6" style={{ color: "black" }}>
 					Fencer Instructions
 				</h2>
-				<Row gutter={[16, 16]}>
-					<Col span={12}>
-						<Card
-							title={
-								<span>
-									<FaWalking className="inline-block mr-2" />
-									Footwork Routine
-								</span>
-							}
-							bordered={true}
-							style={{ height: "100%", cursor: "pointer" }}
+				<div className="flex flex-wrap -mx-2">
+					<div className="w-full sm:w-1/2 p-2">
+						<div
+							className="bg-gray-100 p-4 rounded-lg cursor-pointer shadow-md hover:bg-gray-200"
 							onClick={() => handleRoutineClick("Footwork Routine")}
-							hoverable
 						>
+							<div className="flex items-center mb-2">
+								<FaWalking className="inline-block mr-2" />
+								<span>Footwork Routine</span>
+							</div>
 							<p>
 								<strong>Purpose:</strong> To build agility, speed, and control
 								in footwork.
@@ -185,25 +193,21 @@ const FencerInstructionMenu = ({ setInstructionMenu, onSave }) => {
 								</li>
 							</ul>
 							<p>
-								<FaBalanceScale className="inline-block mr-2" />
-								Maintain a low center of gravity and proper stance, avoiding
-								upper body leaning. Make each movement distinct and purposeful.
+								<FaBalanceScale className="inline-block mr-2" /> Maintain a low
+								center of gravity and proper stance, avoiding upper body
+								leaning. Make each movement distinct and purposeful.
 							</p>
-						</Card>
-					</Col>
-					<Col span={12}>
-						<Card
-							title={
-								<span>
-									<FaHandPaper className="inline-block mr-2" />
-									Parry-Riposte Drill
-								</span>
-							}
-							bordered={true}
-							style={{ height: "100%", cursor: "pointer" }}
+						</div>
+					</div>
+					<div className="w-full sm:w-1/2 p-2">
+						<div
+							className="bg-gray-100 p-4 rounded-lg cursor-pointer shadow-md hover:bg-gray-200"
 							onClick={() => handleRoutineClick("Parry-Riposte Drill")}
-							hoverable
 						>
+							<div className="flex items-center mb-2">
+								<FaHandPaper className="inline-block mr-2" />
+								<span>Parry-Riposte Drill</span>
+							</div>
 							<p>
 								<strong>Purpose:</strong> To practice quick parries and
 								ripostes.
@@ -220,46 +224,74 @@ const FencerInstructionMenu = ({ setInstructionMenu, onSave }) => {
 								<li>Parry in sixte and riposte with a straight thrust.</li>
 							</ul>
 							<p>
-								<FaCheck className="inline-block mr-2" />
-								Focus on speed and precision in both the parry and the riposte.
-								Maintain proper distance and blade control throughout.
+								<FaCheck className="inline-block mr-2" /> Focus on speed and
+								precision in both the parry and the riposte. Maintain proper
+								distance and blade control throughout.
 							</p>
-						</Card>
-					</Col>
-				</Row>
+						</div>
+					</div>
+				</div>
 
 				<div className="flex items-center mb-6">
-					<Select
+					<select
 						id="fencerDropdown"
-						placeholder="Choose Instruction"
-						className="flex-1 mr-4"
-						onChange={changeFencerInstructionValue}
-						options={fencerInstructions.map((instruction) => ({
-							label: instruction,
-							value: instruction,
-						}))}
-					/>
-					<Input
+						className="flex-1 mr-4 p-2 border rounded"
+						onChange={(e) => changeFencerInstructionValue(e.target.value)}
+						defaultValue=""
+					>
+						<option value="" disabled>
+							Choose Instruction
+						</option>
+						{fencerInstructions.map((instruction) => (
+							<option key={instruction} value={instruction}>
+								{instruction}
+							</option>
+						))}
+					</select>
+					<input
 						name="time"
 						placeholder="Time (s)"
-						className="w-20 mr-4"
+						className="w-20 mr-4 p-2 border rounded"
 						value={timeValue}
-						onChange={changeTimeValue}
+						onChange={(e) => setTimeValue(e.target.value)}
+						type="number"
 					/>
-					<Button type="primary" onClick={addDataValues}>
+					<button
+						className="flex items-center bg-gray-100 px-4 py-2 rounded shadow-md hover:bg-gray-200"
+						onClick={addDataValues}
+					>
 						Add
-					</Button>
+					</button>
 				</div>
-				<Table
-					dataSource={data}
-					columns={columns}
-					pagination={false}
-					className="mb-6"
-				/>
+
+				<table className="mb-6 w-full border-collapse">
+					<thead>
+						<tr>
+							{columns.map((col) => (
+								<th key={col.key} className="border p-2 bg-gray-200">
+									{col.title}
+								</th>
+							))}
+						</tr>
+					</thead>
+					<tbody>
+						{data.map((row, index) => (
+							<tr key={index}>
+								{columns.map((col) => (
+									<td key={col.key} className="border p-2">
+										{col.render
+											? col.render(row[col.dataIndex], row)
+											: row[col.dataIndex]}
+									</td>
+								))}
+							</tr>
+						))}
+					</tbody>
+				</table>
 
 				<div className="flex justify-end">
-					<Button
-						type="primary"
+					<button
+						className="flex items-center bg-blue-500 text-white px-4 py-2 rounded shadow-md hover:bg-blue-600"
 						onClick={() => {
 							const newData = [...data];
 							setData(newData);
@@ -268,7 +300,7 @@ const FencerInstructionMenu = ({ setInstructionMenu, onSave }) => {
 						}}
 					>
 						Save & Exit
-					</Button>
+					</button>
 				</div>
 			</div>
 		</div>

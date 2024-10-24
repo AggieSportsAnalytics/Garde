@@ -2,10 +2,11 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { Modal } from "antd";
+import Modal from "react-modal";
 import Logout from "../auth/Logout";
 import DeleteAccountButton from "../auth/DeleteAccount";
-import { SettingOutlined } from "@ant-design/icons";
+import { FaCog } from "react-icons/fa";
+import { FiX } from "react-icons/fi";
 import UuidReveal from "./UuidReveal";
 import AddFencerInstruction from "./AddFencerInstruction";
 
@@ -25,7 +26,7 @@ function TopBar({ id, fencers, currentFencer, setCurrentFencer }) {
 	};
 
 	const showModal = () => {
-		setIsModalVisible(true);
+		setIsModalVisible(!isModalVisible);
 	};
 
 	const handleCancel = () => {
@@ -72,21 +73,44 @@ function TopBar({ id, fencers, currentFencer, setCurrentFencer }) {
 
 				{/* Settings icon that opens the modal */}
 				<div className="mr-4">
-					<SettingOutlined
+					<FaCog
 						className="text-white text-2xl cursor-pointer"
 						onClick={showModal}
 					/>
 				</div>
 			</header>
 
-			{/* Ant Design Modal */}
 			<Modal
-				title="Settings"
-				open={isModalVisible}
-				onCancel={handleCancel}
-				footer={null}
+				isOpen={isModalVisible}
+				onRequestClose={handleCancel}
+				contentLabel="Settings"
+				ariaHideApp={false}
+				style={{
+					content: {
+						borderRadius: "20px",
+						width: "500px",
+						height: "450px",
+						top: "50%",
+						left: "50%",
+						transform: "translate(-50%, -50%)",
+						padding: "20px",
+						position: "fixed",
+						overflow: "auto",
+					},
+					overlay: {
+						backgroundColor: "rgba(0, 0, 0, 0.5)",
+						zIndex: 1000,
+					},
+				}}
 			>
 				<div className="flex flex-col items-center space-y-4">
+					<button
+						type="button"
+						className="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
+						onClick={handleCancel}
+					>
+						<FiX size={24} />
+					</button>
 					<UuidReveal uuid={id} />
 					<AddFencerInstruction />
 					<Logout />

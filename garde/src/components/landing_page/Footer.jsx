@@ -9,7 +9,7 @@ const Footer = () => {
 					src="/images/garde.png"
 					alt="logo"
 					width={150}
-					height={100}
+					height={150}
 					quality={100}
 					className="mt-[100px] rounded-2xl p-1"
 				/>

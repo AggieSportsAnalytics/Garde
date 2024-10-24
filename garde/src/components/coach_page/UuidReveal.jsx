@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { EyeOutlined, EyeInvisibleOutlined } from "@ant-design/icons";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 function UuidReveal({ uuid }) {
 	const [isRevealed, setIsRevealed] = useState(false);
@@ -20,12 +20,12 @@ function UuidReveal({ uuid }) {
 			>
 				{isRevealed ? (
 					<>
-						<EyeInvisibleOutlined className="mr-2" />
+						<FaEyeSlash className="mr-2" />
 						Hide ID
 					</>
 				) : (
 					<>
-						<EyeOutlined className="mr-2" />
+						<FaEye className="mr-2" />
 						Reveal ID
 					</>
 				)}

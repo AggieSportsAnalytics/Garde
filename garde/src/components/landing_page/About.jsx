@@ -12,7 +12,7 @@ const About = () => {
 				</h1>
 			</div>
 
-			<div className="flex justify-center mt-8 md:mt-14 w-full">
+			<div id="about" className="flex justify-center mt-8 md:mt-14 w-full">
 				<CardSpotlight className="w-full max-w-md md:max-w-lg lg:max-w-3xl h-auto p-4">
 					<h1 className="flex justify-center text-white font-bold text-xl md:text-2xl mt-[-20px] md:mt-[-30px] font-platypi">
 						Built for Fencers
@@ -26,14 +26,15 @@ const About = () => {
 							identify and correct bad form instantly.
 						</p>
 					</ul>
-					<div className="mt-5">
-						<WobbleCard className="h-72 md:h-96">
-							<div className="flex justify-center">
+					<div className="flex justify-center mt-5">
+						<WobbleCard className="w-full max-w-lg md:max-w-2xl lg:max-w-3xl h-[400px] md:h-[400px]">
+							<div className="flex justify-center items-center h-full">
 								<Image
+									alt="Fencer page"
 									src="/images/New_FencerPage.png"
-									width={500}
-									height={500}
-									className="rounded-2xl"
+									width={700}
+									height={700}
+									className="rounded-2xl object-contain"
 								/>
 							</div>
 						</WobbleCard>
@@ -54,15 +55,15 @@ const About = () => {
 							access detailed performance metrics and insights for each fencer.
 						</p>
 					</ul>
-					<div className="mt-5">
-						<WobbleCard className="h-72 md:h-96">
-							<div className="flex justify-center">
+					<div className="flex justify-center mt-5">
+						<WobbleCard className="w-full max-w-lg md:max-w-2xl lg:max-w-3xl h-[400px] md:h-[400px]">
+							<div className="flex justify-center items-center h-full">
 								<Image
-									alt="Coach page image"
+									alt="Coach page"
 									src="/images/CoachPage.png"
-									width={500}
-									height={500}
-									className="rounded-2xl"
+									width={700}
+									height={700}
+									className="rounded-2xl object-contain"
 								/>
 							</div>
 						</WobbleCard>

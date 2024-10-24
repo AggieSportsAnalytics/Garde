@@ -9,22 +9,10 @@ import Fencer_Canvas from "../../components/fencer_page/Fencer_Canvas";
 import Fencer_Stats from "../../components/fencer_page/Fencer_Stats";
 import Instruction from "../../components/fencer_page/Instruction";
 import { useSpeechSynthesis } from "react-speech-kit";
-import {
-	calculateAngle,
-	displayFeetDistance,
-	calculateSpeed,
-} from "../../components/fencer_page/Fencer_Canvas";
-import {
-	FaCheckCircle,
-	FaTimesCircle,
-	FaSun,
-	FaMoon,
-	FaVolumeMute,
-	FaVolumeUp,
-} from "react-icons/fa";
+import { FaSun, FaMoon, FaVolumeMute, FaVolumeUp, FaCog } from "react-icons/fa";
+import { FiX } from "react-icons/fi";
 import HeightInputModal from "../../components/fencer_page/HeightInputModal";
 import InstructionContext from "../../components/fencer_page/InstructionContext";
-import PropTypes from "prop-types";
 import {
 	CardBody,
 	CardContainer,
@@ -33,8 +21,7 @@ import {
 import DeleteAccountButton from "../../components/auth/DeleteAccount";
 import AddFencer from "../../components/fencer_page/AddFencer";
 import Logout from "../../components/auth/Logout.jsx";
-import { Modal } from "antd";
-import { SettingOutlined } from "@ant-design/icons";
+import Modal from "react-modal";
 import HeightInput from "../../components/fencer_page/HeightChange";
 
 const MemoizedFencerStats = memo(Fencer_Stats);
@@ -89,7 +76,7 @@ export default function Fencer_Page2() {
 	const [isRoutineStarted, setIsRoutineStarted] = useState(false);
 
 	const showModal = () => {
-		setIsModalVisible(true);
+		setIsModalVisible(!isModalVisible);
 	};
 	const handleCancel = () => {
 		setIsModalVisible(false);
@@ -447,7 +434,7 @@ export default function Fencer_Page2() {
 		<InstructionContext.Provider value={{ instructions, setInstructions }}>
 			{isMobile ? (
 				<div
-						className={`flex flex-col items-center justify-center h-screen ${darkMode ? "bg-black text-white" : "bg-white text-black"} p-4`}
+					className={`flex flex-col items-center justify-center h-screen ${darkMode ? "bg-black text-white" : "bg-white text-black"} p-4`}
 				>
 					<p className="text-center text-xl mb-4">
 						For a better viewing experience, please visit this website on a
@@ -510,17 +497,42 @@ export default function Fencer_Page2() {
     flex items-center justify-center cursor-pointer hover:bg-gray-300`}
 							onClick={showModal}
 						>
-							<SettingOutlined
+							<FaCog
 								className={`${darkMode ? "text-black" : "text-white"} text-2xl`}
 							/>
 						</div>
 
 						<Modal
-							title="Settings"
-							open={isModalVisible}
-							onCancel={handleCancel}
-							footer={null}
+							isOpen={isModalVisible}
+							onRequestClose={handleCancel}
+							contentLabel="Settings"
+							ariaHideApp={false}
+							style={{
+								content: {
+									borderRadius: "20px",
+									width: "450px",
+									height: "600px",
+									top: "50%",
+									left: "50%",
+									transform: "translate(-50%, -50%)",
+									padding: "20px",
+									position: "fixed",
+									overflow: "auto",
+								},
+								overlay: {
+									backgroundColor: "rgba(0, 0, 0, 0.5)",
+									zIndex: 1000,
+								},
+							}}
 						>
+							<button
+								type="button"
+								className="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
+								onClick={handleCancel}
+							>
+								<FiX size={24} />
+							</button>
+							<h2 className="text-xl font-bold mb-4">Settings</h2>
 							<div className="flex flex-col items-center space-y-4">
 								<AddFencer />
 								<HeightInput handleHeightSave={handleHeightInput} />

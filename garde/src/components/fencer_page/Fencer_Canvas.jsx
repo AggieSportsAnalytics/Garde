@@ -3,7 +3,16 @@ import Webcam from "react-webcam";
 import * as poseDetection from "@tensorflow-models/pose-detection";
 import "@tensorflow/tfjs-core";
 import "@tensorflow/tfjs-backend-webgl";
-const { Configuration, OpenAIApi, OpenAI } = require("openai");
+import dynamic from 'next/dynamic';
+
+// Conditionally import OpenAI only on the client-side
+let OpenAI;
+if (typeof window !== 'undefined') {
+    const { OpenAI: OpenAIClient } = require("openai");
+    OpenAI = OpenAIClient;
+}
+
+const { Configuration, OpenAIApi } = require("openai");
 import "@mediapipe/pose";
 import Plotly from "plotly.js-dist-min";
 import Modal from "react-modal";
@@ -75,23 +84,38 @@ const WebcamPose = ({
 				const poses = await detector.estimatePoses(video, {
 					flipHorizontal: true,
 				});
-				//const poses = await detector.estimatePoses(video);
+
 				if (poses.length > 0) {
-					setPose(poses[0]);
-					setLatestPose(poses[0]);
-					drawCanvas(
-						poses[0],
-						videoWidth,
-						videoHeight,
-						canvasRef.current,
-						minConfidence,
-					);
-					draw3DModel(poses[0]);
+					const newPose = poses[0];
+					if (hasSignificantMovement(latestPose, newPose)) {
+						setPose(newPose);
+						setLatestPose(newPose);
+						drawCanvas(
+							newPose,
+							videoWidth,
+							videoHeight,
+							canvasRef.current,
+							minConfidence,
+						);
+						draw3DModel(newPose);
+					}
 				}
 			}
 		};
 
-		intervalId.current = setInterval(detect, 25);
+		intervalId.current = setInterval(detect, 75); // Increased interval time
+	};
+
+	const hasSignificantMovement = (prevPose, newPose) => {
+		if (!prevPose) return true;
+		const threshold = 5; // Define a threshold for significant movement
+		return newPose.keypoints.some((keypoint, index) => {
+			const prevKeypoint = prevPose.keypoints[index];
+			return (
+				Math.abs(keypoint.x - prevKeypoint.x) > threshold ||
+				Math.abs(keypoint.y - prevKeypoint.y) > threshold
+			);
+		});
 	};
 
 	const draw3DModel = (pose) => {
@@ -718,7 +742,11 @@ export async function OpenAIAPIFeedback(props) {
 	const accuracy = 0; // change for accuracy later
 	putUserAngles(props.id, accuracy);
 
-	const query = `Please compare the user's angles ${JSON.stringify(userAngles)} with the ideal angles ${JSON.stringify(comparison)} for the ${userAngles.pose} position and provide a detailed analysis.`;
+	if (typeof window === 'undefined') {
+		console.error("OpenAI API can only be called on the client-side.");
+		return;
+	}
+
 	const openai = new OpenAI({
 		apiKey: process.env.NEXT_PUBLIC_OPENAI_KEY,
 		dangerouslyAllowBrowser: true,
@@ -796,3 +824,4 @@ export const convertPixelsToMeters = (pixels, height, fencerHeightPixels) => {
 // 		window.URL.revokeObjectURL(url);
 // 	}
 // }
+

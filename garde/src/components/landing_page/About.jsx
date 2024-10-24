@@ -30,7 +30,7 @@ const About = () => {
 						<WobbleCard className="h-72 md:h-96">
 							<div className="flex justify-center">
 								<Image
-									src="/images/FencerPage.png"
+									src="/images/New_FencerPage.png"
 									width={500}
 									height={500}
 									className="rounded-2xl"

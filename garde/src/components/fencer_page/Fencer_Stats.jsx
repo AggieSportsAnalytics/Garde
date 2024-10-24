@@ -238,13 +238,13 @@ const Fencer_Stats = ({ pose, lastCalled, setLastCalled, setAiFeedback, height, 
         }
       }
     }
-  }, [pose, height, setFeetDistance, setShoulderWidth]);
+  }, [pose, height]);
 
   useEffect(() => {
     if (feetDistanceState) {
       setFeetDistance(feetDistanceState);
     }
-  }, [feetDistanceState, setFeetDistance]);
+  }, [feetDistanceState]);
 
   useEffect(() => {
     if (pose && Date.now() - lastCalled >= 30000) {
@@ -263,7 +263,7 @@ const Fencer_Stats = ({ pose, lastCalled, setLastCalled, setAiFeedback, height, 
         setAiFeedback(result);
       });
     }
-  }, [pose, lastCalled, setLastCalled, predictedPose, feetDistanceState, leftElbAngle, rightElbAngle, rightHipAngle, leftHipAngle, leftKneeAngle, rightKneeAngle, speed, setAiFeedback]);
+  }, [pose, lastCalled, predictedPose, feetDistanceState, leftElbAngle, rightElbAngle, rightHipAngle, leftHipAngle, leftKneeAngle, rightKneeAngle, speed]);
 
   return (
     <CardContainer className="inter-var w-full h-full bg-none">

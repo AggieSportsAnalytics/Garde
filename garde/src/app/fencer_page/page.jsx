@@ -86,6 +86,7 @@ export default function Fencer_Page2() {
 	const [lastSpokenFeedbackTime, setLastSpokenFeedbackTime] = useState(0);
 	const [lastFeedbackMessage, setLastFeedbackMessage] = useState("");
 	const [isFeedbackMuted, setIsFeedbackMuted] = useState(false);
+	const [isRoutineStarted, setIsRoutineStarted] = useState(false);
 
 	const showModal = () => {
 		setIsModalVisible(true);
@@ -149,6 +150,7 @@ export default function Fencer_Page2() {
 		setIsRunning(true);
 		setFeedbackEnabled(true);
 		setLastFeedbackTime(Date.now());
+		setIsRoutineStarted(true); // Add this line
 	}, []);
 
 	const handleReset = useCallback(() => {
@@ -160,6 +162,7 @@ export default function Fencer_Page2() {
 		setPreInstructionCountdown(3);
 		setShowPreInstructionCountdown(false);
 		setFeedbackEnabled(false);
+		setIsRoutineStarted(false); // Add this line
 	}, []);
 
 	const handleVideoChange = useCallback(
@@ -228,6 +231,8 @@ export default function Fencer_Page2() {
 
 	const handlePoseSequenceDetected = useCallback(
 		(poseDataArray) => {
+			if (!isRoutineStarted) return; // Add this line to check if routine has started
+
 			const feedbackMessages = {
 				advance: [],
 				retreat: [],
@@ -431,7 +436,7 @@ export default function Fencer_Page2() {
 				}
 			}
 		},
-		[speak, voice, lastSpokenFeedbackTime, isFeedbackMuted],
+		[speak, voice, lastSpokenFeedbackTime, isFeedbackMuted, isRoutineStarted], // Add isRoutineStarted to dependency array
 	);
 
 	const toggleFeedbackMute = () => {
@@ -442,7 +447,7 @@ export default function Fencer_Page2() {
 		<InstructionContext.Provider value={{ instructions, setInstructions }}>
 			{isMobile ? (
 				<div
-					className={`flex flex-col items-center justify-center h-screen ${darkMode ? "bg-black text-white" : "bg-white text-black"} p-4`}
+						className={`flex flex-col items-center justify-center h-screen ${darkMode ? "bg-black text-white" : "bg-white text-black"} p-4`}
 				>
 					<p className="text-center text-xl mb-4">
 						For a better viewing experience, please visit this website on a

@@ -39,7 +39,7 @@ const navbar = () => {
 			<div className="flex justify-between items-center w-full h-full px-4">
 				<Link href="/#home">
 					<Image
-						src="/images/garde.png"
+						src="/images/garde-wide.png"
 						alt="logo"
 						width={120}
 						height={120}

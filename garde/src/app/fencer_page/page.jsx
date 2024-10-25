@@ -5,8 +5,7 @@ import "@tensorflow/tfjs-backend-webgl";
 import Stream_Vid from "../../components/fencer_page/Stream_Vid";
 import Link from "next/link";
 import Timer from "../../components/fencer_page/Timer";
-import Fencer_Canvas from "../../components/fencer_page/Fencer_Canvas";
-import Fencer_Stats from "../../components/fencer_page/Fencer_Stats";
+import dynamic from "next/dynamic";
 import Instruction from "../../components/fencer_page/Instruction";
 import { useSpeechSynthesis } from "react-speech-kit";
 import { FaSun, FaMoon, FaVolumeMute, FaVolumeUp, FaCog } from "react-icons/fa";
@@ -23,6 +22,14 @@ import AddFencer from "../../components/fencer_page/AddFencer";
 import Logout from "../../components/auth/Logout.jsx";
 import Modal from "react-modal";
 import HeightInput from "../../components/fencer_page/HeightChange";
+const Fencer_Canvas = dynamic(
+	() => import("../../components/fencer_page/Fencer_Canvas"),
+	{ ssr: false },
+);
+const Fencer_Stats = dynamic(
+	() => import("../../components/fencer_page/Fencer_Stats"),
+	{ ssr: false },
+);
 
 const MemoizedFencerStats = memo(Fencer_Stats);
 const MemoizedInstruction = memo(Instruction);
@@ -85,7 +92,7 @@ export default function Fencer_Page2() {
 	const [isModalVisible, setIsModalVisible] = useState(false);
 
 	useEffect(() => {
-		if (typeof window !== 'undefined') {
+		if (typeof window !== "undefined") {
 			const userAgent = navigator.userAgent;
 			const mobileDevice = /iPhone|iPad|iPod|Android/i.test(userAgent);
 			setIsMobile(mobileDevice);

@@ -6,7 +6,7 @@ const Footer = () => {
 		<div>
 			<div className="mt-20 flex justify-center">
 				<Image
-					src="/images/garde.png"
+					src="/images/garde-wide.png"
 					alt="logo"
 					width={150}
 					height={150}

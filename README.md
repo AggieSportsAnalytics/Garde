@@ -1,5 +1,5 @@
 # 🤺 Garde: AI Fencing Companion built using a bleeding-edge tech
-![image](https://github.com/GardeFencing/Garde/blob/main/garde/public/images/garde-square.png)
+![image](https://github.com/GardeFencing/Garde/blob/main/garde/public/images/garde-wide.png)
 
 ## 🚀 About Garde
 Garde is an automated fencing coach being created with Davis Fencing Academy, a Team USA Fencing certified association. Garde aims to perform a robust analysis of a fencer's form and harness generative A.I. to give detailed feedback as to how the fencer can gradually improve over time. Additionally, Garde allows coaches to access their students' videos and give individual feedback. We hope that Garde is used by leading fencing institutions not only in Davis and The Bay Area, but also worldwide. This application is truly one of a kind and is patent pending.

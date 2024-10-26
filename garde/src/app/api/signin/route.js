@@ -32,7 +32,7 @@ export async function POST(req) {
 			const token = jwt.sign(
 				{
 					id: data.id,
-					email: data.email,
+					email: email,
 					name: data.name,
 					type: type,
 				},

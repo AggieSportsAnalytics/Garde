@@ -245,7 +245,7 @@ export default function Signin({ isSignUpDefault, type }) {
 				</form>
 
 				{/* Google Auth Button */}
-				<div className="relative transform translate-x-1/4 mt-4">
+				<div className="mt-4">
 					<GoogleLogin
 						onSuccess={handleGoogleSuccess}
 						onError={handleGoogleError}

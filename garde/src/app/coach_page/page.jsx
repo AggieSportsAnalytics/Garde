@@ -8,29 +8,40 @@ import Analytics from "../../components/coach_page/Analytics";
 import { useState, useEffect } from "react";
 import { jwtDecode } from "jwt-decode"; // Corrected import for jwtDecode
 import axios from "axios";
+import { useRouter } from "next/navigation";
 
 export default function CoachPage() {
 	const [id, setId] = useState(""); // coach id
 	const [fencers, setFencers] = useState([]); // Initially an empty array for fencers
 	const [currentFencer, setCurrentFencer] = useState({}); // current fencer
 	const [coachName, setCoachName] = useState("");
+	const router = useRouter();
 
 	// Fetch the coach ID and fencers
 	useEffect(() => {
-		const token = document.cookie
-			.split("; ")
-			.find((row) => row.startsWith("token="))
-			?.split("=")[1];
+		try {
+			const token = document.cookie
+				.split("; ")
+				.find((row) => row.startsWith("token="))
+				?.split("=")[1];
 
-		if (token) {
-			const decoded = jwtDecode(token);
-			setId(decoded.id);
-			setCoachName(decoded.name);
-			getInfo("getCoach", decoded.id);
-		} else {
-			console.error("No cookies found");
+			if (token) {
+				const decoded = jwtDecode(token);
+				if (decoded.type !== "coach") {
+					router.push("coach_signin");
+				}
+				setId(decoded.id);
+				setCoachName(decoded.name);
+				getInfo("getCoach", decoded.id);
+			} else {
+				console.error("No cookies found");
+				router.push("coach_signin");
+			}
+		} catch (error) {
+			console.error(error);
+			router.push("coach_signin");
 		}
-	}, []); // Runs only once on mount
+	}, []);
 
 	// Update current fencer when fencers list changes
 	useEffect(() => {

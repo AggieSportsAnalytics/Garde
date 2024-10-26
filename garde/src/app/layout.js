@@ -17,7 +17,7 @@ import { GoogleOAuthProvider } from "@react-oauth/google";
 export default function RootLayout({ children }) {
 	return (
 		<html lang="en">
-			<GoogleOAuthProvider clientId="863304397120-tf8iocednab0668so0qbrg837s6qvbuo.apps.googleusercontent.com">
+			<GoogleOAuthProvider clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID}>
 				<body className={inter.className}>{children}</body>
 			</GoogleOAuthProvider>
 		</html>

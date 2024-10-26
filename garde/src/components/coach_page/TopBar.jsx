@@ -85,55 +85,6 @@ function TopBar({ id, fencers, currentFencer, setCurrentFencer }) {
 				</div>
 			</header>
 
-			{/* <Modal
-				isOpen={isModalVisible}
-				onRequestClose={handleCancel}
-				contentLabel="Settings"
-				ariaHideApp={false}
-				style={{
-					content: {
-						borderRadius: "20px",
-						width: "450px",
-						height: "450px",
-						maxWidth: "90%",
-						maxHeight: "90vh",
-						top: "50%",
-						left: "50%",
-						transform: "translate(-50%, -50%)",
-						padding: "15px",
-						position: "fixed",
-						overflowY: "auto",
-					},
-					overlay: {
-						backgroundColor: "rgba(0, 0, 0, 0.5)",
-						zIndex: 1000,
-					},
-				}}
-			>
-				<div className="flex flex-col h-full items-center space-y-4">
-					<button
-						type="button"
-						className="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
-						onClick={handleCancel}
-					>
-						<FiX size={24} />
-					</button>
-					<h2 className="text-xl font-semibold text-gray-800">Settings</h2>
-
-					<div className="w-full flex flex-col items-center space-y-4">
-						<UuidReveal uuid={id} />
-						<AddFencerInstruction />
-					</div>
-
-					<div className="flex-grow" />
-
-					<hr className="border-gray-300 w-full" />
-					<div className="w-full flex justify-around space-x-4 mt-4">
-						<Logout />
-						<DeleteAccountButton type="coach" otherId="" />
-					</div>
-				</div>
-			</Modal> */}
 			<Modal
 				isOpen={isModalVisible}
 				onRequestClose={handleCancel}

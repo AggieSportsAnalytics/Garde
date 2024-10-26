@@ -7,9 +7,8 @@ const inter = Inter({ subsets: ["latin"] });
 import { GoogleOAuthProvider } from "@react-oauth/google";
 
 export default function RootLayout({ children }) {
-	const NODE_ENV = process.env.NODE_ENV;
 	const CLIENT_ID =
-		NODE_ENV === "development"
+		process.env.NODE_ENV === "development"
 			? process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID_DEV
 			: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID_PROD;
 

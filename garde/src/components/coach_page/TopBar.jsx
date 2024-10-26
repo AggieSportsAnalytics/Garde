@@ -88,7 +88,7 @@ function TopBar({ id, fencers, currentFencer, setCurrentFencer }) {
 				style={{
 					content: {
 						borderRadius: "20px",
-						width: "500px",
+						width: "450px",
 						height: "450px",
 						top: "50%",
 						left: "50%",

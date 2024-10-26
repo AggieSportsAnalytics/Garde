@@ -541,14 +541,16 @@ export default function Fencer_Page2() {
 							style={{
 								content: {
 									borderRadius: "20px",
-									width: "450px",
-									height: "600px",
+									width: "90%",
+									height: "500px",
+									maxWidth: "500px",
+									maxHeight: "90vh",
 									top: "50%",
 									left: "50%",
 									transform: "translate(-50%, -50%)",
 									padding: "20px",
 									position: "fixed",
-									overflow: "auto",
+									overflowY: "auto",
 								},
 								overlay: {
 									backgroundColor: "rgba(0, 0, 0, 0.5)",
@@ -556,25 +558,35 @@ export default function Fencer_Page2() {
 								},
 							}}
 						>
-							<button
-								type="button"
-								className="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
-								onClick={handleCancel}
-							>
-								<FiX size={24} />
-							</button>
-							<h2 className="text-xl font-bold mb-4">Settings</h2>
 							<div className="flex flex-col items-center space-y-4">
-								<AddFencer />
-								<HeightInput handleHeightSave={handleHeightInput} />
-								{height ? (
-									<p>Current Height: {height}</p>
-								) : (
-									<p>Current Height: Not Set</p>
-								)}
-								<div className="h-10"></div>
-								<Logout />
-								<DeleteAccountButton type="fencer" otherId="" />
+								<button
+									type="button"
+									className="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
+									onClick={handleCancel}
+								>
+									<FiX size={24} />
+								</button>
+								<h2 className="text-xl font-bold text-gray-800 mb-4">
+									Settings
+								</h2>
+
+								{/* Modal Content */}
+								<div className="w-full flex flex-col items-center space-y-4">
+									<AddFencer />
+									<HeightInput handleHeightSave={handleHeightInput} />
+									{height ? (
+										<p className="text-gray-700">Current Height: {height}</p>
+									) : (
+										<p className="text-gray-700">Current Height: Not Set</p>
+									)}
+								</div>
+
+								{/* Bottom Actions */}
+								<hr className="border-gray-300 w-full mt-6" />
+								<div className="w-full flex justify-around space-x-4 mt-4">
+									<Logout />
+									<DeleteAccountButton type="fencer" otherId="" />
+								</div>
 							</div>
 						</Modal>
 					</header>

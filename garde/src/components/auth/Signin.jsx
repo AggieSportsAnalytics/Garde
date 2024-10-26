@@ -139,29 +139,30 @@ export default function Signin({ isSignUpDefault, type }) {
 	};
 
 	return (
-		<div className="min-h-screen flex items-center justify-center bg-gray-900 text-white">
+		<div className="min-h-screen flex items-center justify-center bg-gray-900 text-white px-4">
 			<div className="absolute top-4 left-4">
 				<Link href="/" className="cursor-pointer">
 					<button
 						type="button"
-						className="bg-white text-black py-2 px-4 rounded text-lg font-semibold hover:bg-gray-300 duration-200 hover:scale-125 active:scale-100"
+						className="bg-white text-black py-2 px-4 rounded text-lg font-semibold hover:bg-gray-300 duration-200 hover:scale-110 active:scale-100"
 						title="Go Back"
 					>
 						&#8592;
 					</button>
 				</Link>
 			</div>
+
 			{showAlert && (
-				<div className="fixed inset-0 bg-opacity-50 flex justify-center items-center">
-					<div className="p-8 bg-gray-900 rounded-lg shadow-lg max-w-md w-full">
-						<h2 className="text-xl font-semibold mb-4">Restricted Access</h2>
-						<p className="mb-6">
+				<div className="fixed inset-0 bg-opacity-50 flex justify-center items-center px-4">
+					<div className="p-6 bg-gray-900 rounded-lg shadow-lg max-w-sm w-full">
+						<h2 className="text-lg font-semibold mb-3">Restricted Access</h2>
+						<p className="mb-5">
 							You must sign in to access the requested page.
 						</p>
 						<button
 							type="button"
 							onClick={closeModal}
-							className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg"
+							className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg w-full"
 						>
 							Dismiss
 						</button>
@@ -182,7 +183,7 @@ export default function Signin({ isSignUpDefault, type }) {
 							<input
 								type="text"
 								id="name"
-								className="mt-1 block w-full p-2.5 bg-gray-700 border border-gray-600 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+								className="mt-1 block w-full p-2 bg-gray-700 border border-gray-600 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm"
 								value={name}
 								onChange={(e) => setName(e.target.value)}
 								required={isSignUp}
@@ -197,7 +198,7 @@ export default function Signin({ isSignUpDefault, type }) {
 						<input
 							type="email"
 							id="email"
-							className="mt-1 block w-full p-2.5 bg-gray-700 border border-gray-600 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+							className="mt-1 block w-full p-2 bg-gray-700 border border-gray-600 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm"
 							value={email}
 							onChange={(e) => setEmail(e.target.value)}
 							required
@@ -211,28 +212,28 @@ export default function Signin({ isSignUpDefault, type }) {
 						<input
 							type="password"
 							id="password"
-							className="mt-1 block w-full p-2.5 bg-gray-700 border border-gray-600 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+							className="mt-1 block w-full p-2 bg-gray-700 border border-gray-600 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm"
 							value={password}
 							onChange={(e) => setPassword(e.target.value)}
 							required
 						/>
 					</div>
 
-					{error && <p className="text-red-500">{error}</p>}
-					{success && <p className="text-green-500">{success}</p>}
+					{error && <p className="text-red-500 text-sm">{error}</p>}
+					{success && <p className="text-green-500 text-sm">{success}</p>}
 
 					<button
 						type="submit"
-						className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg"
+						className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg text-sm"
 					>
 						{isSignUp ? "Sign Up" : "Sign In"}
 					</button>
 				</form>
 
 				{/* Google Auth Button */}
-				<div className="mt-4">
+				<div className="mt-4 flex justify-center">
 					<GoogleLogin
-						width="385"
+						width="280"
 						onSuccess={handleGoogleSuccess}
 						onError={handleGoogleError}
 					/>

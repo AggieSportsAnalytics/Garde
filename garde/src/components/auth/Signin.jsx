@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { GoogleLogin } from "@react-oauth/google";
 import { useRouter, useSearchParams } from "next/navigation";
 import axios from "axios";
-import { jwtDecode } from "jwt-decode"; // To decode the token
+import { jwtDecode } from "jwt-decode";
 import Link from "next/link";
 
 export default function Signin({ isSignUpDefault, type }) {
@@ -217,21 +217,6 @@ export default function Signin({ isSignUpDefault, type }) {
 							required
 						/>
 					</div>
-					{/* {isSignUp && type !== "fencer" && ( */}
-					{/* 	<div> */}
-					{/* 		<label htmlFor="access-key" className="block text-sm font-medium"> */}
-					{/* 			Access Key */}
-					{/* 		</label> */}
-					{/* 		<input */}
-					{/* 			type="text" */}
-					{/* 			id="access-key" */}
-					{/* 			className="mt-1 block w-full p-2.5 bg-gray-700 border border-gray-600 rounded-lg focus:ring-blue-500 focus:border-blue-500" */}
-					{/* 			value={accessKey} */}
-					{/* 			onChange={(e) => setAccessKey(e.target.value)} */}
-					{/* 			required */}
-					{/* 		/> */}
-					{/* 	</div> */}
-					{/* )} */}
 
 					{error && <p className="text-red-500">{error}</p>}
 					{success && <p className="text-green-500">{success}</p>}
@@ -245,11 +230,11 @@ export default function Signin({ isSignUpDefault, type }) {
 				</form>
 
 				{/* Google Auth Button */}
-				<div className="relative transform translate-x-1/4 mt-4">
+				<div className="mt-4">
 					<GoogleLogin
+						width="385"
 						onSuccess={handleGoogleSuccess}
 						onError={handleGoogleError}
-						// redirectUri={`http://localhost:3000/api/google-auth?type=${type}`}
 					/>
 				</div>
 

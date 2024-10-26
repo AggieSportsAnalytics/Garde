@@ -117,12 +117,18 @@ const navbar = () => {
 									Contact
 								</li>
 							</Link>
-							<button className="login mt-4 hover:text-[#ac4bac] transition-colors duration-500 text-md">
-								Login
-							</button>
-							<button className="button mt-2">
-								<span className="button-content font-bold">Get Started</span>
-							</button>
+							<Link href="/fencer_signin">
+								<button className="login mt-4 hover:text-[#ac4bac] transition-colors duration-500 text-md">
+									Fencer Login/Signup
+								</button>
+							</Link>
+							<Link href="/coach_signin">
+								<button className="button mt-2">
+									<span className="button-content font-bold">
+										Coach Login/Signup
+									</span>
+								</button>
+							</Link>
 						</ul>
 					</div>
 				</div>

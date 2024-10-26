@@ -7,12 +7,10 @@ import Contact from "../components/landing_page/Contact";
 import Footer from "../components/landing_page/Footer";
 import Showcase from "../components/landing_page/Showcase";
 import Banner from "../components/landing_page/Banner";
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import Navbar from "../components/landing_page/Navbar";
 
 export default function Home() {
-	const [isMobile, setIsMobile] = useState(false);
-
 	useEffect(() => {
 		const userAgent =
 			typeof window.navigator === "undefined" ? "" : navigator.userAgent;
@@ -22,7 +20,6 @@ export default function Home() {
 			alert(
 				"For a better viewing experience, please visit this website on a computer.",
 			);
-			setIsMobile(true);
 		}
 	}, []);
 

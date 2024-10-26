@@ -32,7 +32,7 @@ export async function POST(req) {
 			const token = jwt.sign(
 				{
 					id: data.id,
-					email: data.email,
+					email: email,
 					name: data.name,
 					type: type,
 				},
@@ -49,7 +49,7 @@ export async function POST(req) {
 			response.cookies.set("token", token, {
 				httpOnly: false,
 				maxAge: 60 * 60, // 1 hour
-				secure: process.env.NODE_ENV === "production",
+				secure: process.env.NODE_ENV === "prod",
 				path: "/",
 				sameSite: "Strict",
 			});

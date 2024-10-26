@@ -30,6 +30,8 @@ const Fencer_Stats = dynamic(
 	() => import("../../components/fencer_page/Fencer_Stats"),
 	{ ssr: false },
 );
+import { useRouter } from "next/navigation";
+import { jwtDecode } from "jwt-decode";
 
 const MemoizedFencerStats = memo(Fencer_Stats);
 const MemoizedInstruction = memo(Instruction);
@@ -81,6 +83,7 @@ export default function Fencer_Page2() {
 	const [lastFeedbackMessage, setLastFeedbackMessage] = useState("");
 	const [isFeedbackMuted, setIsFeedbackMuted] = useState(false);
 	const [isRoutineStarted, setIsRoutineStarted] = useState(false);
+	const router = useRouter();
 
 	const showModal = () => {
 		setIsModalVisible(!isModalVisible);
@@ -96,6 +99,26 @@ export default function Fencer_Page2() {
 			const userAgent = navigator.userAgent;
 			const mobileDevice = /iPhone|iPad|iPod|Android/i.test(userAgent);
 			setIsMobile(mobileDevice);
+		}
+
+		try {
+			const token = document.cookie
+				.split("; ")
+				.find((row) => row.startsWith("token="))
+				?.split("=")[1];
+
+			if (token) {
+				const decoded = jwtDecode(token);
+				if (decoded.type !== "fencer") {
+					router.push("fencer_signin");
+				}
+			} else {
+				console.error("No cookies found");
+				router.push("fencer_signin");
+			}
+		} catch (error) {
+			console.error(error);
+			router.push("fencer_signin");
 		}
 	}, []);
 

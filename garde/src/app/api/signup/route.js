@@ -7,10 +7,7 @@ import nodemailer from "nodemailer";
 
 // Set the JWT secret (ensure you have this in your .env.local file)
 const JWT_SECRET = process.env.JWT_SECRET;
-const BASE_URL =
-	process.env.NODE_ENV === "production"
-		? process.env.NEXT_PUBLIC_BASE_URL
-		: "http://localhost:3000";
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
 
 export async function POST(req) {
 	const workerUrl = `${process.env.NEXT_PUBLIC_GARDE_WORKER}/auth`;

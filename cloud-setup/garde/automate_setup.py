@@ -180,14 +180,6 @@ def create_d1_database(database_name: str) -> None:
         )
         print(result.stdout)
 
-        match: str = "[[d1_databases]]" + result.stdout.split("[[d1_databases]]")[-1]
-        if match:
-            with open("wrangler.toml", "w") as file:
-                file.write(compat_string)
-                file.write(match)
-        else:
-            raise Exception("Configuration not found in stdout, exiting")
-
     except subprocess.CalledProcessError as e:
         print(f"Error creating database '{database_name}':")
         print(e.stderr)

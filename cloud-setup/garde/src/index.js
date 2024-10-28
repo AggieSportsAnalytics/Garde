@@ -120,7 +120,8 @@ export default {
 					error: error.message,
 				}),
 				{
-					status: 200 <= error.status < 300 ? 500 : error.status,
+					status:
+						error.status >= 200 && error.status < 300 ? 500 : error.status,
 					headers: {
 						"Content-Type": "application/json",
 					},

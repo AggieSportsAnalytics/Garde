@@ -1,11 +1,18 @@
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
+let ORIGIN;
+let BUCKET;
+let R2_ACCESS_KEY_ID;
+let R2_SECRET_ACCESS_KEY;
+
 export default {
 	async fetch(request, env) {
 		const url = new URL(request.url);
-		const { BUCKET, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY } = env;
+		({ BUCKET, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, ORIGIN } = env);
 		const path = url.pathname;
+
+		console.log(BUCKET, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, ORIGIN);
 
 		try {
 			if (request.method === "OPTIONS") {
@@ -22,16 +29,12 @@ export default {
 					const videoId = url.searchParams.get("videoId");
 
 					const key = `${fencerId}/${videoId}`;
-					return await getVideoChunks(
-						key,
-						url.searchParams.get("range"),
-						BUCKET,
-					);
+					return await getVideoChunks(key, url.searchParams.get("range"));
 				}
 
 				if (path.includes("/listBucket")) {
 					const pathName = path.split("/");
-					return await listBucket(pathName[pathName.length - 1], BUCKET);
+					return await listBucket(pathName[pathName.length - 1]);
 				}
 
 				if (path === "/getPresignedUrl") {
@@ -40,11 +43,7 @@ export default {
 
 					const key = `${fencerId}/${videoId}`;
 
-					return await getPresignedUrl(
-						key,
-						R2_ACCESS_KEY_ID,
-						R2_SECRET_ACCESS_KEY,
-					);
+					return await getPresignedUrl(key);
 				}
 			}
 
@@ -70,19 +69,21 @@ export default {
 
 // default get request (test)
 function handleGetRequest() {
-	return new Response(JSON.stringify({ message: "success" }), {
-		status: 200,
-		headers: {
-			"Content-Type": "application/json",
-		},
-	});
+	return addCorsHeaders(
+		new Response(JSON.stringify({ message: "success" }), {
+			status: 200,
+			headers: {
+				"Content-Type": "application/json",
+			},
+		}),
+	);
 }
 
 // Function to handle preflight OPTIONS requests (CORS)
 function handleOptionsRequest() {
 	return new Response(null, {
 		headers: {
-			"Access-Control-Allow-Origin": "*",
+			"Access-Control-Allow-Origin": ORIGIN,
 			"Access-Control-Allow-Methods": "GET, POST, OPTIONS, PUT", // Allow GET, POST, and OPTIONS methods
 			"Access-Control-Allow-Headers": "Content-Type", // Allow headers like Content-Type
 		},
@@ -91,7 +92,7 @@ function handleOptionsRequest() {
 
 function addCorsHeaders(response) {
 	const newHeaders = new Headers(response.headers);
-	newHeaders.set("Access-Control-Allow-Origin", "*");
+	newHeaders.set("Access-Control-Allow-Origin", ORIGIN);
 	newHeaders.set("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT");
 	newHeaders.set("Access-Control-Allow-Headers", "Content-Type");
 
@@ -102,7 +103,7 @@ function addCorsHeaders(response) {
 	});
 }
 
-async function getVideoChunks(videoId, range, BUCKET) {
+async function getVideoChunks(videoId, range) {
 	const video = await BUCKET.get(videoId);
 	if (!video) {
 		return new Response(JSON.stringify({ message: "Video not found" }), {
@@ -127,7 +128,7 @@ async function getVideoChunks(videoId, range, BUCKET) {
 }
 
 // Listing bucket under prefix (user id)
-async function listBucket(prefix, BUCKET) {
+async function listBucket(prefix) {
 	if (prefix === "") {
 		const res = new Response(JSON.stringify({ error: "No fencer detected" }), {
 			status: 404,
@@ -157,11 +158,7 @@ async function listBucket(prefix, BUCKET) {
 	return addCorsHeaders(res);
 }
 
-async function getPresignedUrl(
-	filename,
-	R2_ACCESS_KEY_ID,
-	R2_SECRET_ACCESS_KEY,
-) {
+async function getPresignedUrl(filename) {
 	const client = new S3Client({
 		region: "auto",
 		endpoint:

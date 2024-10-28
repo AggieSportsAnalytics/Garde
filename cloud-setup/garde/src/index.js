@@ -1,8 +1,14 @@
+let ORIGIN;
+let DB;
+let BUCKET;
+
 export default {
 	async fetch(request, env) {
 		const url = new URL(request.url);
-		const { DB, BUCKET } = env;
 		const path = url.pathname;
+		({ ORIGIN, DB, BUCKET } = env);
+
+		console.log(BUCKET, DB, ORIGIN);
 
 		try {
 			if (request.method === "OPTIONS") {
@@ -13,16 +19,10 @@ export default {
 				const body = await request.json();
 
 				if (path === "/verifyEmail") {
-					return await verifyEmail(body.email, body.type, DB);
+					return await verifyEmail(body.email, body.type);
 				}
 				if (path === "/authGoogle") {
-					return await authGoogle(
-						body.id,
-						body.email,
-						body.name,
-						body.type,
-						DB,
-					);
+					return await authGoogle(body.id, body.email, body.name, body.type);
 				}
 				if (path === "/auth") {
 					return await auth(
@@ -31,7 +31,6 @@ export default {
 						body.email,
 						body.password,
 						body.id,
-						DB,
 					);
 				}
 			} else if (request.method === "DELETE") {
@@ -39,7 +38,6 @@ export default {
 					return await deleteCoachFencers(
 						url.searchParams.get("fencerId"),
 						url.searchParams.get("coachId"),
-						DB,
 					);
 				}
 
@@ -47,8 +45,6 @@ export default {
 					return await deleteUser(
 						url.searchParams.get("id"),
 						url.searchParams.get("type"),
-						DB,
-						BUCKET,
 					);
 				}
 			} else if (request.method === "GET") {
@@ -60,36 +56,35 @@ export default {
 					return await verify(
 						url.searchParams.get("type"),
 						url.searchParams.get("email"),
-						DB,
 					);
 				}
 
 				if (path.includes("/getFencerAngles")) {
 					const pathName = path.split("/");
-					return await getFencerAngles(pathName[pathName.length - 1], DB);
+					return await getFencerAngles(pathName[pathName.length - 1]);
 				}
 
 				if (path === "/getIdealAngles") {
-					return await getIdealAngles(DB);
+					return await getIdealAngles();
 				}
 
 				if (path === "/getFencerInstructions") {
-					return await getFencerInstructions(DB);
+					return await getFencerInstructions();
 				}
 
 				if (path.includes("/getCoach")) {
 					const pathName = path.split("/");
-					return await getCoach(pathName[pathName.length - 1], DB);
+					return await getCoach(pathName[pathName.length - 1]);
 				}
 
 				if (path.includes("/getFencer")) {
 					const pathName = path.split("/");
-					return await getFencer(pathName[pathName.length - 1], DB);
+					return await getFencer(pathName[pathName.length - 1]);
 				}
 			} else if (request.method === "PUT") {
 				if (path.includes("/putInstruction")) {
 					const pathName = path.split("/");
-					return await putInstruction(pathName[pathName.length - 1], DB);
+					return await putInstruction(pathName[pathName.length - 1]);
 				}
 
 				const body = await request.json();
@@ -99,7 +94,6 @@ export default {
 					return await putAngleData(
 						pathName[pathName.length - 1],
 						body.accuracy,
-						DB,
 					);
 				}
 
@@ -109,7 +103,6 @@ export default {
 						body.coachId,
 						body.fencerName,
 						body.fencerEmail,
-						DB,
 					);
 				}
 			}
@@ -141,19 +134,21 @@ export default {
 
 // default get method (test)
 function handleGetRequest() {
-	return new Response(JSON.stringify({ message: "success" }), {
-		status: 200,
-		headers: {
-			"Content-Type": "application/json",
-		},
-	});
+	return addCorsHeaders(
+		new Response(JSON.stringify({ message: "success" }), {
+			status: 200,
+			headers: {
+				"Content-Type": "application/json",
+			},
+		}),
+	);
 }
 
 // Function to handle preflight OPTIONS requests (CORS)
 function handleOptionsRequest() {
 	return new Response(null, {
 		headers: {
-			"Access-Control-Allow-Origin": "*",
+			"Access-Control-Allow-Origin": ORIGIN,
 			"Access-Control-Allow-Methods": "GET, POST, OPTIONS, PUT, DELETE", // Allow GET, POST, and OPTIONS methods
 			"Access-Control-Allow-Headers": "Content-Type", // Allow headers like Content-Type
 		},
@@ -163,7 +158,7 @@ function handleOptionsRequest() {
 // adding headers so response isn't rejected by browser
 function addCorsHeaders(response) {
 	const newHeaders = new Headers(response.headers);
-	newHeaders.set("Access-Control-Allow-Origin", "*");
+	newHeaders.set("Access-Control-Allow-Origin", ORIGIN);
 	newHeaders.set("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT");
 	newHeaders.set("Access-Control-Allow-Headers", "Content-Type");
 
@@ -174,7 +169,7 @@ function addCorsHeaders(response) {
 	});
 }
 
-async function putInstruction(fencerInstruction, DB) {
+async function putInstruction(fencerInstruction) {
 	const query = `
         INSERT OR IGNORE INTO fencer_instructions (name)
 		VALUES (?);
@@ -193,7 +188,7 @@ async function putInstruction(fencerInstruction, DB) {
 	return addCorsHeaders(res);
 }
 
-async function putCoachFencer(fencerId, coachId, fencerName, fencerEmail, DB) {
+async function putCoachFencer(fencerId, coachId, fencerName, fencerEmail) {
 	const query =
 		"INSERT OR IGNORE INTO coach_fencer (coach_id, fencer_id, fencer_name, fencer_email) VALUES (?, ?, ?, ?);";
 	await DB.prepare(query)
@@ -212,7 +207,7 @@ async function putCoachFencer(fencerId, coachId, fencerName, fencerEmail, DB) {
 	return addCorsHeaders(res);
 }
 
-async function putAngleData(fencerId, accuracy, DB) {
+async function putAngleData(fencerId, accuracy) {
 	const queryPut =
 		"INSERT OR REPLACE INTO fencer_sessions (fencer_id, accuracy) VALUES (?, ?);";
 
@@ -230,7 +225,7 @@ async function putAngleData(fencerId, accuracy, DB) {
 	return addCorsHeaders(res);
 }
 
-async function verifyEmail(email, type, DB) {
+async function verifyEmail(email, type) {
 	const query = `SELECT * FROM ${type} WHERE email = ?`;
 	const user = await DB.prepare(query).bind(email).all();
 
@@ -272,7 +267,7 @@ async function verifyEmail(email, type, DB) {
 	);
 }
 
-async function authGoogle(id, email, name, type, DB) {
+async function authGoogle(id, email, name, type) {
 	// remove this code once Garde goes public
 	const isWhitelisted = await isOnWhitelist(email, DB);
 	if (!isWhitelisted) {
@@ -375,7 +370,7 @@ async function authGoogle(id, email, name, type, DB) {
 	return addCorsHeaders(res);
 }
 
-async function getFencerInstructions(DB) {
+async function getFencerInstructions() {
 	const instructions = await DB.prepare(
 		"SELECT * FROM fencer_instructions",
 	).all();
@@ -396,7 +391,7 @@ async function getFencerInstructions(DB) {
 }
 
 // remove this code once Garde goes public
-async function isOnWhitelist(email, DB) {
+async function isOnWhitelist(email) {
 	const fetched = await DB.prepare("SELECT * FROM whitelist WHERE email = ?")
 		.bind(email)
 		.all();
@@ -408,7 +403,7 @@ async function isOnWhitelist(email, DB) {
 	return true;
 }
 
-async function auth(type, name, email, password, id, DB) {
+async function auth(type, name, email, password, id) {
 	// remove this code once Garde goes public
 	const isWhitelisted = await isOnWhitelist(email, DB);
 	if (!isWhitelisted) {
@@ -486,7 +481,7 @@ async function auth(type, name, email, password, id, DB) {
 	return addCorsHeaders(res);
 }
 
-async function getFencer(id, DB) {
+async function getFencer(id) {
 	const result = await DB.prepare(
 		"SELECT * FROM fencer_sessions WHERE fencer_id = ?",
 	)
@@ -509,7 +504,7 @@ async function getFencer(id, DB) {
 	return addCorsHeaders(res);
 }
 
-async function getCoach(id, DB) {
+async function getCoach(id) {
 	const result = await DB.prepare(
 		"SELECT * FROM coach_fencer WHERE coach_id = ?",
 	)
@@ -532,7 +527,7 @@ async function getCoach(id, DB) {
 	return addCorsHeaders(res);
 }
 
-async function verify(type, email, DB) {
+async function verify(type, email) {
 	// Query the user by email
 	const fetched = await DB.prepare(`SELECT * FROM ${type} WHERE email = ?`)
 		.bind(email)
@@ -592,7 +587,7 @@ async function verify(type, email, DB) {
 	return addCorsHeaders(res);
 }
 
-async function deleteCoachFencers(fencerId, coachId, DB) {
+async function deleteCoachFencers(fencerId, coachId) {
 	const query = `
         DELETE FROM coach_fencer
         WHERE fencer_id = ? AND coach_id = ?;
@@ -612,7 +607,7 @@ async function deleteCoachFencers(fencerId, coachId, DB) {
 	return addCorsHeaders(res);
 }
 
-async function deleteUser(id, type, DB, BUCKET) {
+async function deleteUser(id, type) {
 	const query = `
         DELETE FROM ${type}
         WHERE unique_id = ?;
@@ -639,7 +634,7 @@ async function deleteUser(id, type, DB, BUCKET) {
 	return addCorsHeaders(res);
 }
 
-async function getIdealAngles(DB) {
+async function getIdealAngles() {
 	const query = "SELECT * FROM ideal_angles";
 	const angles = await DB.prepare(query).run();
 
@@ -658,7 +653,7 @@ async function getIdealAngles(DB) {
 	return addCorsHeaders(res);
 }
 
-async function getFencerAngles(id, DB) {
+async function getFencerAngles(id) {
 	const query = "SELECT * FROM fencer_sessions WHERE fencer_id = ?";
 	const angles = await DB.prepare(query).bind(id).run();
 

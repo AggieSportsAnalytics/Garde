@@ -42,11 +42,6 @@ export const viewport = {
 };
 
 export default function RootLayout({ children }) {
-	const CLIENT_ID =
-		process.env.NODE_ENV === "development"
-			? process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID_DEV
-			: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID_PROD;
-
 	return (
 		<html lang="en">
 			<head>
@@ -69,7 +64,7 @@ export default function RootLayout({ children }) {
 				/>
 				<link rel="manifest" href="/site.webmanifest" />
 			</head>
-			<GoogleOAuthProvider clientId={CLIENT_ID}>
+			<GoogleOAuthProvider clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID}>
 				<body className={inter.className}>{children}</body>
 			</GoogleOAuthProvider>
 		</html>

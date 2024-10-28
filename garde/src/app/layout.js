@@ -7,6 +7,7 @@ import { GoogleOAuthProvider } from "@react-oauth/google";
 export const metadata = {
 	title: "Garde",
 	description: "Enhance your fencing skills with AI-powered insights.",
+	metadataBase: new URL("https://gardeai.com"),
 	robots: {
 		index: true,
 		follow: true,
@@ -34,6 +35,9 @@ export const metadata = {
 		description: "Enhance your fencing skills with AI-powered insights.",
 		images: ["/images/garde-square.png"],
 	},
+};
+
+export const viewport = {
 	themeColor: "#ffffff",
 };
 

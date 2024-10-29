@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { S3Client, ListObjectsV2Command } from "@aws-sdk/client-s3";
 
+export const dynamic = "force-dynamic";
+
 export async function GET(req) {
 	try {
 		const url = new URL(req.url);

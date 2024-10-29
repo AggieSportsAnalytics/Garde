@@ -101,7 +101,7 @@ const uploadToR2 = async (video, videoId, segmentId, fencerId) => {
 	try {
 		await r2Client.send(
 			new PutObjectCommand({
-				Bucket: "garde-fencing-videos",
+				Bucket: process.env.BUCKET_NAME,
 				Key: `${fencerId}/${videoId}/${segmentId}`,
 				Body: video,
 				ContentType: segmentId.endsWith(".m3u8")
@@ -128,7 +128,7 @@ const uploadThumbnail = async (thumbnail, videoId, fencerId) => {
 	try {
 		await r2Client.send(
 			new PutObjectCommand({
-				Bucket: "garde-fencing-videos",
+				Bucket: process.env.BUCKET_NAME,
 				Key: `${fencerId}/${videoId}/thumbnail.jpeg`,
 				Body: thumbnail,
 				ContentType: "image/jpeg",

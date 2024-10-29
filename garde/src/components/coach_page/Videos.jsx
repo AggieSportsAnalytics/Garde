@@ -55,6 +55,7 @@ const Videos = ({ fencer }) => {
 	const [videos, setVideos] = useState([]);
 	const [loading, setLoading] = useState(false);
 	const [videoNumber, setVideoNumber] = useState(-1);
+	const bucketUrl = process.env.NEXT_PUBLIC_BUCKET_URL;
 
 	useEffect(() => {
 		const fetchVideos = async () => {
@@ -70,7 +71,7 @@ const Videos = ({ fencer }) => {
 				if (vidNames) {
 					vids = vidNames.map((name) => ({
 						key: name,
-						thumbnail: `https://pub-35cd65af934243b8a6d0faf4fc079d3a.r2.dev/${fencer.fencer_id}/${name}/thumbnail.jpeg`,
+						thumbnail: `${bucketUrl}/${fencer.fencer_id}/${name}/thumbnail.jpeg`,
 					}));
 				}
 
@@ -86,24 +87,7 @@ const Videos = ({ fencer }) => {
 	const handleVideoClick = (i, videoId) => {
 		setLoading(true);
 		setVideoNumber(i);
-		setVideoUrl(
-			`https://pub-35cd65af934243b8a6d0faf4fc079d3a.r2.dev/${fencer.fencer_id}/${videoId}/playlist.m3u8`,
-		);
-	};
-
-	const readableDate = (dateString) => {
-		const date = new Date(dateString);
-		const formattedDate = date.toLocaleString("en-US", {
-			year: "numeric",
-			month: "long",
-			day: "numeric",
-			hour: "numeric",
-			minute: "numeric",
-			// second: "numeric",
-			hour12: true,
-		});
-
-		return formattedDate;
+		setVideoUrl(`${bucketUrl}/${fencer.fencer_id}/${videoId}/playlist.m3u8`);
 	};
 
 	return (

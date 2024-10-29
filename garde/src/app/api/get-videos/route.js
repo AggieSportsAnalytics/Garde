@@ -32,7 +32,7 @@ const listR2Bucket = async (fencerId) => {
 
 	try {
 		const command = new ListObjectsV2Command({
-			Bucket: "garde-fencing-videos",
+			Bucket: process.env.BUCKET_NAME,
 			Prefix: prefix,
 			Delimiter: "/",
 		});

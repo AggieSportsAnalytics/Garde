@@ -130,7 +130,7 @@ function TopBar({ id, fencers, currentFencer, setCurrentFencer }) {
 					<hr className="border-gray-300 w-full mt-6" />
 					<div className="w-full flex justify-around space-x-4 mt-4">
 						<Logout />
-						<DeleteAccountButton type="coach" otherId="" />
+						<DeleteAccountButton type="coach" userId={id} />
 					</div>
 				</div>
 			</Modal>

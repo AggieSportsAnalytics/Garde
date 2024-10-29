@@ -1,14 +1,61 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import ReactPlayer from "react-player";
+import React, { useState, useEffect, useRef } from "react";
+import Hls from "hls.js";
 import axios from "axios";
+import Image from "next/image";
+
+const HLSPlayer = ({ videoUrl, setLoading }) => {
+	const videoRef = useRef(null);
+
+	useEffect(() => {
+		if (Hls.isSupported()) {
+			const hls = new Hls();
+			hls.loadSource(videoUrl);
+			hls.attachMedia(videoRef.current);
+
+			hls.on(Hls.Events.MANIFEST_PARSED, () => {
+				videoRef.current.play();
+			});
+
+			return () => {
+				hls.destroy();
+			};
+		}
+		if (videoRef.current.canPlayType("application/vnd.apple.mpegurl")) {
+			// For Safari and other native HLS-supporting browsers
+			videoRef.current.src = videoUrl;
+			videoRef.current.addEventListener("loadedmetadata", () => {
+				videoRef.current.play();
+			});
+		}
+	}, [videoUrl]);
+
+	// return <video ref={videoRef} controls />;
+	return (
+		<div style={{ maxWidth: "800px", margin: "0 auto" }}>
+			<video
+				ref={videoRef}
+				controls
+				style={{
+					width: "100%",
+					maxWidth: "100%",
+					height: "450px",
+					aspectRatio: "16 / 9",
+					borderRadius: "8px",
+				}}
+				onPlay={() => setLoading(false)}
+			/>
+		</div>
+	);
+};
 
 const Videos = ({ fencer }) => {
 	const [videoUrl, setVideoUrl] = useState(null);
 	const [videos, setVideos] = useState([]);
 	const [loading, setLoading] = useState(false);
 	const [videoNumber, setVideoNumber] = useState(-1);
+	const bucketUrl = process.env.NEXT_PUBLIC_BUCKET_URL;
 
 	useEffect(() => {
 		const fetchVideos = async () => {
@@ -17,9 +64,18 @@ const Videos = ({ fencer }) => {
 			}
 			try {
 				setVideoUrl(null);
-				const listUrl = `${process.env.NEXT_PUBLIC_R2_WORKER}/listBucket/${fencer.fencer_id}`;
+				const listUrl = `/api/get-videos?fencerId=${fencer.fencer_id}`;
 				const response = await axios.get(listUrl);
-				setVideos(response.data.videos);
+				const vidNames = response.data.videos;
+				let vids = [];
+				if (vidNames) {
+					vids = vidNames.map((name) => ({
+						key: name,
+						thumbnail: `${bucketUrl}/${fencer.fencer_id}/${name}/thumbnail.jpeg`,
+					}));
+				}
+
+				setVideos(vids);
 			} catch (error) {
 				console.error(error.message);
 			}
@@ -28,47 +84,10 @@ const Videos = ({ fencer }) => {
 		fetchVideos(); // Call the async function
 	}, [fencer]);
 
-	const fetchVideoChunks = async (videoId) => {
-		const range = "0-"; // Start with an initial range
-		const splitVideo = videoId.split("/");
-		const fencerId = splitVideo[0];
-		const video = splitVideo[1];
-		const url = `${process.env.NEXT_PUBLIC_R2_WORKER}/getVideoChunks?fencerId=${fencerId}&videoId=${video}&range=${range}`;
-
-		try {
-			// Fetch video chunk from backend
-			const response = await axios.get(url, { responseType: "blob" });
-			const videoObjectUrl = URL.createObjectURL(response.data);
-
-			setVideoUrl(videoObjectUrl);
-		} catch (error) {
-			console.error("Failed to fetch video:", error.message);
-		}
-	};
-
 	const handleVideoClick = (i, videoId) => {
 		setLoading(true);
 		setVideoNumber(i);
-		fetchVideoChunks(videoId);
-	};
-
-	const handleVideoReady = () => {
-		setLoading(false);
-	};
-
-	const readableDate = (dateString) => {
-		const date = new Date(dateString);
-		const formattedDate = date.toLocaleString("en-US", {
-			year: "numeric",
-			month: "long",
-			day: "numeric",
-			hour: "numeric",
-			minute: "numeric",
-			// second: "numeric",
-			hour12: true,
-		});
-
-		return formattedDate;
+		setVideoUrl(`${bucketUrl}/${fencer.fencer_id}/${videoId}/playlist.m3u8`);
 	};
 
 	return (
@@ -78,19 +97,15 @@ const Videos = ({ fencer }) => {
 					{videoUrl ? (
 						<>
 							<div className="video-player mt-6">
-								<ReactPlayer
-									url={videoUrl}
-									controls={true}
-									playing={false}
-									onReady={handleVideoReady}
-									width="100%"
-									height="450px"
-								/>
+								<HLSPlayer videoUrl={videoUrl} setLoading={setLoading} />
 							</div>
 							<div className="flex justify-center mt-4">
 								<button
 									type="button"
-									onClick={() => setVideoUrl(null)}
+									onClick={() => {
+										setVideoUrl(null);
+										setLoading(false);
+									}}
 									className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-400"
 								>
 									Back to Gallery
@@ -100,7 +115,7 @@ const Videos = ({ fencer }) => {
 					) : (
 						<>
 							<h2 className="text-lg font-bold mb-4">Fencer Videos</h2>
-							<div className="video-gallery grid grid-cols-2 gap-4 max-h-96 overflow-y-auto">
+							<div className="video-gallery grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 max-h-96 overflow-y-auto">
 								{videos.map((video, i) => (
 									<button
 										type="button"
@@ -108,9 +123,16 @@ const Videos = ({ fencer }) => {
 										onClick={() => handleVideoClick(i, video.key)}
 										className="focus:outline-none"
 									>
-										<div className="video-thumbnail border border-gray-300 p-2 rounded-md shadow-md bg-gray-800 hover:bg-gray-700 text-center text-white">
-											<p>
-												{i + 1}. {readableDate(video.lastModified)}
+										<div className="video-thumbnail border border-gray-300 p-2 rounded-lg shadow-lg bg-gray-800 hover:bg-gray-700 transition duration-200 ease-in-out">
+											<Image
+												src={video.thumbnail}
+												width={200}
+												height={200}
+												className="object-cover rounded-md w-full h-auto"
+												alt="Thumbnail"
+											/>
+											<p className="mt-2 text-sm font-medium text-white text-center">
+												Video {i + 1}
 											</p>
 										</div>
 									</button>

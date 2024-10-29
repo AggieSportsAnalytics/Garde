@@ -1,25 +1,17 @@
 import React, { useState } from "react";
 import axios from "axios";
-import { jwtDecode } from "jwt-decode";
 import { useRouter } from "next/navigation";
 
-export default function DeleteAccountButton({ type, otherId }) {
+export default function DeleteAccountButton({ type, userId }) {
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState(null);
 	const [success, setSuccess] = useState(null);
 	const router = useRouter();
 
 	const handleDeleteAccount = async () => {
-		let confirmed;
-		if (type === "coach-fencer") {
-			confirmed = window.confirm(
-				"Are you sure you want to remove fencer-coach connection? This actions is irreversible.",
-			);
-		} else {
-			confirmed = window.confirm(
-				"Are you sure you want to delete your account? This action is irreversible.",
-			);
-		}
+		const confirmed = window.confirm(
+			"Are you sure you want to delete your account? This action is irreversible.",
+		);
 
 		if (!confirmed) {
 			return; // Exit if the user cancels the confirmation
@@ -30,28 +22,7 @@ export default function DeleteAccountButton({ type, otherId }) {
 		setSuccess(null);
 
 		try {
-			let workerUrl = process.env.NEXT_PUBLIC_GARDE_WORKER;
-			if (type === "coach-fencer") {
-				workerUrl += "/deleteCoachFencer";
-			} else {
-				workerUrl += "/deleteUser";
-			}
-			const token = document.cookie
-				.split("; ")
-				.find((row) => row.startsWith("token="))
-				?.split("=")[1];
-
-			const decoded = jwtDecode(token);
-
-			if (type === "coach-fencer") {
-				if (decoded.type === "coach") {
-					workerUrl += `?fencerId=${otherId}&coachId=${decoded.id}`;
-				} else {
-					workerUrl += `?fencerId=${decoded.id}&coachId=${otherId}`;
-				}
-			} else {
-				workerUrl += `?id=${decoded.id}&type=${type}`;
-			}
+			const workerUrl = `${process.env.NEXT_PUBLIC_GARDE_WORKER}/deleteUser?id=${userId}&type=${type}`;
 
 			// Replace with your actual DELETE API endpoint
 			const response = await axios.delete(workerUrl);

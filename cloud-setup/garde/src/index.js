@@ -8,8 +8,6 @@ export default {
 		const path = url.pathname;
 		({ ORIGIN, DB, BUCKET } = env);
 
-		console.log(BUCKET, DB, ORIGIN);
-
 		try {
 			if (request.method === "OPTIONS") {
 				return handleOptionsRequest();

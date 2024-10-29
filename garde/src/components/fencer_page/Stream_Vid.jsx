@@ -1,13 +1,15 @@
 import React, { useRef, useState } from "react";
 import axios from "axios";
 import { v4 as uuidv4 } from "uuid";
-import { jwtDecode } from "jwt-decode";
 
-const Stream_Vid = ({ onVideoChange, isRecording, toggleRecording }) => {
-	const webcamRef = useRef(null);
+const Stream_Vid = ({
+	onVideoChange,
+	isRecording,
+	toggleRecording,
+	fencerId,
+}) => {
 	const refFileInput = useRef(null);
 	const [videoAdded, setVideoAdded] = useState(false); // Track if video has been added
-	const [selectedFile, setSelectedFile] = useState(null);
 
 	const handleFileChange = async (event) => {
 		const file = event.target.files[0];
@@ -15,11 +17,7 @@ const Stream_Vid = ({ onVideoChange, isRecording, toggleRecording }) => {
 			const videoURL = URL.createObjectURL(file);
 			onVideoChange(videoURL);
 			setVideoAdded(true); // Update state to show video has been added
-			const convertedFile = await convertFile(file);
-			// handleVideoUpload(file);
-			if (convertedFile) {
-				handleVideoUpload(convertedFile);
-			}
+			await handleVideoUpload(file);
 		}
 	};
 
@@ -32,10 +30,25 @@ const Stream_Vid = ({ onVideoChange, isRecording, toggleRecording }) => {
 		}
 	};
 
-	const captureScreenshot = () => {
-		if (webcamRef.current) {
-			const screenshot = webcamRef.current.getScreenshot();
-			onVideoChange(screenshot);
+	const handleVideoUpload = async (file) => {
+		const formData = new FormData();
+		formData.append("video", file, uuidv4());
+
+		try {
+			const res = await axios.post(
+				`/api/convert-video?fencerId=${fencerId}`,
+				formData,
+				{
+					headers: {
+						"Content-Type": "multipart/form-data",
+					},
+				},
+			);
+			if (res.status < 200 || res.status >= 300) {
+				console.error("Failed to upload file");
+			}
+		} catch (error) {
+			console.error("Error during file upload:", error);
 		}
 	};
 
@@ -69,91 +82,6 @@ const Stream_Vid = ({ onVideoChange, isRecording, toggleRecording }) => {
 			</div>
 		</div>
 	);
-};
-
-const handleVideoUpload = async (file) => {
-	let decoded = "";
-	const token = document.cookie
-		.split("; ")
-		.find((row) => row.startsWith("token="))
-		?.split("=")[1];
-
-	if (token) {
-		try {
-			decoded = jwtDecode(token);
-		} catch (error) {
-			console.error("Invalid JWT token");
-			return;
-		}
-	} else {
-		console.error("No cookies found");
-		return;
-	}
-
-	const uniqueId = uuidv4();
-	const fencerId = decoded.id;
-	const videoId = uniqueId;
-	const workerUrl = `${process.env.NEXT_PUBLIC_R2_WORKER}/getPresignedUrl?videoId=${videoId}&fencerId=${fencerId}`;
-
-	try {
-		const presignedUrlResponse = await axios.get(workerUrl, {
-			headers: {
-				"Content-Type": "application/json",
-			},
-		});
-
-		const presignedUrl = presignedUrlResponse.data.url;
-
-		const uploadResponse = await axios.put(presignedUrl, file, {
-			headers: {
-				"Content-Type": "video/webm; codecs=vp9",
-			},
-		});
-
-		if (uploadResponse.status >= 200 && uploadResponse.status <= 300) {
-		} else {
-			console.error("Failed to upload file");
-		}
-	} catch (error) {
-		console.error("Error during file upload:", error);
-	}
-};
-
-const convertFile = async (selectedFile) => {
-	const formData = new FormData();
-	formData.append("video", selectedFile);
-
-	try {
-		// Request backend conversion, expecting a blob response
-		const response = await axios.post("/api/convert-video", formData, {
-			headers: {
-				// "Content-Type": "multipart/form-data", // Correct header for FormData
-				"Content-Type": "video/*",
-			},
-			responseType: "blob",
-		});
-
-		if (response.status >= 200 && response.status < 300) {
-			// Receive the blob from the response and convert it into a File object
-			const fileBlob = response.data;
-
-			const convertedFile = new File(
-				[fileBlob],
-				`converted_${selectedFile.name}.webm; codecs=vp9`,
-				{
-					type: "video/webm; codecs=vp9",
-				},
-			);
-
-			return convertedFile; // Return the converted file as a File object
-		}
-
-		console.error("Failed to upload and convert file");
-		return null;
-	} catch (error) {
-		console.error("Error during file conversion:", error);
-		return null;
-	}
 };
 
 export default Stream_Vid;

@@ -83,6 +83,8 @@ export default function Fencer_Page2() {
 	const [lastFeedbackMessage, setLastFeedbackMessage] = useState("");
 	const [isFeedbackMuted, setIsFeedbackMuted] = useState(false);
 	const [isRoutineStarted, setIsRoutineStarted] = useState(false);
+	const [fencerId, setFencerId] = useState("");
+	const [decoded, setDecoded] = useState({});
 	const router = useRouter();
 
 	const showModal = () => {
@@ -111,6 +113,9 @@ export default function Fencer_Page2() {
 				const decoded = jwtDecode(token);
 				if (decoded.type !== "fencer") {
 					router.push("fencer_signin");
+				} else {
+					setFencerId(decoded.id);
+					setDecoded(decoded);
 				}
 			} else {
 				console.error("No cookies found");
@@ -500,6 +505,7 @@ export default function Fencer_Page2() {
 								isRecording={isRecording}
 								toggleRecording={toggleRecording}
 								videoSource={videoSource}
+								fencerId={fencerId}
 							/>
 						</div>
 						<div className="flex items-center space-x-4">
@@ -572,7 +578,7 @@ export default function Fencer_Page2() {
 
 								{/* Modal Content */}
 								<div className="w-full flex flex-col items-center space-y-4">
-									<AddFencer />
+									<AddFencer decoded={decoded} />
 									<HeightInput handleHeightSave={handleHeightInput} />
 									{height ? (
 										<p className="text-gray-700">Current Height: {height}</p>
@@ -585,7 +591,7 @@ export default function Fencer_Page2() {
 								<hr className="border-gray-300 w-full mt-6" />
 								<div className="w-full flex justify-around space-x-4 mt-4">
 									<Logout />
-									<DeleteAccountButton type="fencer" otherId="" />
+									<DeleteAccountButton userId={fencerId} type="fencer" />
 								</div>
 							</div>
 						</Modal>
@@ -655,6 +661,7 @@ export default function Fencer_Page2() {
 									containerWidth="100%"
 									containerHeight="100%"
 									darkMode={darkMode}
+									fencerId={fencerId}
 								/>
 							</div>
 

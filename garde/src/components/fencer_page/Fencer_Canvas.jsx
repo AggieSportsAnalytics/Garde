@@ -19,7 +19,6 @@ import FencerInstructionMenu from "./FencerInstructionMenu";
 import { MdBuild } from "react-icons/md";
 import axios from "axios";
 import { v4 as uuidv4 } from "uuid";
-import { jwtDecode } from "jwt-decode";
 
 const WebcamPose = ({
 	onVideoChange,
@@ -31,6 +30,7 @@ const WebcamPose = ({
 	containerWidth,
 	containerHeight,
 	darkMode,
+	fencerId,
 }) => {
 	const videoRef = useRef(null);
 	const webcamRef = useRef(null);
@@ -298,46 +298,20 @@ const WebcamPose = ({
 	}, [isRecording, videoSource, runtime, modelType]);
 
 	const handleDataAvailable = async (event) => {
-		let decoded = "";
-		const token = document.cookie
-			.split("; ")
-			.find((row) => row.startsWith("token="))
-			?.split("=")[1];
-
-		if (token) {
-			try {
-				decoded = jwtDecode(token);
-			} catch (error) {
-				console.error("Invalid JWT token");
-				return;
-			}
-		} else {
-			console.error("No cookies found");
-			return;
-		}
-
-		const uniqueId = uuidv4();
-		const fencerId = decoded.id;
-		const videoId = uniqueId;
-		const workerUrl = `${process.env.NEXT_PUBLIC_R2_WORKER}/getPresignedUrl?videoId=${videoId}&fencerId=${fencerId}`;
+		const formData = new FormData();
+		formData.append("video", event.data, uuidv4());
 
 		try {
-			const presignedUrlResponse = await axios.get(workerUrl, {
-				headers: {
-					"Content-Type": "application/json",
+			const res = await axios.post(
+				`/api/convert-video?fencerId=${fencerId}`,
+				formData,
+				{
+					headers: {
+						"Content-Type": "multipart/form-data",
+					},
 				},
-			});
-
-			const presignedUrl = presignedUrlResponse.data.url;
-
-			const uploadResponse = await axios.put(presignedUrl, event.data, {
-				headers: {
-					"Content-Type": "video/webm; codecs=vp9",
-				},
-			});
-
-			if (uploadResponse.status >= 200 && uploadResponse.status <= 300) {
-			} else {
+			);
+			if (res.status < 200 || res.status >= 300) {
 				console.error("Failed to upload file");
 			}
 		} catch (error) {
@@ -774,51 +748,3 @@ export const convertPixelsToMeters = (pixels, height, fencerHeightPixels) => {
 	const pixelToMeterRatio = height / fencerHeightPixels;
 	return pixels * pixelToMeterRatio;
 };
-
-// const url = process.env.MONGODB_URL
-// const client = new MongoClient(url, {
-//   serverApi: ServerApiVersion.v1,
-//   useNewUrlParser: true,
-//   useUnifiedTopology: true,
-// });
-
-// export async function getFromMongo(req, res) {
-//     try {
-//         const data = req.body;
-
-//         await client.connect();
-
-//         const db = client.db("Garde");
-//         const collection = db.collection(data.type);
-
-//         let document = await collection.find({}).toArray();
-
-//         // if(data.type === "fencer" && !document) {
-//         //     document = createFencer(data, collection);
-//         // }
-//         // else if(data.type === "coach" && !document) {
-//         //     document = createCoach(data, collection);
-//         // }
-
-//         res.status(200).json({ "document": document });
-//     } catch (err) {
-//         res.status(500).json({ error: err.message });
-//     }
-// }
-
-// function handleDataAvailable(event) {
-// 	if (event.data.size > 0) {
-// 		const recordedChunks = [event.data];
-//
-// 		// Download.
-// 		const blob = new Blob(recordedChunks, { type: "video/webm" });
-// 		const url = URL.createObjectURL(blob);
-// 		const a = document.createElement("a");
-// 		document.body.appendChild(a);
-// 		a.style = "display: none";
-// 		a.href = url;
-// 		a.download = "pose.webm";
-// 		a.click();
-// 		window.URL.revokeObjectURL(url);
-// 	}
-// }

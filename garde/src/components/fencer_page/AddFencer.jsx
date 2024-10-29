@@ -1,20 +1,13 @@
 import { useState } from "react";
 import axios from "axios";
-import { jwtDecode } from "jwt-decode";
 
-export default function AddFencer() {
+export default function AddFencer({ decoded }) {
 	const [coachToken, setCoachToken] = useState("");
 	const [status, setStatus] = useState("");
 	const workerUrl = `${process.env.NEXT_PUBLIC_GARDE_WORKER}/putCoachFencer`;
 
 	const handleAddFencer = async () => {
 		try {
-			const token = document.cookie
-				.split("; ")
-				.find((row) => row.startsWith("token="))
-				?.split("=")[1];
-
-			const decoded = jwtDecode(token);
 			const queryData = {
 				fencerId: decoded.id,
 				fencerName: decoded.name,

@@ -1,9 +1,0 @@
-name = "garde"
-main = "src/index.js"
-compatibility_date = "2023-08-23"
-
-
-[[d1_databases]]
-binding = "DB" # i.e. available in your Worker on env.DB
-database_name = "garde-db"
-database_id = "eb0340e9-9e28-4a7d-a21d-23dd883f2117"

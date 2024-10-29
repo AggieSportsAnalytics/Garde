@@ -8,12 +8,11 @@ import pLimit from "p-limit";
 ffmpeg.setFfmpegPath(process.env.FFMPEG_PATH);
 const limit = pLimit(5);
 
-export async function POST(req) {
+export async function POST(req, { params }) {
 	try {
 		const formData = await req.formData();
 		const videoFile = formData.get("video");
-		const url = new URL(req.url);
-		const fencerId = url.searchParams.get("fencerId");
+		const { fencerId } = params;
 
 		if (!videoFile) {
 			return NextResponse.json(

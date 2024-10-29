@@ -1,12 +1,9 @@
 import { NextResponse } from "next/server";
 import { S3Client, ListObjectsV2Command } from "@aws-sdk/client-s3";
 
-export const dynamic = "force-dynamic";
-
-export async function GET(req) {
+export async function GET(req, { params }) {
 	try {
-		const url = new URL(req.url);
-		const fencerId = url.searchParams.get("fencerId");
+		const { fencerId } = params;
 		const videos = await listR2Bucket(fencerId);
 
 		return NextResponse.json(

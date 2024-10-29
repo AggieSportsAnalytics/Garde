@@ -5,7 +5,7 @@ const { v4: uuidv4 } = require("uuid");
 
 const JWT_SECRET = process.env.JWT_SECRET;
 
-export async function POST(req, res) {
+export async function POST(req) {
 	const data = await req.json();
 	const userData = data.userData;
 	const type = data.type;

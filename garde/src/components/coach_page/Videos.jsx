@@ -31,7 +31,6 @@ const HLSPlayer = ({ videoUrl, setLoading }) => {
 		}
 	}, [videoUrl]);
 
-	// return <video ref={videoRef} controls />;
 	return (
 		<div style={{ maxWidth: "800px", margin: "0 auto" }}>
 			<video
@@ -64,7 +63,7 @@ const Videos = ({ fencer }) => {
 			}
 			try {
 				setVideoUrl(null);
-				const listUrl = `/api/get-videos?fencerId=${fencer.fencer_id}`;
+				const listUrl = `/api/get-videos/${fencer.fencer_id}`;
 				const response = await axios.get(listUrl);
 				const vidNames = response.data.videos;
 				let vids = [];

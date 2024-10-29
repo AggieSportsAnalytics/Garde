@@ -35,15 +35,11 @@ const Stream_Vid = ({
 		formData.append("video", file, uuidv4());
 
 		try {
-			const res = await axios.post(
-				`/api/convert-video?fencerId=${fencerId}`,
-				formData,
-				{
-					headers: {
-						"Content-Type": "multipart/form-data",
-					},
+			const res = await axios.post(`/api/convert-video/${fencerId}`, formData, {
+				headers: {
+					"Content-Type": "multipart/form-data",
 				},
-			);
+			});
 			if (res.status < 200 || res.status >= 300) {
 				console.error("Failed to upload file");
 			}

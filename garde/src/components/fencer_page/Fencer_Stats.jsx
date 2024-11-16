@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, use } from "react";
 import {
 	calculateAngle,
 	displayFeetDistance,
@@ -11,14 +11,15 @@ import { CardBody, CardContainer, CardItem } from "../ui/3d-card";
 
 const Fencer_Stats = ({
 	pose,
-	lastCalled,
-	setLastCalled,
+	// lastCalled,
+	// setLastCalled,
 	setAiFeedback,
 	height,
 	setFeetDistance,
 	setShoulderWidth,
 	darkMode,
 	onPoseSequenceDetected,
+	fencerId,
 }) => {
 	const [feetDistanceState, setFeetDistanceState] = useState(null);
 	const [leftElbAngle, setLeftElbAngle] = useState(null);
@@ -39,6 +40,8 @@ const Fencer_Stats = ({
 	const [lungeCount, setLungeCount] = useState(0);
 	const poseSequenceTimerRef = useRef(null);
 	const poseDataBuffer = useRef([]);
+
+	const [lastCalled, setLastCalled] = useState(null);
 
 	const smoothSpeed = (currentSpeed) => {
 		const smoothingFactor = 0.7;
@@ -379,6 +382,10 @@ const Fencer_Stats = ({
 	}, [feetDistanceState]);
 
 	useEffect(() => {
+		if (!lastCalled) {
+			setLastCalled(Date.now());
+		}
+
 		if (pose && Date.now() - lastCalled >= 30000) {
 			setLastCalled(Date.now());
 			OpenAIAPIFeedback({
@@ -391,8 +398,9 @@ const Fencer_Stats = ({
 				left_knee: leftKneeAngle,
 				right_knee: rightKneeAngle,
 				speed: speed,
+				id: fencerId,
 			}).then((result) => {
-				setAiFeedback(result);
+				// setAiFeedback(result);
 			});
 		}
 	}, [

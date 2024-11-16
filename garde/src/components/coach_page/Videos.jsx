@@ -66,21 +66,47 @@ const Videos = ({ fencer }) => {
 				const listUrl = `/api/get-videos/${fencer.fencer_id}`;
 				const response = await axios.get(listUrl);
 				const vidNames = response.data.videos;
-				let vids = [];
-				if (vidNames) {
-					vids = vidNames.map((name) => ({
-						key: name,
-						thumbnail: `${bucketUrl}/${fencer.fencer_id}/${name}/thumbnail.jpeg`,
-					}));
-				}
 
-				setVideos(vids);
+				if (vidNames) {
+					const vids = await Promise.all(
+						vidNames.map(async (name) => {
+							const metadataUrl = `${bucketUrl}/${fencer.fencer_id}/${name}/metadata.json`;
+							let timestamp = null;
+
+							try {
+								const response = await fetch(metadataUrl);
+								if (response.ok) {
+									const metadata = await response.json();
+									timestamp = metadata.timestamp || null;
+								} else {
+									console.warn(
+										`Failed to fetch metadata for ${name}:`,
+										response.statusText,
+									);
+								}
+							} catch (error) {
+								console.error(
+									`Error fetching metadata for ${name}:`,
+									error.message,
+								);
+							}
+
+							return {
+								key: name,
+								thumbnail: `${bucketUrl}/${fencer.fencer_id}/${name}/thumbnail.jpeg`,
+								timestamp,
+							};
+						}),
+					);
+
+					setVideos(vids);
+				}
 			} catch (error) {
 				console.error(error.message);
 			}
 		};
 
-		fetchVideos(); // Call the async function
+		fetchVideos();
 	}, [fencer]);
 
 	const handleVideoClick = (i, videoId) => {
@@ -115,27 +141,32 @@ const Videos = ({ fencer }) => {
 						<>
 							<h2 className="text-lg font-bold mb-4">Fencer Videos</h2>
 							<div className="video-gallery grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 max-h-96 overflow-y-auto">
-								{videos.map((video, i) => (
-									<button
-										type="button"
-										key={video.key}
-										onClick={() => handleVideoClick(i, video.key)}
-										className="focus:outline-none"
-									>
-										<div className="video-thumbnail border border-gray-300 p-2 rounded-lg shadow-lg bg-gray-800 hover:bg-gray-700 transition duration-200 ease-in-out">
-											<Image
-												src={video.thumbnail}
-												width={200}
-												height={200}
-												className="object-cover rounded-md w-full h-auto"
-												alt="Thumbnail"
-											/>
-											<p className="mt-2 text-sm font-medium text-white text-center">
-												Video {i + 1}
-											</p>
-										</div>
-									</button>
-								))}
+								{videos
+									.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp))
+									.map((video, i) => (
+										<button
+											type="button"
+											key={video.key}
+											onClick={() => handleVideoClick(i, video.key)}
+											className="focus:outline-none"
+										>
+											<div className="video-thumbnail border border-gray-300 p-2 rounded-lg shadow-lg bg-gray-800 hover:bg-gray-700 transition duration-200 ease-in-out">
+												<Image
+													src={video.thumbnail}
+													width={200}
+													height={200}
+													className="object-cover rounded-md w-full h-auto"
+													alt="Thumbnail"
+												/>
+												<p className="mt-2 text-sm font-medium text-white text-center">
+													Video {i + 1}
+												</p>
+												<p className="text-xs text-gray-400 text-center">
+													{new Date(video.timestamp).toLocaleString()}{" "}
+												</p>
+											</div>
+										</button>
+									))}
 							</div>
 						</>
 					)}

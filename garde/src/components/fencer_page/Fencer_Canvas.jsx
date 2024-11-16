@@ -603,17 +603,13 @@ export function displayFeetDistance(keypoints) {
 	return { feetDistance, predictedPose };
 }
 
-const putUserAngles = async (id, accuracy) => {
+const putUserAngles = async (body, id) => {
 	const putWorkerUrl = `${process.env.NEXT_PUBLIC_GARDE_WORKER}/putUserAngles/${id}`;
 
 	try {
-		const response = await axios.put(
-			putWorkerUrl,
-			{ accuracy: accuracy },
-			{
-				headers: { "Content-Type": "application/json" },
-			},
-		);
+		const response = await axios.put(putWorkerUrl, body, {
+			headers: { "Content-Type": "application/json" },
+		});
 
 		if (response.status >= 200 && response.status < 300) {
 			return true;
@@ -643,9 +639,12 @@ const getIdealAngles = async () => {
 };
 
 export async function OpenAIAPIFeedback(props) {
-	const pose = props.pose || {};
-	const userAngles = {
+	const pose = props.pose || "";
+
+	const body = {
 		name: props.pose,
+		feet_distance: props.feet_distance,
+		speed: props.speed,
 		elbow_left: props.left_elbow,
 		hip_left: props.left_hip,
 		knee_left: props.left_knee,
@@ -656,47 +655,7 @@ export async function OpenAIAPIFeedback(props) {
 
 	const idealAngles = getIdealAngles();
 
-	// const idealAngles = [
-	// 	{
-	// 		name: "en guarde",
-	// 		elbow_left: "96",
-	// 		hip_left: "117",
-	// 		knee_left: "121",
-	// 		elbow_right: "2",
-	// 		hip_right: "170",
-	// 		knee_right: "160",
-	// 	},
-	// 	{
-	// 		name: "advance",
-	// 		elbow_left: "87",
-	// 		hip_left: "126",
-	// 		knee_left: "132",
-	// 		elbow_right: "36",
-	// 		hip_right: "170",
-	// 		knee_right: "160",
-	// 	},
-	// 	{
-	// 		name: "retreat",
-	// 		elbow_left: "90",
-	// 		hip_left: "127",
-	// 		knee_left: "144",
-	// 		elbow_right: "8",
-	// 		hip_right: "172",
-	// 		knee_right: "170",
-	// 	},
-	// 	{
-	// 		name: "lunge",
-	// 		elbow_left: "178",
-	// 		hip_left: "84",
-	// 		knee_left: "110",
-	// 		elbow_right: "170",
-	// 		hip_right: "151",
-	// 		knee_right: "165",
-	// 	},
-	// ];
-
 	let comparison;
-
 	if (pose === "en guarde") {
 		comparison = idealAngles[0];
 	} else if (pose === "advance") {
@@ -707,8 +666,8 @@ export async function OpenAIAPIFeedback(props) {
 		comparison = idealAngles[3];
 	}
 
-	const accuracy = 0; // change for accuracy later
-	putUserAngles(props.id, accuracy);
+	body.accuracy = 0;
+	putUserAngles(body, props.id);
 
 	// if (typeof window === 'undefined') {
 	// 	console.error("OpenAI API can only be called on the client-side.");

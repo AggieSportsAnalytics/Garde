@@ -1,7 +1,7 @@
-import subprocess
-from subprocess import CompletedProcess
 import argparse
+import subprocess
 from argparse import Namespace
+from subprocess import CompletedProcess
 
 compat_string: str = """name = "garde"
 main = "src/index.js"
@@ -47,7 +47,17 @@ CREATE TABLE IF NOT EXISTS fencer (
 create_fencer_sessions_table = """
 CREATE TABLE IF NOT EXISTS fencer_sessions (
     fencer_id TEXT,
-    accuracy REAL,                                 
+    pose TEXT,
+    feet_distance REAL,
+    speed REAL,
+    elbow_left REAL, 
+    hip_left REAL, 
+    knee_left REAL, 
+    elbow_right REAL, 
+    hip_right REAL, 
+    knee_right REAL,
+    accuracy REAL,
+    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (fencer_id) REFERENCES fencer(unique_id) ON DELETE CASCADE
 );
 """

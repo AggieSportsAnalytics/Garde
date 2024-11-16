@@ -21,8 +21,9 @@ export async function POST(req, { params }) {
 			);
 		}
 		const videoId = videoFile.name;
+		const fileExtension = path.extname(videoId).toLowerCase();
 
-		const tempInputPath = path.join("/tmp", `input_${videoId}.webm`);
+		const tempInputPath = path.join("/tmp", `input_${videoId}${fileExtension}`);
 		const outputDir = path.join("/tmp", `hls_output_${videoId}`);
 		await fsPromises.mkdir(outputDir, { recursive: true });
 
@@ -30,36 +31,68 @@ export async function POST(req, { params }) {
 		const arrayBuffer = await videoFile.arrayBuffer();
 		await fsPromises.writeFile(tempInputPath, Buffer.from(arrayBuffer));
 
+		const metadata = await getVideoMetadata(tempInputPath);
+		await uploadMetadata(metadata, videoId, fencerId);
+
 		await new Promise((resolve, reject) => {
 			ffmpeg(tempInputPath)
 				.outputOptions([
 					"-c:v libx264",
+					"-preset fast",
 					"-c:a aac",
+					"-b:a 128k",
+					"-movflags +faststart",
 					"-start_number 0",
 					"-hls_time 10",
 					"-hls_list_size 0",
+					"-hls_segment_type mpegts",
 					"-f hls",
 				])
 				.output(path.join(outputDir, "playlist.m3u8"))
-				.on("end", resolve)
-				.on("error", reject)
+				.on("start", (commandLine) => {
+					console.log("FFmpeg HLS command:", commandLine);
+				})
+				.on("stderr", (stderrLine) => {
+					console.log("FFmpeg stderr (HLS):", stderrLine);
+				})
+				.on("end", () => {
+					console.log("HLS generation completed");
+					resolve();
+				})
+				.on("error", (error) => {
+					console.error("Error generating HLS:", error);
+					reject(error);
+				})
 				.run();
 		});
 
 		// Read and upload the .m3u8 and .ts files to Cloudflare R2 or similar storage
 		const files = await fsPromises.readdir(outputDir);
-		const len = files.length;
+		if (
+			!files.includes("playlist.m3u8") ||
+			!files.some((file) => file.endsWith(".ts"))
+		) {
+			throw new Error(
+				"HLS generation failed: Missing required files in outputDir",
+			);
+		}
+
+		const thumbPath = path.join(outputDir, "thumbnail.jpeg");
+		try {
+			const len = (files.length - 1) * 10 - 5;
+			const timestamp = Math.floor(len / 2);
+
+			await generateThumbnail(tempInputPath, thumbPath, timestamp);
+			const buff = await fsPromises.readFile(thumbPath);
+			await uploadThumbnail(buff, videoId, fencerId);
+			await fsPromises.unlink(thumbPath);
+		} catch (error) {
+			console.error(error);
+		}
+
 		const uploadPromises = files.map(async (file, i) => {
 			const filePath = path.join(outputDir, file);
 			const fileBuffer = await fsPromises.readFile(filePath);
-
-			if (i === Math.floor(len / 2)) {
-				const thumbPath = path.join(outputDir, "thumbnail.jpeg");
-				await generateThumbnail(filePath, thumbPath);
-				const buff = await fsPromises.readFile(thumbPath);
-				await uploadThumbnail(buff, videoId, fencerId);
-				await fsPromises.unlink(thumbPath);
-			}
 
 			await limit(() => uploadToR2(fileBuffer, videoId, file, fencerId));
 		});
@@ -69,8 +102,19 @@ export async function POST(req, { params }) {
 		// Clean up temporary files
 		await fsPromises.unlink(tempInputPath);
 		await Promise.all(
-			files.map((file) => fsPromises.unlink(path.join(outputDir, file))),
+			files.map(async (file) => {
+				const filePath = path.join(outputDir, file);
+				try {
+					await fsPromises.unlink(filePath);
+				} catch (error) {
+					console.warn(
+						`Warning: Could not delete file ${filePath}:`,
+						error.message,
+					);
+				}
+			}),
 		);
+
 		await fsPromises.rmdir(outputDir);
 
 		return NextResponse.json(
@@ -141,20 +185,21 @@ const uploadThumbnail = async (thumbnail, videoId, fencerId) => {
 const generateThumbnail = async (
 	inputPath,
 	outputPath,
-	timestamp = "00:00:05",
+	timestamp = "00:00:01",
 ) => {
 	try {
 		await new Promise((resolve, reject) => {
 			ffmpeg(inputPath)
-				.seekInput(timestamp) // Set the timestamp for the thumbnail
-				.frames(1) // Capture only one frame
-				.outputOptions(["-q:v 2", "-update 1", "-frames:v 1"]) // Set quality and ensure only one image
+				.inputOptions(["-skip_frame nokey"])
+				.seekInput(timestamp)
+				.frames(1)
+				.outputOptions(["-q:v 2", "-update 1", "-strict unofficial"])
 				.output(outputPath)
 				.on("start", (commandLine) => {
-					console.log("FFmpeg command:", commandLine); // Logs FFmpeg command
+					console.log("FFmpeg Thumbnail command:", commandLine);
 				})
 				.on("stderr", (stderrLine) => {
-					console.log("FFmpeg stderr:", stderrLine); // Logs FFmpeg errors and warnings
+					console.log("FFmpeg stderr (Thumbnail):", stderrLine);
 				})
 				.on("end", () => {
 					console.log("Thumbnail generated:", outputPath);
@@ -169,5 +214,44 @@ const generateThumbnail = async (
 	} catch (error) {
 		console.error("Error in thumbnail generation:", error);
 		throw error;
+	}
+};
+
+const getVideoMetadata = async (videoPath) => {
+	return new Promise((resolve, reject) => {
+		ffmpeg(videoPath).ffprobe((err, metadata) => {
+			if (err) {
+				return reject(err);
+			}
+			resolve(metadata);
+		});
+	});
+};
+
+const uploadMetadata = async (metadata, videoId, fencerId) => {
+	const r2Client = new S3Client({
+		region: "auto",
+		endpoint:
+			"https://aab5b28251de4c153b96e6f8d3179cbc.r2.cloudflarestorage.com",
+		credentials: {
+			accessKeyId: process.env.R2_ACCESS_KEY_ID,
+			secretAccessKey: process.env.R2_SECRET_ACCESS_KEY,
+		},
+	});
+
+	try {
+		metadata.timestamp = new Date().toISOString();
+		const metadataJson = JSON.stringify(metadata);
+
+		await r2Client.send(
+			new PutObjectCommand({
+				Bucket: process.env.BUCKET_NAME,
+				Key: `${fencerId}/${videoId}/metadata.json`,
+				Body: metadataJson,
+				ContentType: "application/json",
+			}),
+		);
+	} catch (error) {
+		console.error("Error uploading to R2:", error);
 	}
 };

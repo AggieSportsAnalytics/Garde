@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import axios from "axios";
-import { Line } from "react-chartjs-2"; // Import Chart.js
+import { Line } from "react-chartjs-2";
 import {
 	Chart as ChartJS,
 	CategoryScale,
@@ -12,9 +12,11 @@ import {
 	Title,
 	Tooltip,
 	Legend,
-} from "chart.js"; // Import the necessary components from Chart.js
+	TimeScale,
+} from "chart.js";
+import "chartjs-adapter-date-fns"; // Import the date adapter
 
-// Register the necessary Chart.js components
+// Register necessary components
 ChartJS.register(
 	CategoryScale,
 	LinearScale,
@@ -23,6 +25,7 @@ ChartJS.register(
 	Title,
 	Tooltip,
 	Legend,
+	TimeScale,
 );
 
 function Analytics({ fencer }) {
@@ -42,16 +45,79 @@ function Analytics({ fencer }) {
 		getFencerData();
 	}, [fencer]);
 
-	// Prepare the data for the chart
-	const chartData = {
-		labels: fencerSessions.map((_, index) => `Session ${index + 1}`), // Label for each session
+	// Prepare chart data for metrics
+	const metricsData = {
+		labels: fencerSessions.map((session) => session.timestamp),
 		datasets: [
 			{
 				label: "Accuracy (%)",
-				data: fencerSessions.map((session) => session.accuracy), // Accuracy data for each session
-				borderColor: "rgba(75, 192, 192, 1)", // Line color
-				backgroundColor: "rgba(75, 192, 192, 0.2)", // Fill color under the line
-				fill: true, // Fill under the line
+				data: fencerSessions.map((session) => session.accuracy),
+				borderColor: "rgba(75, 192, 192, 1)",
+				backgroundColor: "rgba(75, 192, 192, 0.2)",
+				fill: true,
+			},
+			{
+				label: "Speed (m/s)",
+				data: fencerSessions.map((session) => session.speed),
+				borderColor: "rgba(255, 99, 132, 1)",
+				backgroundColor: "rgba(255, 99, 132, 0.2)",
+				fill: true,
+			},
+			{
+				label: "Feet Distance (m)",
+				data: fencerSessions.map((session) => session.feet_distance),
+				borderColor: "rgba(54, 162, 235, 1)",
+				backgroundColor: "rgba(54, 162, 235, 0.2)",
+				fill: true,
+			},
+		],
+	};
+
+	// Prepare chart data for angles
+	const anglesData = {
+		labels: fencerSessions.map((session) => session.timestamp),
+		datasets: [
+			{
+				label: "Elbow Left (°)",
+				data: fencerSessions.map((session) => session.elbow_left),
+				borderColor: "rgba(153, 102, 255, 1)",
+				backgroundColor: "rgba(153, 102, 255, 0.2)",
+				fill: true,
+			},
+			{
+				label: "Elbow Right (°)",
+				data: fencerSessions.map((session) => session.elbow_right),
+				borderColor: "rgba(255, 159, 64, 1)",
+				backgroundColor: "rgba(255, 159, 64, 0.2)",
+				fill: true,
+			},
+			{
+				label: "Hip Left (°)",
+				data: fencerSessions.map((session) => session.hip_left),
+				borderColor: "rgba(199, 199, 199, 1)",
+				backgroundColor: "rgba(199, 199, 199, 0.2)",
+				fill: true,
+			},
+			{
+				label: "Hip Right (°)",
+				data: fencerSessions.map((session) => session.hip_right),
+				borderColor: "rgba(255, 206, 86, 1)",
+				backgroundColor: "rgba(255, 206, 86, 0.2)",
+				fill: true,
+			},
+			{
+				label: "Knee Left (°)",
+				data: fencerSessions.map((session) => session.knee_left),
+				borderColor: "rgba(75, 192, 192, 1)",
+				backgroundColor: "rgba(75, 192, 192, 0.2)",
+				fill: true,
+			},
+			{
+				label: "Knee Right (°)",
+				data: fencerSessions.map((session) => session.knee_right),
+				borderColor: "rgba(54, 162, 235, 1)",
+				backgroundColor: "rgba(54, 162, 235, 0.2)",
+				fill: true,
 			},
 		],
 	};
@@ -66,15 +132,25 @@ function Analytics({ fencer }) {
 			},
 			title: {
 				display: true,
-				text: `Fencer ${fencer.name}'s Accuracy Over Sessions`,
+				text: `Fencer ${fencer.name}'s Data Over Time`,
 			},
 		},
 		scales: {
+			x: {
+				type: "time",
+				time: {
+					unit: "minute",
+				},
+				title: {
+					display: true,
+					text: "Timestamp",
+				},
+			},
 			y: {
 				beginAtZero: true,
-				max: 100, // Set max to 100% for accuracy
-				ticks: {
-					stepSize: 10, // Set the interval of the y-axis ticks
+				title: {
+					display: true,
+					text: "Values",
 				},
 			},
 		},
@@ -88,19 +164,38 @@ function Analytics({ fencer }) {
 
 			{fencerSessions.length > 0 ? (
 				<>
-					{/* Render the chart */}
-					<div className="mb-8">
-						<Line data={chartData} options={chartOptions} />
+					{/* Side-by-side Charts */}
+					<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+						<div className="bg-gray-800 p-2 rounded-md">
+							<h3 className="text-white text-lg mb-2">General Metrics</h3>
+							<Line data={metricsData} options={chartOptions} />
+						</div>
+						<div className="bg-gray-800 p-2 rounded-md">
+							<h3 className="text-white text-lg mb-2">Angles</h3>
+							<Line data={anglesData} options={chartOptions} />
+						</div>
 					</div>
 
-					{/* Display session details */}
-					<div className="text-white space-y-2">
+					{/* Session Details */}
+					<div className="text-white space-y-2 mt-4">
 						{fencerSessions.map((session, i) => (
 							<div
-								key={`${i}_${session}`}
+								key={`${i}_${session.timestamp}`}
 								className="bg-gray-800 p-2 rounded-md"
 							>
-								Session #{i + 1}: {session.accuracy}% accuracy
+								Session #{i + 1}:
+								<ul>
+									<li>Timestamp: {session.timestamp}</li>
+									<li>Accuracy: {session.accuracy}%</li>
+									<li>Speed: {session.speed} m/s</li>
+									<li>Feet Distance: {session.feet_distance} m</li>
+									<li>Elbow Left: {session.elbow_left}°</li>
+									<li>Elbow Right: {session.elbow_right}°</li>
+									<li>Hip Left: {session.hip_left}°</li>
+									<li>Hip Right: {session.hip_right}°</li>
+									<li>Knee Left: {session.knee_left}°</li>
+									<li>Knee Right: {session.knee_right}°</li>
+								</ul>
 							</div>
 						))}
 					</div>

@@ -89,10 +89,7 @@ export default {
 
 				if (path.includes("/putUserAngles")) {
 					const pathName = path.split("/");
-					return await putAngleData(
-						pathName[pathName.length - 1],
-						body.accuracy,
-					);
+					return await putAngleData(pathName[pathName.length - 1], body);
 				}
 
 				if (path === "/putCoachFencer") {
@@ -206,11 +203,26 @@ async function putCoachFencer(fencerId, coachId, fencerName, fencerEmail) {
 	return addCorsHeaders(res);
 }
 
-async function putAngleData(fencerId, accuracy) {
+async function putAngleData(fencerId, body) {
 	const queryPut =
-		"INSERT OR REPLACE INTO fencer_sessions (fencer_id, accuracy) VALUES (?, ?);";
+		"INSERT OR REPLACE INTO fencer_sessions (fencer_id, pose, feet_distance, speed, accuracy, elbow_left, hip_left, knee_left, elbow_right, hip_right, knee_right) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
 
-	await DB.prepare(queryPut).bind(fencerId, accuracy).run();
+	console.log("Putting angle data");
+	await DB.prepare(queryPut)
+		.bind(
+			fencerId,
+			body.name,
+			body.feet_distance,
+			body.speed,
+			body.accuracy,
+			body.elbow_left,
+			body.hip_left,
+			body.knee_left,
+			body.elbow_right,
+			body.hip_right,
+			body.knee_right,
+		)
+		.run();
 
 	const res = new Response(
 		JSON.stringify({ message: "Successfully added angle data" }),

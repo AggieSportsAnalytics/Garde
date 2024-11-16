@@ -620,6 +620,7 @@ export default function Fencer_Page2() {
 									setShoulderWidth={setShoulderWidth}
 									darkMode={darkMode}
 									onPoseSequenceDetected={handlePoseSequenceDetected}
+									fencerId={fencerId}
 								/>
 							</div>
 						</div>

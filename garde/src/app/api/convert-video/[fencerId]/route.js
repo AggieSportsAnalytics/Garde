@@ -35,8 +35,8 @@ export async function POST(req, { params }) {
 		const arrayBuffer = await videoFile.arrayBuffer();
 		await fsPromises.writeFile(tempInputPath, Buffer.from(arrayBuffer));
 
-		const metadata = await getVideoMetadata(tempInputPath);
-		await uploadMetadata(metadata, videoId, fencerId);
+		// const metadata = await getVideoMetadata(tempInputPath);
+		await uploadMetadata({}, videoId, fencerId);
 
 		// If hls conversion fails, upload full video to bucket as failsafe so video is not lost
 		let files;

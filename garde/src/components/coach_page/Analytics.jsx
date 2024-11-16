@@ -132,7 +132,7 @@ function Analytics({ fencer }) {
 			},
 			title: {
 				display: true,
-				text: `Fencer ${fencer.name}'s Data Over Time`,
+				text: `Fencer ${fencer.fencer_name}'s Data Over Time`,
 			},
 		},
 		scales: {
@@ -176,16 +176,17 @@ function Analytics({ fencer }) {
 						</div>
 					</div>
 
-					{/* Session Details */}
-					<div className="text-white space-y-2 mt-4">
+					<div className="text-white flex flex-wrap gap-4 mt-4 h-[600px] overflow-y-auto">
 						{fencerSessions.map((session, i) => (
 							<div
 								key={`${i}_${session.timestamp}`}
-								className="bg-gray-800 p-2 rounded-md"
+								className="bg-gray-800 p-2 rounded-md w-[24%]"
 							>
 								Session #{i + 1}:
 								<ul>
-									<li>Timestamp: {session.timestamp}</li>
+									<li>
+										Timestamp: {new Date(session.timestamp).toLocaleString()}
+									</li>
 									<li>Accuracy: {session.accuracy}%</li>
 									<li>Speed: {session.speed} m/s</li>
 									<li>Feet Distance: {session.feet_distance} m</li>

@@ -241,7 +241,7 @@ const WebcamPose = ({
 	};
 
 	useEffect(() => {
-		// video/webm; codecs=vp9 is more space efficient but less compatible
+		// video/webm; codecs=vp9 is more space-efficient but less compatible
 		const options = { mimeType: "video/webm; codecs=vp9" };
 
 		if (videoSource || isRecording) {
@@ -250,22 +250,40 @@ const WebcamPose = ({
 
 		const startRecording = () => {
 			const webcamVideo = webcamRef.current?.video;
-			const canvas = canvasRef.current;
 
 			if (webcamVideo && webcamVideo.readyState === 4) {
-				const stream = webcamVideo.captureStream();
+				// Capture both video and audio tracks
+				const videoStream = webcamVideo.captureStream();
+				const audioStream = navigator.mediaDevices.getUserMedia({
+					audio: true,
+				});
 
-				// Reinitialize MediaRecorder each time a new recording starts
-				if (mediaRecorderRef.current) {
-					mediaRecorderRef.current = null; // Clear the old MediaRecorder
-				}
+				audioStream
+					.then((audio) => {
+						// Combine video and audio streams
+						const combinedStream = new MediaStream([
+							...videoStream.getTracks(),
+							...audio.getTracks(),
+						]);
 
-				mediaRecorderRef.current = new MediaRecorder(stream, options);
-				mediaRecorderRef.current.ondataavailable = handleDataAvailable;
+						// Reinitialize MediaRecorder each time a new recording starts
+						if (mediaRecorderRef.current) {
+							mediaRecorderRef.current = null; // Clear the old MediaRecorder
+						}
 
-				if (isRecording && mediaRecorderRef.current.state === "inactive") {
-					mediaRecorderRef.current.start();
-				}
+						mediaRecorderRef.current = new MediaRecorder(
+							combinedStream,
+							options,
+						);
+						mediaRecorderRef.current.ondataavailable = handleDataAvailable;
+
+						if (isRecording && mediaRecorderRef.current.state === "inactive") {
+							mediaRecorderRef.current.start();
+						}
+					})
+					.catch((error) => {
+						console.error("Error accessing audio stream:", error);
+					});
 			} else {
 				console.error("Webcam stream is not ready.");
 			}

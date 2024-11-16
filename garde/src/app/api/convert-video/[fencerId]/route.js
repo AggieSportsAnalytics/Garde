@@ -21,9 +21,13 @@ export async function POST(req, { params }) {
 			);
 		}
 		const videoId = videoFile.name;
-		const fileExtension = path.extname(videoId).toLowerCase();
+		const fileExtension =
+			videoFile.type.split("/")[1].split(";")[0] || "unknown";
 
-		const tempInputPath = path.join("/tmp", `input_${videoId}${fileExtension}`);
+		const tempInputPath = path.join(
+			"/tmp",
+			`input_${videoId}.${fileExtension}`,
+		);
 		const outputDir = path.join("/tmp", `hls_output_${videoId}`);
 		await fsPromises.mkdir(outputDir, { recursive: true });
 
@@ -34,46 +38,63 @@ export async function POST(req, { params }) {
 		const metadata = await getVideoMetadata(tempInputPath);
 		await uploadMetadata(metadata, videoId, fencerId);
 
-		await new Promise((resolve, reject) => {
-			ffmpeg(tempInputPath)
-				.outputOptions([
-					"-c:v libx264",
-					"-preset fast",
-					"-c:a aac",
-					"-b:a 128k",
-					"-movflags +faststart",
-					"-start_number 0",
-					"-hls_time 10",
-					"-hls_list_size 0",
-					"-hls_segment_type mpegts",
-					"-f hls",
-				])
-				.output(path.join(outputDir, "playlist.m3u8"))
-				.on("start", (commandLine) => {
-					console.log("FFmpeg HLS command:", commandLine);
-				})
-				.on("stderr", (stderrLine) => {
-					console.log("FFmpeg stderr (HLS):", stderrLine);
-				})
-				.on("end", () => {
-					console.log("HLS generation completed");
-					resolve();
-				})
-				.on("error", (error) => {
-					console.error("Error generating HLS:", error);
-					reject(error);
-				})
-				.run();
-		});
+		// If hls conversion fails, upload full video to bucket as failsafe so video is not lost
+		let files;
+		try {
+			await new Promise((resolve, reject) => {
+				ffmpeg(tempInputPath)
+					.outputOptions([
+						"-c:v libx264",
+						"-preset fast",
+						"-c:a aac",
+						"-b:a 128k",
+						"-movflags +faststart",
+						"-start_number 0",
+						"-hls_time 10",
+						"-hls_list_size 0",
+						"-hls_segment_type mpegts",
+						"-f hls",
+					])
+					.output(path.join(outputDir, "playlist.m3u8"))
+					.on("start", (commandLine) => {
+						console.log("FFmpeg HLS command:", commandLine);
+					})
+					.on("stderr", (stderrLine) => {
+						console.log("FFmpeg stderr (HLS):", stderrLine);
+					})
+					.on("end", () => {
+						console.log("HLS generation completed");
+						resolve();
+					})
+					.on("error", (error) => {
+						console.error("Error generating HLS:", error);
+						reject(error);
+					})
+					.run();
+			});
 
-		// Read and upload the .m3u8 and .ts files to Cloudflare R2 or similar storage
-		const files = await fsPromises.readdir(outputDir);
-		if (
-			!files.includes("playlist.m3u8") ||
-			!files.some((file) => file.endsWith(".ts"))
-		) {
-			throw new Error(
-				"HLS generation failed: Missing required files in outputDir",
+			// Read and upload the .m3u8 and .ts files to Cloudflare R2 or similar storage
+			files = await fsPromises.readdir(outputDir);
+			if (
+				!files.includes("playlist.m3u8") ||
+				!files.some((file) => file.endsWith(".ts"))
+			) {
+				throw new Error(
+					"HLS generation failed: Missing required files in outputDir",
+				);
+			}
+		} catch (error) {
+			console.error(error);
+			await uploadToR2(
+				arrayBuffer,
+				videoId,
+				`full_video.${fileExtension}`,
+				fencerId,
+				videoFile.type,
+			);
+			return NextResponse.json(
+				{ message: "Error converting video" },
+				{ status: 500 },
 			);
 		}
 
@@ -90,7 +111,7 @@ export async function POST(req, { params }) {
 			console.error(error);
 		}
 
-		const uploadPromises = files.map(async (file, i) => {
+		const uploadPromises = files.map(async (file) => {
 			const filePath = path.join(outputDir, file);
 			const fileBuffer = await fsPromises.readFile(filePath);
 
@@ -130,7 +151,13 @@ export async function POST(req, { params }) {
 	}
 }
 
-const uploadToR2 = async (video, videoId, segmentId, fencerId) => {
+const uploadToR2 = async (
+	video,
+	videoId,
+	segmentId,
+	fencerId,
+	contentType = null,
+) => {
 	const r2Client = new S3Client({
 		region: "auto",
 		endpoint:
@@ -142,14 +169,21 @@ const uploadToR2 = async (video, videoId, segmentId, fencerId) => {
 	});
 
 	try {
+		let type;
+		if (!contentType) {
+			if (segmentId.endsWith(".m3u8")) {
+				type = "application/vnd.apple.mpegurl";
+			} else {
+				type = "video/MP2T";
+			}
+		}
+
 		await r2Client.send(
 			new PutObjectCommand({
 				Bucket: process.env.BUCKET_NAME,
 				Key: `${fencerId}/${videoId}/${segmentId}`,
 				Body: video,
-				ContentType: segmentId.endsWith(".m3u8")
-					? "application/vnd.apple.mpegurl"
-					: "video/MP2T",
+				ContentType: contentType || type,
 			}),
 		);
 	} catch (error) {
@@ -213,7 +247,6 @@ const generateThumbnail = async (
 		});
 	} catch (error) {
 		console.error("Error in thumbnail generation:", error);
-		throw error;
 	}
 };
 

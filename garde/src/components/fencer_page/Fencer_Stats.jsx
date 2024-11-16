@@ -420,37 +420,35 @@ const Fencer_Stats = ({
 	return (
 		<CardContainer className="inter-var w-full h-full bg-none">
 			<CardBody
-				className={`relative group/card ${darkMode ? "bg-none text-white" : "bg-none text-black"} w-full h-full rounded-xl p-8 space-y-4 border ${darkMode ? "border-gray-700" : "border-gray-300"} flex flex-col justify-center items-center`}
+				className={`relative ${darkMode ? "bg-none text-white" : "bg-none text-black"} w-full h-full rounded-xl p-6 grid grid-cols-2 gap-6 border ${darkMode ? "border-gray-700" : "border-gray-300"}`}
 			>
-				<CardItem translateZ="50" className="text-xl font-bold mb-4">
-					Fencer Statistics
-				</CardItem>
-				<div className="grid grid-rows-4 grid-cols-2 gap-4">
-					{[
-						{ label: "Predicted Pose", value: predictedPose },
-						{ label: "Feet Distance (m)", value: feetDistanceState || "N/A" },
-						{ label: "Left Elbow Angle", value: leftElbAngle },
-						{ label: "Right Elbow Angle", value: rightElbAngle },
-						{ label: "Right Hip Angle", value: rightHipAngle },
-						{ label: "Left Hip Angle", value: leftHipAngle },
-						{ label: "Left Knee Angle", value: leftKneeAngle },
-						{ label: "Right Knee Angle", value: rightKneeAngle },
-						{ label: "Speed", value: speed },
-					].map((item, index) => (
-						<CardItem
-							key={index}
-							translateZ="60"
-							className={`rounded p-4 ${darkMode ? "bg-gray-800 text-white" : "bg-gray-100 text-black"} border ${darkMode ? "border-gray-700" : "border-gray-300"} shadow-lg w-[230px]`}
-							style={{ paddingBottom: "35px" }}
-						>
-							<h4>{item.label}</h4>
-							<h4>{item.value}</h4>
-						</CardItem>
-					))}
-				</div>
+				{[
+					{ label: "Predicted Pose", value: predictedPose || "N/A" },
+					{ label: "Feet Distance (m)", value: feetDistanceState || "N/A" },
+					{ label: "Left Elbow Angle", value: leftElbAngle || "N/A" },
+					{ label: "Right Elbow Angle", value: rightElbAngle || "N/A" },
+					{ label: "Right Hip Angle", value: rightHipAngle || "N/A" },
+					{ label: "Left Hip Angle", value: leftHipAngle || "N/A" },
+					{ label: "Left Knee Angle", value: leftKneeAngle || "N/A" },
+					{ label: "Right Knee Angle", value: rightKneeAngle || "N/A" },
+					{ label: "Speed", value: speed || "N/A" },
+				].map((item, index) => (
+					<CardItem
+						key={index}
+						translateZ="60"
+						className={`rounded-lg flex flex-col justify-center items-center ${darkMode ? "bg-gray-800 text-white" : "bg-gray-100 text-black"} shadow-lg w-[200px] h-[100px]`}
+					>
+						<h3 className="text-md font-semibold opacity-70 mb-1">{item.label}</h3>
+						<h1 className="text-3xl font-extrabold">{item.value}</h1>
+					</CardItem>
+				))}
 			</CardBody>
 		</CardContainer>
 	);
 };
 
 export default Fencer_Stats;
+
+
+
+

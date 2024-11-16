@@ -611,7 +611,7 @@ export default function Fencer_Page2() {
 								top: "-60px",
 							}}
 						>
-							<div className="h-[full] p-6 flex flex-col justify-center items-center">
+							<div className="h-[full] flex flex-col justify-center items-center" style={{marginLeft: "50px", marginTop: "40px" }}>
 								<MemoizedFencerStats
 									pose={pose}
 									// setAiFeedback={setAiResult}
@@ -691,7 +691,7 @@ export default function Fencer_Page2() {
 										translateZ="50"
 										className="text-m font-bold mb-4 w-full text-left"
 									>
-										AI Feedback
+										 {/* AI Feedback */} 
 									</CardItem>
 									<div
 										className="rounded p-4 border shadow-lg w-[85%] h-[calc(100%-4rem)] overflow-y-auto"

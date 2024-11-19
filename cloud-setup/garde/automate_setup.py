@@ -47,6 +47,7 @@ CREATE TABLE IF NOT EXISTS fencer (
 create_fencer_sessions_table = """
 CREATE TABLE IF NOT EXISTS fencer_sessions (
     fencer_id TEXT,
+    video_id TEXT,
     pose TEXT,
     feet_distance REAL,
     speed REAL,
@@ -56,7 +57,6 @@ CREATE TABLE IF NOT EXISTS fencer_sessions (
     elbow_right REAL, 
     hip_right REAL, 
     knee_right REAL,
-    accuracy REAL,
     timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (fencer_id) REFERENCES fencer(unique_id) ON DELETE CASCADE
 );

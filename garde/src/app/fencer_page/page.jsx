@@ -32,6 +32,7 @@ const Fencer_Stats = dynamic(
 );
 import { useRouter } from "next/navigation";
 import { jwtDecode } from "jwt-decode";
+import axios from "axios";
 
 const MemoizedFencerStats = memo(Fencer_Stats);
 const MemoizedInstruction = memo(Instruction);
@@ -85,7 +86,52 @@ export default function Fencer_Page2() {
 	const [isRoutineStarted, setIsRoutineStarted] = useState(false);
 	const [fencerId, setFencerId] = useState("");
 	const [decoded, setDecoded] = useState({});
+	const [videoId, setVideoId] = useState("");
 	const router = useRouter();
+
+	const [sumAngles, setSumAngles] = useState({
+		advance: {
+			leftElbAngle: 0,
+			rightElbAngle: 0,
+			leftHipAngle: 0,
+			rightHipAngle: 0,
+			leftKneeAngle: 0,
+			rightKneeAngle: 0,
+			feet_distance: 0,
+			speed: 0,
+		},
+		retreat: {
+			leftElbAngle: 0,
+			rightElbAngle: 0,
+			leftHipAngle: 0,
+			rightHipAngle: 0,
+			leftKneeAngle: 0,
+			rightKneeAngle: 0,
+			feet_distance: 0,
+			speed: 0,
+		},
+		onguard: {
+			leftElbAngle: 0,
+			rightElbAngle: 0,
+			leftHipAngle: 0,
+			rightHipAngle: 0,
+			leftKneeAngle: 0,
+			rightKneeAngle: 0,
+			feet_distance: 0,
+			speed: 0,
+		},
+		lunge: {
+			leftElbAngle: 0,
+			rightElbAngle: 0,
+			leftHipAngle: 0,
+			rightHipAngle: 0,
+			leftKneeAngle: 0,
+			rightKneeAngle: 0,
+			feet_distance: 0,
+			speed: 0,
+		},
+	});
+	const [countAngles, setCountAngles] = useState(0);
 
 	const showModal = () => {
 		setIsModalVisible(!isModalVisible);
@@ -95,6 +141,109 @@ export default function Fencer_Page2() {
 	};
 
 	const [isModalVisible, setIsModalVisible] = useState(false);
+
+	useEffect(() => {
+		if (isRecording) {
+			return;
+		}
+
+		const putUserAngles = async (body, id, videoId, pose) => {
+			const putWorkerUrl = `${process.env.NEXT_PUBLIC_GARDE_WORKER}/putUserAngles/${id}/${videoId}/${pose}`;
+
+			try {
+				const response = await axios.put(putWorkerUrl, body, {
+					headers: { "Content-Type": "application/json" },
+				});
+
+				if (response.status >= 200 && response.status < 300) {
+					return true;
+				}
+				return false;
+			} catch (error) {
+				console.error(error);
+				return false;
+			}
+		};
+
+		const parseAngle = (angle) => {
+			if (angle < 90) {
+				return "very bent";
+			}
+			if (angle < 145) {
+				return "slightly bent";
+			}
+			if (angle < 160) {
+				return "mostly straight";
+			}
+			return "straight";
+		};
+
+		const avgAngles = {};
+
+		for (const pose of Object.keys(sumAngles)) {
+			let nonContinueCount = 0;
+
+			if (!avgAngles[pose]) {
+				avgAngles[pose] = {};
+			}
+
+			for (const angle of Object.keys(sumAngles[pose])) {
+				if (Number.isNaN(sumAngles[pose][angle]) || !sumAngles[pose][angle]) {
+					continue;
+				}
+				nonContinueCount++;
+				const avgAngle = sumAngles[pose][angle] / countAngles;
+				avgAngles[pose][angle] = avgAngle;
+			}
+			if (nonContinueCount > 0) {
+				putUserAngles(avgAngles[pose], fencerId, videoId, pose);
+			}
+		}
+
+		setSumAngles({
+			advance: {
+				leftElbAngle: 0,
+				rightElbAngle: 0,
+				leftHipAngle: 0,
+				rightHipAngle: 0,
+				leftKneeAngle: 0,
+				rightKneeAngle: 0,
+				feet_distance: 0,
+				speed: 0,
+			},
+			retreat: {
+				leftElbAngle: 0,
+				rightElbAngle: 0,
+				leftHipAngle: 0,
+				rightHipAngle: 0,
+				leftKneeAngle: 0,
+				rightKneeAngle: 0,
+				feet_distance: 0,
+				speed: 0,
+			},
+			onguard: {
+				leftElbAngle: 0,
+				rightElbAngle: 0,
+				leftHipAngle: 0,
+				rightHipAngle: 0,
+				leftKneeAngle: 0,
+				rightKneeAngle: 0,
+				feet_distance: 0,
+				speed: 0,
+			},
+			lunge: {
+				leftElbAngle: 0,
+				rightElbAngle: 0,
+				leftHipAngle: 0,
+				rightHipAngle: 0,
+				leftKneeAngle: 0,
+				rightKneeAngle: 0,
+				feet_distance: 0,
+				speed: 0,
+			},
+		});
+		setCountAngles(0);
+	}, [videoId]);
 
 	useEffect(() => {
 		if (typeof window !== "undefined") {
@@ -506,6 +655,7 @@ export default function Fencer_Page2() {
 								toggleRecording={toggleRecording}
 								videoSource={videoSource}
 								fencerId={fencerId}
+								setVideoId={setVideoId}
 							/>
 						</div>
 						<div className="flex items-center space-x-4">
@@ -611,7 +761,10 @@ export default function Fencer_Page2() {
 								top: "-60px",
 							}}
 						>
-							<div className="h-[full] flex flex-col justify-center items-center" style={{marginLeft: "50px", marginTop: "40px" }}>
+							<div
+								className="h-[full] flex flex-col justify-center items-center"
+								style={{ marginLeft: "50px", marginTop: "40px" }}
+							>
 								<MemoizedFencerStats
 									pose={pose}
 									// setAiFeedback={setAiResult}
@@ -621,6 +774,8 @@ export default function Fencer_Page2() {
 									darkMode={darkMode}
 									onPoseSequenceDetected={handlePoseSequenceDetected}
 									fencerId={fencerId}
+									setCountAngles={setCountAngles}
+									setSumAngles={setSumAngles}
 								/>
 							</div>
 						</div>
@@ -663,6 +818,7 @@ export default function Fencer_Page2() {
 									containerHeight="100%"
 									darkMode={darkMode}
 									fencerId={fencerId}
+									setVideoId={setVideoId}
 								/>
 							</div>
 
@@ -691,7 +847,7 @@ export default function Fencer_Page2() {
 										translateZ="50"
 										className="text-m font-bold mb-4 w-full text-left"
 									>
-										 {/* AI Feedback */} 
+										{/* AI Feedback */}
 									</CardItem>
 									<div
 										className="rounded p-4 border shadow-lg w-[85%] h-[calc(100%-4rem)] overflow-y-auto"

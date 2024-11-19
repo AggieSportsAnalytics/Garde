@@ -31,6 +31,7 @@ const WebcamPose = ({
 	containerHeight,
 	darkMode,
 	fencerId,
+	setVideoId,
 }) => {
 	const videoRef = useRef(null);
 	const webcamRef = useRef(null);
@@ -317,7 +318,9 @@ const WebcamPose = ({
 
 	const handleDataAvailable = async (event) => {
 		const formData = new FormData();
-		formData.append("video", event.data, uuidv4());
+		const videoId = uuidv4();
+		setVideoId(videoId);
+		formData.append("video", event.data, videoId);
 
 		try {
 			const res = await axios.post(`/api/convert-video/${fencerId}`, formData, {
@@ -621,24 +624,6 @@ export function displayFeetDistance(keypoints) {
 	return { feetDistance, predictedPose };
 }
 
-const putUserAngles = async (body, id) => {
-	const putWorkerUrl = `${process.env.NEXT_PUBLIC_GARDE_WORKER}/putUserAngles/${id}`;
-
-	try {
-		const response = await axios.put(putWorkerUrl, body, {
-			headers: { "Content-Type": "application/json" },
-		});
-
-		if (response.status >= 200 && response.status < 300) {
-			return true;
-		}
-		return false;
-	} catch (error) {
-		console.error(error);
-		return false;
-	}
-};
-
 const getIdealAngles = async () => {
 	const getWorkerUrl = `${process.env.NEXT_PUBLIC_GARDE_WORKER}/getIdealAngles`;
 
@@ -657,46 +642,39 @@ const getIdealAngles = async () => {
 };
 
 export async function OpenAIAPIFeedback(props) {
-	const pose = props.pose || "";
-
-	const body = {
-		name: props.pose,
-		feet_distance: props.feet_distance,
-		speed: props.speed,
-		elbow_left: props.left_elbow,
-		hip_left: props.left_hip,
-		knee_left: props.left_knee,
-		elbow_right: props.right_elbow,
-		hip_right: props.right_hip,
-		knee_right: props.right_knee,
-	};
-
-	const idealAngles = getIdealAngles();
-
-	let comparison;
-	if (pose === "en guarde") {
-		comparison = idealAngles[0];
-	} else if (pose === "advance") {
-		comparison = idealAngles[1];
-	} else if (pose === "retreat") {
-		comparison = idealAngles[2];
-	} else if (pose === "lunge") {
-		comparison = idealAngles[3];
-	}
-
-	body.accuracy = 0;
-	putUserAngles(body, props.id);
-
+	// const pose = props.pose || "";
+	// const body = {
+	// 	name: props.pose,
+	// 	feet_distance: props.feet_distance,
+	// 	speed: props.speed,
+	// 	elbow_left: props.left_elbow,
+	// 	hip_left: props.left_hip,
+	// 	knee_left: props.left_knee,
+	// 	elbow_right: props.right_elbow,
+	// 	hip_right: props.right_hip,
+	// 	knee_right: props.right_knee,
+	// };
+	// const idealAngles = getIdealAngles();
+	// let comparison;
+	// if (pose === "en guarde") {
+	// 	comparison = idealAngles[0];
+	// } else if (pose === "advance") {
+	// 	comparison = idealAngles[1];
+	// } else if (pose === "retreat") {
+	// 	comparison = idealAngles[2];
+	// } else if (pose === "lunge") {
+	// 	comparison = idealAngles[3];
+	// }
+	// body.accuracy = 0;
+	// putUserAngles(body, props.id);
 	// if (typeof window === 'undefined') {
 	// 	console.error("OpenAI API can only be called on the client-side.");
 	// 	return;
 	// }
-
 	// const openai = new OpenAI({
 	// 	apiKey: process.env.NEXT_PUBLIC_OPENAI_KEY,
 	// 	dangerouslyAllowBrowser: true,
 	// });
-
 	// const chatCompletion = await openai.chat.completions.create({
 	// 	messages: [
 	// 		{

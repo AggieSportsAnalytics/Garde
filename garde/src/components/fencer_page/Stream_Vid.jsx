@@ -7,6 +7,7 @@ const Stream_Vid = ({
 	isRecording,
 	toggleRecording,
 	fencerId,
+	setVideoId,
 }) => {
 	const refFileInput = useRef(null);
 	const [videoAdded, setVideoAdded] = useState(false); // Track if video has been added
@@ -32,7 +33,9 @@ const Stream_Vid = ({
 
 	const handleVideoUpload = async (file) => {
 		const formData = new FormData();
-		formData.append("video", file, uuidv4());
+		const videoId = uuidv4();
+		setVideoId(videoId);
+		formData.append("video", file, videoId);
 
 		try {
 			const res = await axios.post(`/api/convert-video/${fencerId}`, formData, {

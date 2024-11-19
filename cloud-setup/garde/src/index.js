@@ -88,8 +88,8 @@ export default {
 				const body = await request.json();
 
 				if (path.includes("/putUserAngles")) {
-					const pathName = path.split("/");
-					return await putAngleData(pathName[pathName.length - 1], body);
+					const [_, __, fencerId, videoId, pose] = path.split("/");
+					return await putAngleData(fencerId, videoId, pose, body);
 				}
 
 				if (path === "/putCoachFencer") {
@@ -203,24 +203,23 @@ async function putCoachFencer(fencerId, coachId, fencerName, fencerEmail) {
 	return addCorsHeaders(res);
 }
 
-async function putAngleData(fencerId, body) {
+async function putAngleData(fencerId, videoId, pose, body) {
 	const queryPut =
-		"INSERT OR REPLACE INTO fencer_sessions (fencer_id, pose, feet_distance, speed, accuracy, elbow_left, hip_left, knee_left, elbow_right, hip_right, knee_right) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
+		"INSERT OR REPLACE INTO fencer_sessions (fencer_id, video_id, pose, feet_distance, speed, elbow_left, hip_left, knee_left, elbow_right, hip_right, knee_right) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
 
-	console.log("Putting angle data");
 	await DB.prepare(queryPut)
 		.bind(
 			fencerId,
-			body.name,
+			videoId,
+			pose,
 			body.feet_distance,
 			body.speed,
-			body.accuracy,
-			body.elbow_left,
-			body.hip_left,
-			body.knee_left,
-			body.elbow_right,
-			body.hip_right,
-			body.knee_right,
+			body.leftElbAngle,
+			body.leftHipAngle,
+			body.leftKneeAngle,
+			body.rightElbAngle,
+			body.rightHipAngle,
+			body.rightKneeAngle,
 		)
 		.run();
 

@@ -49,7 +49,7 @@ const HLSPlayer = ({ videoUrl, setLoading }) => {
 	);
 };
 
-const Videos = ({ fencer }) => {
+const Videos = ({ fencer, setCurrentVideo }) => {
 	const [videoUrl, setVideoUrl] = useState(null);
 	const [videos, setVideos] = useState([]);
 	const [loading, setLoading] = useState(false);
@@ -112,6 +112,7 @@ const Videos = ({ fencer }) => {
 	const handleVideoClick = (i, videoId) => {
 		setLoading(true);
 		setVideoNumber(i);
+		setCurrentVideo(videoId);
 		setVideoUrl(`${bucketUrl}/${fencer.fencer_id}/${videoId}/playlist.m3u8`);
 	};
 
@@ -130,6 +131,7 @@ const Videos = ({ fencer }) => {
 									onClick={() => {
 										setVideoUrl(null);
 										setLoading(false);
+										setCurrentVideo(null);
 									}}
 									className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-400"
 								>

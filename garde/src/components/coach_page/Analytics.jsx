@@ -28,8 +28,11 @@ ChartJS.register(
 	TimeScale,
 );
 
-function Analytics({ fencer }) {
+function Analytics({ fencer, currentVideo }) {
+	const [allSessions, setAllSessions] = useState([]);
 	const [fencerSessions, setFencerSessions] = useState([]);
+	const poses = ["all", "onguard", "lunge", "advance", "retreat"];
+	const [selectedPose, setSelectedPose] = useState("");
 
 	useEffect(() => {
 		const getFencerData = async () => {
@@ -37,6 +40,7 @@ function Analytics({ fencer }) {
 				const workerUrl = `${process.env.NEXT_PUBLIC_GARDE_WORKER}/getFencerAngles/${fencer.fencer_id}`;
 				const response = await axios.get(workerUrl);
 				setFencerSessions(response.data.angles.results);
+				setAllSessions(response.data.angles.results);
 			} catch (error) {
 				console.error(error);
 			}
@@ -45,17 +49,20 @@ function Analytics({ fencer }) {
 		getFencerData();
 	}, [fencer]);
 
+	useEffect(() => {
+		setFencerSessions(
+			allSessions.filter(
+				(session) =>
+					session.video_id === (currentVideo || session.video_id) &&
+					(session.pose === selectedPose || selectedPose === "all"),
+			),
+		);
+	}, [currentVideo, selectedPose]);
+
 	// Prepare chart data for metrics
 	const metricsData = {
 		labels: fencerSessions.map((session) => session.timestamp),
 		datasets: [
-			{
-				label: "Accuracy (%)",
-				data: fencerSessions.map((session) => session.accuracy),
-				borderColor: "rgba(75, 192, 192, 1)",
-				backgroundColor: "rgba(75, 192, 192, 0.2)",
-				fill: true,
-			},
 			{
 				label: "Speed (m/s)",
 				data: fencerSessions.map((session) => session.speed),
@@ -158,9 +165,22 @@ function Analytics({ fencer }) {
 
 	return (
 		<div className="p-4 bg-gray-900 rounded-lg shadow-lg mt-10">
-			<h2 className="text-white text-xl mb-4">
-				Fencer {fencer.name}'s Sessions
-			</h2>
+			<div className="flex flex-row items-center">
+				<h2 className="text-white text-xl mb-4">
+					Fencer {fencer.name}'s Sessions
+				</h2>
+				<select
+					value={selectedPose}
+					onChange={(event) => setSelectedPose(event.target.value)}
+					className="ml-4 mb-4 px-2 py-1 bg-gray-700 text-white border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 hover:bg-gray-600 transition duration-200"
+				>
+					{poses.map((pose) => (
+						<option key={pose} className="bg-gray-800 text-white">
+							{pose}
+						</option>
+					))}
+				</select>
+			</div>
 
 			{fencerSessions.length > 0 ? (
 				<>
@@ -187,15 +207,15 @@ function Analytics({ fencer }) {
 									<li>
 										Timestamp: {new Date(session.timestamp).toLocaleString()}
 									</li>
-									<li>Accuracy: {session.accuracy}%</li>
-									<li>Speed: {session.speed} m/s</li>
-									<li>Feet Distance: {session.feet_distance} m</li>
-									<li>Elbow Left: {session.elbow_left}°</li>
-									<li>Elbow Right: {session.elbow_right}°</li>
-									<li>Hip Left: {session.hip_left}°</li>
-									<li>Hip Right: {session.hip_right}°</li>
-									<li>Knee Left: {session.knee_left}°</li>
-									<li>Knee Right: {session.knee_right}°</li>
+									<li>Pose: {session.pose}</li>
+									<li>Speed: {session.speed.toFixed(3)} m/s</li>
+									<li>Feet Distance: {session.feet_distance.toFixed(3)} m</li>
+									<li>Elbow Left: {session.elbow_left.toFixed(3)}°</li>
+									<li>Elbow Right: {session.elbow_right.toFixed(3)}°</li>
+									<li>Hip Left: {session.hip_left.toFixed(3)}°</li>
+									<li>Hip Right: {session.hip_right.toFixed(3)}°</li>
+									<li>Knee Left: {session.knee_left.toFixed(3)}°</li>
+									<li>Knee Right: {session.knee_right.toFixed(3)}°</li>
 								</ul>
 							</div>
 						))}

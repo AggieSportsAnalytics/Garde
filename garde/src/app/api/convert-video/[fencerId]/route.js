@@ -38,6 +38,14 @@ export async function POST(req, { params }) {
 		// const metadata = await getVideoMetadata(tempInputPath);
 		await uploadMetadata({}, videoId, fencerId);
 
+		await uploadToR2(
+			arrayBuffer,
+			videoId,
+			`full_video.${fileExtension}`,
+			fencerId,
+			videoFile.type,
+		);
+
 		// If hls conversion fails, upload full video to bucket as failsafe so video is not lost
 		let files;
 		try {
@@ -85,13 +93,6 @@ export async function POST(req, { params }) {
 			}
 		} catch (error) {
 			console.error(error);
-			await uploadToR2(
-				arrayBuffer,
-				videoId,
-				`full_video.${fileExtension}`,
-				fencerId,
-				videoFile.type,
-			);
 			return NextResponse.json(
 				{ message: "Error converting video" },
 				{ status: 500 },
@@ -109,6 +110,10 @@ export async function POST(req, { params }) {
 			await fsPromises.unlink(thumbPath);
 		} catch (error) {
 			console.error(error);
+			await generateThumbnail(tempInputPath, thumbPath, 1);
+			const buff = await fsPromises.readFile(thumbPath);
+			await uploadThumbnail(buff, videoId, fencerId);
+			await fsPromises.unlink(thumbPath);
 		}
 
 		const uploadPromises = files.map(async (file) => {

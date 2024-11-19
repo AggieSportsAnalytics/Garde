@@ -20,6 +20,8 @@ const Fencer_Stats = ({
 	darkMode,
 	onPoseSequenceDetected,
 	fencerId,
+	setSumAngles,
+	setCountAngles,
 }) => {
 	const [feetDistanceState, setFeetDistanceState] = useState(null);
 	const [leftElbAngle, setLeftElbAngle] = useState(null);
@@ -370,6 +372,69 @@ const Fencer_Stats = ({
 
 					// Update the previous pose reference
 					prevPoseRef.current = pose;
+
+					setSumAngles((prevSumAngles) => ({
+						...prevSumAngles,
+						[stablePose]: {
+							leftElbAngle:
+								Math.round(
+									calculateAngle(
+										pose.keypoints[11],
+										pose.keypoints[13],
+										pose.keypoints[15],
+									),
+								) + (prevSumAngles[stablePose].leftElbAngle || 0),
+							rightElbAngle:
+								Math.round(
+									calculateAngle(
+										pose.keypoints[12],
+										pose.keypoints[14],
+										pose.keypoints[16],
+									),
+								) + (prevSumAngles[stablePose].rightElbAngle || 0),
+							leftHipAngle:
+								Math.round(
+									calculateAngle(
+										pose.keypoints[23],
+										pose.keypoints[25],
+										pose.keypoints[27],
+									),
+								) + (prevSumAngles[stablePose].leftHipAngle || 0),
+							rightHipAngle:
+								Math.round(
+									calculateAngle(
+										pose.keypoints[24],
+										pose.keypoints[26],
+										pose.keypoints[28],
+									),
+								) + (prevSumAngles[stablePose].rightHipAngle || 0),
+							leftKneeAngle:
+								Math.round(
+									calculateAngle(
+										pose.keypoints[23],
+										pose.keypoints[25],
+										pose.keypoints[27],
+									),
+								) + (prevSumAngles[stablePose].leftKneeAngle || 0),
+							rightKneeAngle:
+								Math.round(
+									calculateAngle(
+										pose.keypoints[24],
+										pose.keypoints[26],
+										pose.keypoints[28],
+									),
+								) + (prevSumAngles[stablePose].rightKneeAngle || 0),
+							feet_distance:
+								Number(feetDistanceMeters) +
+								(prevSumAngles[stablePose].feet_distance || 0),
+							speed: Math.round(
+								smoothSpeed(calculateSpeed(pose.keypoints).currentSpeed),
+								+prevSumAngles[stablePose].speed || 0,
+							),
+						},
+					}));
+
+					setCountAngles((prevCount) => prevCount + 1);
 				}
 			}
 		}
@@ -438,7 +503,9 @@ const Fencer_Stats = ({
 						translateZ="60"
 						className={`rounded-lg flex flex-col justify-center items-center ${darkMode ? "bg-gray-800 text-white" : "bg-gray-100 text-black"} shadow-lg w-[200px] h-[100px]`}
 					>
-						<h3 className="text-md font-semibold opacity-70 mb-1">{item.label}</h3>
+						<h3 className="text-md font-semibold opacity-70 mb-1">
+							{item.label}
+						</h3>
 						<h1 className="text-3xl font-extrabold">{item.value}</h1>
 					</CardItem>
 				))}
@@ -448,7 +515,3 @@ const Fencer_Stats = ({
 };
 
 export default Fencer_Stats;
-
-
-
-

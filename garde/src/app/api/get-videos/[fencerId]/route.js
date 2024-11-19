@@ -36,7 +36,7 @@ const listR2Bucket = async (fencerId) => {
 			Delimiter: "/",
 		});
 		const response = await r2Client.send(command);
-		const videos = response.CommonPrefixes.map((key) => {
+		const videos = response.CommonPrefixes?.map((key) => {
 			const keyArr = key.Prefix.split("/");
 			return keyArr[1];
 		});

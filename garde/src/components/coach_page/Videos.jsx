@@ -98,7 +98,9 @@ const Videos = ({ fencer, setCurrentVideo, videos, setVideos }) => {
 						}),
 					);
 
-					setVideos(vids);
+					setVideos(
+						vids.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp)),
+					);
 				}
 			} catch (error) {
 				console.error(error.message);
@@ -142,32 +144,30 @@ const Videos = ({ fencer, setCurrentVideo, videos, setVideos }) => {
 						<>
 							<h2 className="text-lg font-bold mb-4">Fencer Videos</h2>
 							<div className="video-gallery grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 max-h-96 overflow-y-auto">
-								{videos
-									.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp))
-									.map((video, i) => (
-										<button
-											type="button"
-											key={video.key}
-											onClick={() => handleVideoClick(i, video.key)}
-											className="focus:outline-none"
-										>
-											<div className="video-thumbnail border border-gray-300 p-2 rounded-lg shadow-lg bg-gray-800 hover:bg-gray-700 transition duration-200 ease-in-out">
-												<Image
-													src={video.thumbnail}
-													width={200}
-													height={200}
-													className="object-cover rounded-md w-full h-auto"
-													alt="Thumbnail"
-												/>
-												<p className="mt-2 text-sm font-medium text-white text-center">
-													Video {i + 1}
-												</p>
-												<p className="text-xs text-gray-400 text-center">
-													{new Date(video.timestamp).toLocaleString()}{" "}
-												</p>
-											</div>
-										</button>
-									))}
+								{videos.map((video, i) => (
+									<button
+										type="button"
+										key={video.key}
+										onClick={() => handleVideoClick(i, video.key)}
+										className="focus:outline-none"
+									>
+										<div className="video-thumbnail border border-gray-300 p-2 rounded-lg shadow-lg bg-gray-800 hover:bg-gray-700 transition duration-200 ease-in-out">
+											<Image
+												src={video.thumbnail}
+												width={200}
+												height={200}
+												className="object-cover rounded-md w-full h-auto"
+												alt="Thumbnail"
+											/>
+											<p className="mt-2 text-sm font-medium text-white text-center">
+												Video {i + 1}
+											</p>
+											<p className="text-xs text-gray-400 text-center">
+												{new Date(video.timestamp).toLocaleString()}{" "}
+											</p>
+										</div>
+									</button>
+								))}
 							</div>
 						</>
 					)}

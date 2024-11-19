@@ -33,14 +33,9 @@ function Analytics({ fencer, currentVideo, videos }) {
 	const [fencerSessions, setFencerSessions] = useState([]);
 	const poses = ["all", "onguard", "lunge", "advance", "retreat"];
 	const [selectedPose, setSelectedPose] = useState(poses[0]);
-	// const [sortedVideos, setSortedVideos] = useState([]);
 
 	const determineIndex = (videoId) => {
-		const sorted = videos.sort(
-			(a, b) => new Date(a.timestamp) - new Date(b.timestamp),
-		);
-
-		const index = sorted.findIndex((video) => video.key === videoId);
+		const index = videos.findIndex((video) => video.key === videoId);
 
 		return index !== -1 ? index + 1 : -1;
 	};

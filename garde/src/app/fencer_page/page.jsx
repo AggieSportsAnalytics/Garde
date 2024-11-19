@@ -33,6 +33,7 @@ const Fencer_Stats = dynamic(
 import { useRouter } from "next/navigation";
 import { jwtDecode } from "jwt-decode";
 import axios from "axios";
+import Chatbot from "../../components/fencer_page/Chatbot";
 
 const MemoizedFencerStats = memo(Fencer_Stats);
 const MemoizedInstruction = memo(Instruction);
@@ -831,37 +832,20 @@ export default function Fencer_Page2() {
                 </ul>
               </div> */}
 						</div>
-
+						
 						<div
-							className="absolute left-[1070px] top-[10%]"
+							className="absolute right-0 top-0"
 							style={{
+								width: "25%",
+								height: "70%",
+								marginTop: "100px",
 								transform: "rotateY(-20deg)",
-								transformOrigin: "left center",
+								transformOrigin: "right center",
+								zIndex: 50,
+								pointerEvents: 'auto',
 							}}
 						>
-							<CardContainer className="inter-var w-96 h-[24rem]">
-								<CardBody
-									className={`[transform-style:preserve-3d] [&>*]:[transform-style:preserve-3d] relative group/card ${darkMode ? "bg-gray-900 text-white" : "bg-white text-black"} h-full rounded-xl p-4 space-y-4 border ${darkMode ? "border-gray-700" : "border-gray-300"}`}
-								>
-									<CardItem
-										translateZ="50"
-										className="text-m font-bold mb-4 w-full text-left"
-									>
-										{/* AI Feedback */}
-									</CardItem>
-									<div
-										className="rounded p-4 border shadow-lg w-[85%] h-[calc(100%-4rem)] overflow-y-auto"
-										style={{ wordWrap: "break-word" }}
-									>
-										{/* uncomment to generate AI feedback */}
-										{/* {(aiResult ? aiResult.split('\n') : []).map((item, key) => (
-                      <CardItem key={key} translateZ="60" className={`rounded p-2 ${darkMode ? 'bg-gray-800 text-white' : 'bg-gray-100 text-black'} border ${darkMode ? 'border-gray-700' : 'border-gray-300'} shadow-lg`}>
-                        <span>{item}</span><br/>
-                      </CardItem>
-                    ))} */}
-									</div>
-								</CardBody>
-							</CardContainer>
+							<Chatbot darkMode={darkMode} />
 						</div>
 
 						<div

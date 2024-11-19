@@ -488,15 +488,15 @@ const Fencer_Stats = ({
 				className={`relative ${darkMode ? "bg-none text-white" : "bg-none text-black"} w-full h-full rounded-xl p-6 grid grid-cols-2 gap-6 border ${darkMode ? "border-gray-700" : "border-gray-300"}`}
 			>
 				{[
-					{ label: "Predicted Pose", value: predictedPose || "N/A" },
-					{ label: "Feet Distance (m)", value: feetDistanceState || "N/A" },
-					{ label: "Left Elbow Angle", value: leftElbAngle || "N/A" },
-					{ label: "Right Elbow Angle", value: rightElbAngle || "N/A" },
-					{ label: "Right Hip Angle", value: rightHipAngle || "N/A" },
-					{ label: "Left Hip Angle", value: leftHipAngle || "N/A" },
-					{ label: "Left Knee Angle", value: leftKneeAngle || "N/A" },
-					{ label: "Right Knee Angle", value: rightKneeAngle || "N/A" },
-					{ label: "Speed", value: speed || "N/A" },
+					{ label: "Predicted Pose", value: predictedPose || "0" },
+					{ label: "Feet Distance (m)", value: feetDistanceState || "0" },
+					{ label: "Left Elbow Angle", value: leftElbAngle || "0" },
+					{ label: "Right Elbow Angle", value: rightElbAngle || "0" },
+					{ label: "Right Hip Angle", value: rightHipAngle || "0" },
+					{ label: "Left Hip Angle", value: leftHipAngle || "0"},
+					{ label: "Left Knee Angle", value: leftKneeAngle || "0" },
+					{ label: "Right Knee Angle", value: rightKneeAngle || "0" },
+					{ label: "Speed", value: speed || "0" },
 				].map((item, index) => (
 					<CardItem
 						key={index}

@@ -49,9 +49,8 @@ const HLSPlayer = ({ videoUrl, setLoading }) => {
 	);
 };
 
-const Videos = ({ fencer, setCurrentVideo }) => {
+const Videos = ({ fencer, setCurrentVideo, videos, setVideos }) => {
 	const [videoUrl, setVideoUrl] = useState(null);
-	const [videos, setVideos] = useState([]);
 	const [loading, setLoading] = useState(false);
 	const [videoNumber, setVideoNumber] = useState(-1);
 	const bucketUrl = process.env.NEXT_PUBLIC_BUCKET_URL;

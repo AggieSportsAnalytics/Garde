@@ -16,6 +16,7 @@ export default function CoachPage() {
 	const [currentFencer, setCurrentFencer] = useState({}); // current fencer
 	const [coachName, setCoachName] = useState("");
 	const [currentVideo, setCurrentVideo] = useState("");
+	const [videos, setVideos] = useState([]);
 	const router = useRouter();
 
 	// Fetch the coach ID and fencers
@@ -80,18 +81,29 @@ export default function CoachPage() {
 				fencer={currentFencer}
 				coachName={coachName}
 				setCurrentVideo={setCurrentVideo}
+				videos={videos}
+				setVideos={setVideos}
 			/>
-			<Analytics fencer={currentFencer} currentVideo={currentVideo} />
+			<Analytics
+				fencer={currentFencer}
+				currentVideo={currentVideo}
+				videos={videos}
+			/>
 		</div>
 	);
 }
 
-function Feedback({ fencer, coachName, setCurrentVideo }) {
+function Feedback({ fencer, coachName, setCurrentVideo, videos, setVideos }) {
 	return (
 		<div className="flex flex-row mx-10 pt-10 text-white space-x-6">
 			{/* Video Gallery */}
 			<div className="w-1/2">
-				<Videos fencer={fencer} setCurrentVideo={setCurrentVideo} />
+				<Videos
+					fencer={fencer}
+					setCurrentVideo={setCurrentVideo}
+					videos={videos}
+					setVideos={setVideos}
+				/>
 			</div>
 
 			{/* Editor Component */}

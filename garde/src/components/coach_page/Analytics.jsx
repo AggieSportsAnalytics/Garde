@@ -28,11 +28,22 @@ ChartJS.register(
 	TimeScale,
 );
 
-function Analytics({ fencer, currentVideo }) {
+function Analytics({ fencer, currentVideo, videos }) {
 	const [allSessions, setAllSessions] = useState([]);
 	const [fencerSessions, setFencerSessions] = useState([]);
 	const poses = ["all", "onguard", "lunge", "advance", "retreat"];
-	const [selectedPose, setSelectedPose] = useState("");
+	const [selectedPose, setSelectedPose] = useState(poses[0]);
+	// const [sortedVideos, setSortedVideos] = useState([]);
+
+	const determineIndex = (videoId) => {
+		const sorted = videos.sort(
+			(a, b) => new Date(a.timestamp) - new Date(b.timestamp),
+		);
+
+		const index = sorted.findIndex((video) => video.key === videoId);
+
+		return index !== -1 ? index + 1 : -1;
+	};
 
 	useEffect(() => {
 		const getFencerData = async () => {
@@ -196,26 +207,55 @@ function Analytics({ fencer, currentVideo }) {
 						</div>
 					</div>
 
-					<div className="text-white flex flex-wrap gap-4 mt-4 h-[600px] overflow-y-auto">
+					<div className="text-white flex flex-wrap gap-6 mt-4 h-[600px] overflow-y-auto">
 						{fencerSessions.map((session, i) => (
 							<div
 								key={`${i}_${session.timestamp}`}
-								className="bg-gray-800 p-2 rounded-md w-[24%]"
+								className="bg-gray-800 p-4 rounded-lg w-full sm:w-[48%] md:w-[31%] lg:w-[23%] border border-gray-700 shadow-md hover:shadow-lg transition-shadow duration-300"
 							>
-								Session #{i + 1}:
-								<ul>
+								<h3 className="text-lg font-semibold text-blue-400 mb-2">
+									Video #{determineIndex(session.video_id)}
+								</h3>
+								<ul className="space-y-1 text-sm">
 									<li>
-										Timestamp: {new Date(session.timestamp).toLocaleString()}
+										<span className="font-medium">Timestamp:</span>{" "}
+										{new Date(session.timestamp).toLocaleString()}
 									</li>
-									<li>Pose: {session.pose}</li>
-									<li>Speed: {session.speed.toFixed(3)} m/s</li>
-									<li>Feet Distance: {session.feet_distance.toFixed(3)} m</li>
-									<li>Elbow Left: {session.elbow_left.toFixed(3)}°</li>
-									<li>Elbow Right: {session.elbow_right.toFixed(3)}°</li>
-									<li>Hip Left: {session.hip_left.toFixed(3)}°</li>
-									<li>Hip Right: {session.hip_right.toFixed(3)}°</li>
-									<li>Knee Left: {session.knee_left.toFixed(3)}°</li>
-									<li>Knee Right: {session.knee_right.toFixed(3)}°</li>
+									<li>
+										<span className="font-medium">Pose:</span> {session.pose}
+									</li>
+									<li>
+										<span className="font-medium">Speed:</span>{" "}
+										{session.speed.toFixed(3)} m/s
+									</li>
+									<li>
+										<span className="font-medium">Feet Distance:</span>{" "}
+										{session.feet_distance.toFixed(3)} m
+									</li>
+									<li>
+										<span className="font-medium">Elbow Left:</span>{" "}
+										{session.elbow_left.toFixed(3)}°
+									</li>
+									<li>
+										<span className="font-medium">Elbow Right:</span>{" "}
+										{session.elbow_right.toFixed(3)}°
+									</li>
+									<li>
+										<span className="font-medium">Hip Left:</span>{" "}
+										{session.hip_left.toFixed(3)}°
+									</li>
+									<li>
+										<span className="font-medium">Hip Right:</span>{" "}
+										{session.hip_right.toFixed(3)}°
+									</li>
+									<li>
+										<span className="font-medium">Knee Left:</span>{" "}
+										{session.knee_left.toFixed(3)}°
+									</li>
+									<li>
+										<span className="font-medium">Knee Right:</span>{" "}
+										{session.knee_right.toFixed(3)}°
+									</li>
 								</ul>
 							</div>
 						))}

@@ -4,8 +4,10 @@ import React, { useState, useEffect, useRef } from "react";
 import Hls from "hls.js";
 import axios from "axios";
 import Image from "next/image";
+import { FiRefreshCw } from "react-icons/fi";
+import Loader from "../ui/Loader";
 
-const HLSPlayer = ({ videoUrl, setLoading }) => {
+const HLSPlayer = ({ videoUrl }) => {
 	const videoRef = useRef(null);
 
 	useEffect(() => {
@@ -43,16 +45,20 @@ const HLSPlayer = ({ videoUrl, setLoading }) => {
 					aspectRatio: "16 / 9",
 					borderRadius: "8px",
 				}}
-				onPlay={() => setLoading(false)}
 			/>
 		</div>
 	);
 };
 
-const Videos = ({ fencer, setCurrentVideo, videos, setVideos }) => {
+const Videos = ({
+	fencer,
+	setCurrentVideo,
+	videos,
+	setVideos,
+	handleRefresh,
+}) => {
 	const [videoUrl, setVideoUrl] = useState(null);
 	const [loading, setLoading] = useState(false);
-	const [videoNumber, setVideoNumber] = useState(-1);
 	const bucketUrl = process.env.NEXT_PUBLIC_BUCKET_URL;
 
 	useEffect(() => {
@@ -61,6 +67,7 @@ const Videos = ({ fencer, setCurrentVideo, videos, setVideos }) => {
 				return;
 			}
 			try {
+				setLoading(true);
 				setVideoUrl(null);
 				const listUrl = `/api/get-videos/${fencer.fencer_id}`;
 				const response = await axios.get(listUrl);
@@ -102,7 +109,9 @@ const Videos = ({ fencer, setCurrentVideo, videos, setVideos }) => {
 						vids.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp)),
 					);
 				}
+				setLoading(false);
 			} catch (error) {
+				setLoading(false);
 				console.error(error.message);
 			}
 		};
@@ -110,28 +119,26 @@ const Videos = ({ fencer, setCurrentVideo, videos, setVideos }) => {
 		fetchVideos();
 	}, [fencer]);
 
-	const handleVideoClick = (i, videoId) => {
-		setLoading(true);
-		setVideoNumber(i);
+	const handleVideoClick = (videoId) => {
 		setCurrentVideo(videoId);
 		setVideoUrl(`${bucketUrl}/${fencer.fencer_id}/${videoId}/playlist.m3u8`);
 	};
 
 	return (
 		<>
+			<Loader loading={loading} />
 			{videos.length > 0 ? (
 				<>
 					{videoUrl ? (
 						<>
 							<div className="video-player mt-6">
-								<HLSPlayer videoUrl={videoUrl} setLoading={setLoading} />
+								<HLSPlayer videoUrl={videoUrl} />
 							</div>
 							<div className="flex justify-center mt-4">
 								<button
 									type="button"
 									onClick={() => {
 										setVideoUrl(null);
-										setLoading(false);
 										setCurrentVideo(null);
 									}}
 									className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-400"
@@ -142,13 +149,22 @@ const Videos = ({ fencer, setCurrentVideo, videos, setVideos }) => {
 						</>
 					) : (
 						<>
-							<h2 className="text-lg font-bold mb-4">Fencer Videos</h2>
+							<div className="flex justify-between items-center mb-4">
+								<h2 className="text-lg font-bold">Fencer Videos</h2>
+								<button
+									type="button"
+									onClick={handleRefresh}
+									className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-400 transition duration-200"
+								>
+									<FiRefreshCw size={20} />
+								</button>
+							</div>
 							<div className="video-gallery grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 max-h-96 overflow-y-auto">
 								{videos.map((video, i) => (
 									<button
 										type="button"
 										key={video.key}
-										onClick={() => handleVideoClick(i, video.key)}
+										onClick={() => handleVideoClick(video.key)}
 										className="focus:outline-none"
 									>
 										<div className="video-thumbnail border border-gray-300 p-2 rounded-lg shadow-lg bg-gray-800 hover:bg-gray-700 transition duration-200 ease-in-out">
@@ -173,9 +189,17 @@ const Videos = ({ fencer, setCurrentVideo, videos, setVideos }) => {
 					)}
 				</>
 			) : (
-				<p>No videos available</p>
+				<div className="flex justify-between items-center mb-4">
+					<h2 className="text-lg font-bold">No videos available</h2>
+					<button
+						type="button"
+						onClick={handleRefresh}
+						className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-400 transition duration-200"
+					>
+						<FiRefreshCw size={20} />
+					</button>
+				</div>
 			)}
-			{loading && <p className="mt-3">Loading Video {videoNumber + 1} ...</p>}
 		</>
 	);
 };

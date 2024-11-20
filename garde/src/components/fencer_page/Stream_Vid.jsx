@@ -19,6 +19,8 @@ const Stream_Vid = ({
 			onVideoChange(videoURL);
 			setVideoAdded(true); // Update state to show video has been added
 			await handleVideoUpload(file);
+
+			event.target.value = null;
 		}
 	};
 
@@ -26,14 +28,21 @@ const Stream_Vid = ({
 		if (!videoAdded) {
 			refFileInput.current.click();
 		} else {
-			onVideoChange(""); // Clear the video source
+			onVideoChange(null); // Clear the video source
 			setVideoAdded(false); // Reset state to show no video is added
+			if (isRecording) {
+				toggleRecording();
+			}
+			if (refFileInput.current) {
+				refFileInput.current.value = null;
+			}
 		}
 	};
 
 	const handleVideoUpload = async (file) => {
 		const formData = new FormData();
 		const videoId = uuidv4();
+		// videoId should be set to this uuid when video ends automatically so angles can upload
 		setVideoId(videoId);
 		formData.append("video", file, videoId);
 
@@ -76,7 +85,7 @@ const Stream_Vid = ({
 					className="bg-white text-black font-bold py-2 px-4 rounded shadow-md hover:bg-gray-100"
 					onClick={toggleRecording}
 				>
-					{isRecording ? "Stop Recording" : "Record Video"}
+					{isRecording && !videoAdded ? "Stop Recording" : "Record Video"}
 				</button>
 			</div>
 		</div>

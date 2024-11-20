@@ -32,6 +32,8 @@ const WebcamPose = ({
 	darkMode,
 	fencerId,
 	setVideoId,
+	setUploadAngles,
+	setIsRecording,
 }) => {
 	const videoRef = useRef(null);
 	const webcamRef = useRef(null);
@@ -320,6 +322,7 @@ const WebcamPose = ({
 		const formData = new FormData();
 		const videoId = uuidv4();
 		setVideoId(videoId);
+		setUploadAngles(true);
 		formData.append("video", event.data, videoId);
 
 		try {
@@ -362,8 +365,11 @@ const WebcamPose = ({
 									ref={videoRef}
 									style={{ width: "100%", height: "100%" }}
 									autoPlay
-									loop
-									muted
+									muted={false}
+									onEnded={() => {
+										setIsRecording(false);
+										setUploadAngles(true);
+									}}
 								/>
 							) : (
 								<Webcam

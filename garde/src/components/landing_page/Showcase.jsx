@@ -54,19 +54,19 @@ const Showcase = () => {
 const data = [
 	{
 		category: "Fencers",
-		title: "Enhance your performance.",
+		title: "Improve Your Fencing with Real-Time Feedback and Insights",
 		src: "/images/fencer.jpg",
 		// content: <DummyContent />,
 	},
 	{
 		category: "Coaches",
-		title: "Save time with real-time insights.",
+		title: "Streamline Coaching with Video Dashboards and Analytics",
 		src: "/images/fencing-coach.png",
 		// content: <DummyContent />,
 	},
 	{
 		category: "Artificial Intelligence",
-		title: "90% Accurate Pose Estimation. Embedded with RAG Systems",
+		title: "AI-Powered Feedback and Pose Detection",
 		src: "/images/ArtificialIntelligence.jpg",
 		// content: <DummyContent />,
 	},

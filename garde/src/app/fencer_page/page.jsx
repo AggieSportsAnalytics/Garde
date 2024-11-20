@@ -88,6 +88,7 @@ export default function Fencer_Page2() {
 	const [fencerId, setFencerId] = useState("");
 	const [decoded, setDecoded] = useState({});
 	const [videoId, setVideoId] = useState("");
+	const [uploadAngles, setUploadAngles] = useState(false);
 	const router = useRouter();
 
 	const [sumAngles, setSumAngles] = useState({
@@ -144,7 +145,7 @@ export default function Fencer_Page2() {
 	const [isModalVisible, setIsModalVisible] = useState(false);
 
 	useEffect(() => {
-		if (isRecording) {
+		if (isRecording || !uploadAngles) {
 			return;
 		}
 
@@ -244,7 +245,8 @@ export default function Fencer_Page2() {
 			},
 		});
 		setCountAngles(0);
-	}, [videoId]);
+		setUploadAngles(false);
+	}, [videoId, uploadAngles]);
 
 	useEffect(() => {
 		if (typeof window !== "undefined") {
@@ -820,6 +822,8 @@ export default function Fencer_Page2() {
 									darkMode={darkMode}
 									fencerId={fencerId}
 									setVideoId={setVideoId}
+									setUploadAngles={setUploadAngles}
+									setIsRecording={setIsRecording}
 								/>
 							</div>
 
@@ -832,7 +836,7 @@ export default function Fencer_Page2() {
                 </ul>
               </div> */}
 						</div>
-						
+
 						<div
 							className="absolute right-0 top-0"
 							style={{
@@ -842,7 +846,7 @@ export default function Fencer_Page2() {
 								transform: "rotateY(-20deg)",
 								transformOrigin: "right center",
 								zIndex: 50,
-								pointerEvents: 'auto',
+								pointerEvents: "auto",
 							}}
 						>
 							<Chatbot darkMode={darkMode} />

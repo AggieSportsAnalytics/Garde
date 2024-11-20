@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import axios from "axios";
 import { jwtDecode } from "jwt-decode";
 import Link from "next/link";
+import Loader from "../ui/Loader";
 
 export default function Signin({ isSignUpDefault, type }) {
 	const [isSignUp, setIsSignUp] = useState(isSignUpDefault || false);
@@ -15,6 +16,7 @@ export default function Signin({ isSignUpDefault, type }) {
 	const [error, setError] = useState(null);
 	const [showAlert, setShowAlert] = useState(false);
 	const [success, setSuccess] = useState("");
+	const [loading, setLoading] = useState(false);
 	const router = useRouter();
 	const searchParams = useSearchParams();
 
@@ -61,6 +63,7 @@ export default function Signin({ isSignUpDefault, type }) {
 
 	// Handle form submission for both sign-in and sign-up
 	const handleSubmit = async (e) => {
+		setLoading(true);
 		e.preventDefault();
 
 		const endpoint = isSignUp ? "/api/signup" : "/api/signin";
@@ -76,32 +79,37 @@ export default function Signin({ isSignUpDefault, type }) {
 			});
 
 			if (res.status >= 200 && res.status < 300 && !isSignUp) {
+				// setLoading(false);
 				setError("");
 				setSuccess("Please wait, logging in...");
 				router.push(`/${type}_page`); // Redirect to the appropriate page
 			} else if (res.status >= 200 && res.status < 300 && isSignUp) {
+				setLoading(false);
 				setError("");
 				setSuccess("Please verify your email address...");
 			}
 		} catch (error) {
+			setLoading(false);
 			setName("");
 			setEmail("");
 			setPassword("");
 			setSuccess("");
 			setError(error.response.data.error || "Failed to login/sign up");
 		} finally {
-			await new Promise((r) => setTimeout(r, 2000));
 			setEmail("");
 			setPassword("");
 			setName("");
-			setSuccess("");
-			setError("");
+			setTimeout(() => {
+				setSuccess("");
+				setError("");
+			}, 2000);
 		}
 	};
 
 	// Handle Google Auth Success
 	const handleGoogleSuccess = async (response) => {
 		try {
+			setLoading(true);
 			setError("");
 
 			const queryData = {
@@ -113,18 +121,20 @@ export default function Signin({ isSignUpDefault, type }) {
 			});
 
 			if (res.status >= 200 && res.status < 300) {
+				// setLoading(false);
 				setSuccess("Please wait, logging in...");
 				router.push(`/${type}_page`);
 			}
 		} catch (error) {
+			setLoading(false);
 			setSuccess("");
 			setError(error.response.data.error || "Failed to sign up");
-			await new Promise((r) => setTimeout(r, 2000));
-			setError("");
+			setTimeout(() => setError(""), 2000);
 		}
 	};
 
 	const handleGoogleError = () => {
+		setLoading(false);
 		setSuccess("");
 		setError("Google Auth failed");
 	};
@@ -151,6 +161,8 @@ export default function Signin({ isSignUpDefault, type }) {
 					</button>
 				</Link>
 			</div>
+
+			<Loader loading={loading} />
 
 			{showAlert && (
 				<div className="fixed inset-0 bg-opacity-50 flex justify-center items-center px-4">

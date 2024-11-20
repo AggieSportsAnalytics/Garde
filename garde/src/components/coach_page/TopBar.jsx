@@ -102,6 +102,8 @@ function TopBar({ id, fencers, currentFencer, setCurrentFencer }) {
 						transform: "translate(-50%, -50%)",
 						padding: "20px",
 						position: "fixed",
+						display: "flex",
+						flexDirection: "column",
 						overflowY: "auto",
 					},
 					overlay: {
@@ -110,7 +112,7 @@ function TopBar({ id, fencers, currentFencer, setCurrentFencer }) {
 					},
 				}}
 			>
-				<div className="flex flex-col items-center space-y-4">
+				<div className="flex flex-col items-center space-y-4 flex-grow">
 					<button
 						type="button"
 						className="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
@@ -118,19 +120,20 @@ function TopBar({ id, fencers, currentFencer, setCurrentFencer }) {
 					>
 						<FiX size={24} />
 					</button>
-					<h2 className="text-xl font-bold text-gray-800 mb-4">Settings</h2>
 
-					{/* Modal Content */}
-					<div className="w-full flex flex-col items-center space-y-4">
+					<h2 className="text-xl font-bold text-gray-800">Settings</h2>
+
+					<div className="w-full flex flex-col items-center space-y-4 flex-grow">
 						<UuidReveal uuid={id} />
-						<AddFencerInstruction />
+						{/* <AddFencerInstruction /> */}
 					</div>
 
-					{/* Bottom Actions */}
-					<hr className="border-gray-300 w-full mt-6" />
-					<div className="w-full flex justify-around space-x-4 mt-4">
-						<Logout />
-						<DeleteAccountButton type="coach" userId={id} />
+					<div className="mt-auto w-full">
+						<hr className="border-gray-300 w-full mb-4" />
+						<div className="flex justify-around space-x-4">
+							<Logout />
+							<DeleteAccountButton type="coach" userId={id} />
+						</div>
 					</div>
 				</div>
 			</Modal>

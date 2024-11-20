@@ -29,8 +29,7 @@ export default function AddFencer({ decoded }) {
 			setStatus("Error adding fencer.");
 			console.error(error);
 		} finally {
-			await new Promise((r) => setTimeout(r, 2000));
-			setStatus("");
+			setTimeout(() => setStatus(""), 2000);
 		}
 	};
 

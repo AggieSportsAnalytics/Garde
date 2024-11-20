@@ -257,7 +257,7 @@ function Analytics({ fencer, currentVideo, videos }) {
 					</div>
 				</>
 			) : (
-				<p className="text-gray-400">Loading fencer data...</p>
+				<p className="text-gray-400">No sessions to display</p>
 			)}
 		</div>
 	);

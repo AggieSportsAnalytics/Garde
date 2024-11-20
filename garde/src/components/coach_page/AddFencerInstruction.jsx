@@ -19,8 +19,7 @@ function AddFencerInstruction() {
 		} catch (error) {
 			setStatus("Failed to add instruction");
 		} finally {
-			await new Promise((r) => setTimeout(r, 2000));
-			setStatus("");
+			setTimeout(() => setStatus(""), 2000);
 		}
 	};
 

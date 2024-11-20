@@ -1,7 +1,7 @@
 "use client";
 import React, { useRef, useState } from "react";
 import axios from "axios";
-import { FaLinkedin, FaYoutube } from "react-icons/fa";
+import { FaLinkedin, FaYoutube, FaInstagram } from "react-icons/fa";
 
 const Contact = () => {
 	const form = useRef();
@@ -26,8 +26,7 @@ const Contact = () => {
 			if (response.status === 200) {
 				setSuccess("Email sent successfully!");
 				form.current.reset();
-				await new Promise((r) => setTimeout(r, 2000));
-				setSuccess("");
+				setTimeout(() => setSuccess(""), 2000);
 			} else {
 				console.error("Failed to send email");
 				setSuccess("Failed to send email. Please try again.");
@@ -108,9 +107,15 @@ const Contact = () => {
 								<FaLinkedin className="w-6 h-6 text-white" />
 							</a>
 						</div>
-						{/* <div className="bg-slate-500 w-12 h-12 rounded-xl hover:bg-slate-400 flex items-center justify-center">
-							<Instagram className="w-6 h-6 text-white" />
-						</div> */}
+						<div className="bg-slate-500 w-12 h-12 rounded-xl hover:bg-slate-400 flex items-center justify-center">
+							<a
+								href="https://www.instagram.com/garde.ai"
+								target="_blank"
+								rel="noreferrer"
+							>
+								<FaInstagram className="w-6 h-6 text-white" />
+							</a>
+						</div>
 						<div className="bg-slate-500 w-12 h-12 rounded-xl hover:bg-slate-400 flex items-center justify-center">
 							<a
 								href="https://www.youtube.com/@gardefencing"

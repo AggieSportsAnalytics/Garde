@@ -71,12 +71,12 @@ const Hero = () => {
 					</p>
 					<div className="mt-4">
 						<TextGenerateEffect
-							words="Your AI Fencing Companion"
+							words="Smart Coaching, Smarter Fencing"
 							className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-platypi"
 						/>
 					</div>
 					<div className="mt-8">
-						<a href="#features">
+						<a href="#about">
 							<MagicButton
 								title="Learn More"
 								icon={<FaLocationArrow />}

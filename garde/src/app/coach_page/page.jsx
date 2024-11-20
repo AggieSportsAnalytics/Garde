@@ -18,6 +18,11 @@ export default function CoachPage() {
 	const [currentVideo, setCurrentVideo] = useState("");
 	const [videos, setVideos] = useState([]);
 	const router = useRouter();
+	const [refreshKey, setRefreshKey] = useState(0);
+
+	const handleRefresh = () => {
+		setRefreshKey((prevKey) => prevKey + 1);
+	};
 
 	// Fetch the coach ID and fencers
 	useEffect(() => {
@@ -70,7 +75,7 @@ export default function CoachPage() {
 	}
 
 	return (
-		<div>
+		<div key={refreshKey}>
 			<TopBar
 				id={id}
 				fencers={fencers}
@@ -83,6 +88,7 @@ export default function CoachPage() {
 				setCurrentVideo={setCurrentVideo}
 				videos={videos}
 				setVideos={setVideos}
+				handleRefresh={handleRefresh}
 			/>
 			<Analytics
 				fencer={currentFencer}
@@ -93,7 +99,14 @@ export default function CoachPage() {
 	);
 }
 
-function Feedback({ fencer, coachName, setCurrentVideo, videos, setVideos }) {
+function Feedback({
+	fencer,
+	coachName,
+	setCurrentVideo,
+	videos,
+	setVideos,
+	handleRefresh,
+}) {
 	return (
 		<div className="flex flex-row mx-10 pt-10 text-white space-x-6">
 			{/* Video Gallery */}
@@ -103,6 +116,7 @@ function Feedback({ fencer, coachName, setCurrentVideo, videos, setVideos }) {
 					setCurrentVideo={setCurrentVideo}
 					videos={videos}
 					setVideos={setVideos}
+					handleRefresh={handleRefresh}
 				/>
 			</div>
 

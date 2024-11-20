@@ -6,7 +6,8 @@ import { GoogleOAuthProvider } from "@react-oauth/google";
 
 export const metadata = {
 	title: "Garde",
-	description: "Enhance your fencing skills with AI-powered insights.",
+	description:
+		"Smart Coaching, Smarter Fencing. Garde uses AI to deliver real-time feedback for fencers and video/analytics dashboards for coaches, elevating performance.",
 	metadataBase: new URL("https://gardeai.com"),
 	robots: {
 		index: true,
@@ -15,7 +16,8 @@ export const metadata = {
 	},
 	openGraph: {
 		title: "Garde",
-		description: "Enhance your fencing skills with AI-powered insights.",
+		description:
+			"Smart Coaching, Smarter Fencing. AI-powered tools for real-time feedback and analytics, helping fencers and coaches elevate performance.",
 		url: "https://gardeai.com",
 		siteName: "Garde",
 		images: [
@@ -32,7 +34,8 @@ export const metadata = {
 	twitter: {
 		card: "summary_large_image",
 		title: "Garde",
-		description: "Enhance your fencing skills with AI-powered insights.",
+		description:
+			"Smart Coaching, Smarter Fencing. AI-powered tools for real-time feedback and analytics, helping fencers and coaches elevate performance.",
 		images: ["/images/garde-square.png"],
 	},
 };

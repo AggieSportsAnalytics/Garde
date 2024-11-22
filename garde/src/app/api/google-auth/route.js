@@ -32,7 +32,7 @@ export async function POST(req) {
 				type: type,
 			},
 			JWT_SECRET,
-			{ expiresIn: "1h" },
+			{ expiresIn: "25h" },
 		);
 
 		const response = NextResponse.json(
@@ -43,7 +43,7 @@ export async function POST(req) {
 		// Set the cookie
 		response.cookies.set("token", token, {
 			httpOnly: false,
-			maxAge: 60 * 60,
+			maxAge: 25 * 60 * 60,
 			sameSite: "Strict",
 			secure: process.env.NODE_ENV === "production",
 			path: "/",

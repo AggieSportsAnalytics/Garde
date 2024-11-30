@@ -101,8 +101,8 @@ export async function POST(req, { params }) {
 
 		const thumbPath = path.join(outputDir, "thumbnail.jpeg");
 		try {
-			const len = (files.length - 1) * 10 - 5;
-			const timestamp = Math.floor(len / 2);
+			const len = (files.length - 1) * 10 + 1;
+			const timestamp = Math.max(Math.floor(len / 2), 1);
 
 			await generateThumbnail(tempInputPath, thumbPath, timestamp);
 			const buff = await fsPromises.readFile(thumbPath);

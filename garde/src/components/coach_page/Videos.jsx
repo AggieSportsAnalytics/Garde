@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef } from "react";
 import Hls from "hls.js";
 import axios from "axios";
 import Image from "next/image";
-import { FiRefreshCw } from "react-icons/fi";
+import { FiRefreshCw, FiGrid, FiAlignJustify } from "react-icons/fi";
 import Loader from "../ui/Loader";
 
 const HLSPlayer = ({ videoUrl }) => {
@@ -34,18 +34,86 @@ const HLSPlayer = ({ videoUrl }) => {
 	}, [videoUrl]);
 
 	return (
-		<div style={{ maxWidth: "800px", margin: "0 auto" }}>
+		<div className="max-w-[800px] mx-auto">
 			<video
 				ref={videoRef}
 				controls
-				style={{
-					width: "100%",
-					maxWidth: "100%",
-					height: "450px",
-					aspectRatio: "16 / 9",
-					borderRadius: "8px",
-				}}
+				muted={false}
+				className="w-full max-w-full h-[445px] aspect-video rounded-lg"
 			/>
+		</div>
+	);
+};
+
+const VideoSource = ({ videoUrl, thumbnail, isGridLayout }) => {
+	const videoRef = useRef(null);
+	const hlsRef = useRef(null);
+
+	const [videPlaying, setVideoPlaying] = useState(false);
+
+	useEffect(() => {
+		return () => {
+			if (hlsRef.current) {
+				hlsRef.current.destroy();
+				hlsRef.current = null;
+			}
+		};
+	}, []);
+
+	const handleMouseEnter = () => {
+		setVideoPlaying(true);
+		if (Hls.isSupported()) {
+			const hls = new Hls();
+			hlsRef.current = hls;
+			hls.loadSource(videoUrl);
+			hls.attachMedia(videoRef.current);
+
+			hls.on(Hls.Events.MANIFEST_PARSED, () => {
+				videoRef.current.play().catch(console.error);
+			});
+		} else if (videoRef.current.canPlayType("application/vnd.apple.mpegurl")) {
+			videoRef.current.src = videoUrl;
+			videoRef.current.play().catch(console.error);
+		}
+	};
+
+	const handleMouseLeave = () => {
+		setVideoPlaying(false);
+		if (videoRef.current) {
+			videoRef.current.pause();
+			videoRef.current.currentTime = 0;
+		}
+		if (hlsRef.current) {
+			hlsRef.current.destroy();
+			hlsRef.current = null;
+		}
+	};
+
+	return (
+		<div
+			className={`relative overflow-hidden rounded-lg ${
+				isGridLayout
+					? "w-full aspect-video"
+					: "w-full max-w-sm md:max-w-md lg:max-w-lg aspect-video"
+			}`}
+			onMouseEnter={handleMouseEnter}
+			onMouseLeave={handleMouseLeave}
+		>
+			{videPlaying ? (
+				<video
+					className="w-full h-full object-cover"
+					ref={videoRef}
+					muted
+					playsInline
+				/>
+			) : (
+				<Image
+					src={thumbnail}
+					layout="fill"
+					className="object-cover rounded-md"
+					alt="Thumbnail"
+				/>
+			)}
 		</div>
 	);
 };
@@ -59,6 +127,7 @@ const Videos = ({
 }) => {
 	const [videoUrl, setVideoUrl] = useState(null);
 	const [loading, setLoading] = useState(false);
+	const [isGridLayout, setIsGridLayout] = useState(true); // New state for layout toggle
 	const bucketUrl = process.env.NEXT_PUBLIC_BUCKET_URL;
 
 	useEffect(() => {
@@ -151,15 +220,34 @@ const Videos = ({
 						<>
 							<div className="flex justify-between items-center mb-4">
 								<h2 className="text-lg font-bold">Fencer Videos</h2>
-								<button
-									type="button"
-									onClick={handleRefresh}
-									className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-400 transition duration-200"
-								>
-									<FiRefreshCw size={20} />
-								</button>
+								<div className="flex gap-2">
+									<button
+										type="button"
+										onClick={handleRefresh}
+										className="px-4 py-2 text-white rounded-md hover:bg-blue-400 transition duration-200"
+									>
+										<FiRefreshCw size={20} />
+									</button>
+									<button
+										type="button"
+										onClick={() => setIsGridLayout(!isGridLayout)}
+										className="px-4 py-2 text-white rounded-md hover:bg-blue-400 transition duration-200 flex items-center gap-2"
+									>
+										{isGridLayout ? (
+											<FiAlignJustify size={20} />
+										) : (
+											<FiGrid size={20} />
+										)}
+									</button>
+								</div>
 							</div>
-							<div className="video-gallery grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 max-h-96 overflow-y-auto">
+							<div
+								className={`video-gallery ${
+									isGridLayout
+										? "grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4"
+										: "flex flex-col gap-4"
+								} max-h-96 overflow-y-auto`}
+							>
 								{videos.map((video, i) => (
 									<button
 										type="button"
@@ -167,20 +255,24 @@ const Videos = ({
 										onClick={() => handleVideoClick(video.key)}
 										className="focus:outline-none"
 									>
-										<div className="video-thumbnail border border-gray-300 p-2 rounded-lg shadow-lg bg-gray-800 hover:bg-gray-700 transition duration-200 ease-in-out">
-											<Image
-												src={video.thumbnail}
-												width={200}
-												height={200}
-												className="object-cover rounded-md w-full h-auto"
-												alt="Thumbnail"
+										<div
+											className={`video-thumbnail border border-gray-300 p-2 rounded-lg shadow-lg bg-gray-800 hover:bg-gray-700 transition duration-200 ease-in-out ${
+												!isGridLayout ? "flex items-center gap-4" : ""
+											}`}
+										>
+											<VideoSource
+												videoUrl={`${bucketUrl}/${fencer.fencer_id}/${video.key}/playlist.m3u8`}
+												thumbnail={video.thumbnail}
+												isGridLayout={isGridLayout}
 											/>
-											<p className="mt-2 text-sm font-medium text-white text-center">
-												Video {i + 1}
-											</p>
-											<p className="text-xs text-gray-400 text-center">
-												{new Date(video.timestamp).toLocaleString()}{" "}
-											</p>
+											<div className={!isGridLayout ? "flex flex-col" : ""}>
+												<p className="mt-2 text-sm font-medium text-white text-center">
+													Video {i + 1}
+												</p>
+												<p className="text-xs text-gray-400 text-center">
+													{new Date(video.timestamp).toLocaleString()}{" "}
+												</p>
+											</div>
 										</div>
 									</button>
 								))}

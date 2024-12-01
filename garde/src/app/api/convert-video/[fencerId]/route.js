@@ -110,7 +110,7 @@ export async function POST(req, { params }) {
 			await fsPromises.unlink(thumbPath);
 		} catch (error) {
 			console.error(error);
-			await generateThumbnail(tempInputPath, thumbPath, 1);
+			await generateThumbnail(tempInputPath, thumbPath, 0);
 			const buff = await fsPromises.readFile(thumbPath);
 			await uploadThumbnail(buff, videoId, fencerId);
 			await fsPromises.unlink(thumbPath);

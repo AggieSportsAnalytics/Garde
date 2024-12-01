@@ -179,7 +179,7 @@ const Videos = ({
 				setLoading(false);
 			} catch (error) {
 				setLoading(false);
-				console.error(error.message);
+				console.error(error);
 			}
 		};
 

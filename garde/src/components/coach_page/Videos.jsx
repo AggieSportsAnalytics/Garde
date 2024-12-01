@@ -95,6 +95,8 @@ const VideoSource = ({ videoUrl, thumbnail, isGridLayout }) => {
 		}
 	};
 
+	// need to add support for hover on mobile devices
+	// need to fix refresh button if stuff is deleted from DB
 	return (
 		<div
 			className={`relative overflow-hidden rounded-lg ${

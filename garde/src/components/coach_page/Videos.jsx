@@ -3,7 +3,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import Hls from "hls.js";
 import axios from "axios";
-import Image from "next/image";
 import { FiRefreshCw, FiGrid, FiAlignJustify } from "react-icons/fi";
 import Loader from "../ui/Loader";
 
@@ -62,18 +61,25 @@ const VideoSource = ({ videoUrl, thumbnail, isGridLayout }) => {
 
 	const handleMouseEnter = () => {
 		setVideoPlaying(true);
-		if (Hls.isSupported()) {
-			const hls = new Hls();
-			hlsRef.current = hls;
-			hls.loadSource(videoUrl);
-			hls.attachMedia(videoRef.current);
+		try {
+			if (Hls.isSupported()) {
+				const hls = new Hls();
+				hlsRef.current = hls;
+				hls.loadSource(videoUrl);
+				hls.attachMedia(videoRef.current);
 
-			hls.on(Hls.Events.MANIFEST_PARSED, () => {
-				videoRef.current.play().catch(console.error);
-			});
-		} else if (videoRef.current.canPlayType("application/vnd.apple.mpegurl")) {
-			videoRef.current.src = videoUrl;
-			videoRef.current.play().catch(console.error);
+				hls.on(Hls.Events.MANIFEST_PARSED, () => {
+					videoRef.current.play();
+				});
+			} else if (
+				videoRef.current.canPlayType("application/vnd.apple.mpegurl")
+			) {
+				videoRef.current.src = videoUrl;
+				videoRef.current.play();
+			}
+		} catch (error) {
+			console.error(error);
+			setVideoPlaying(false);
 		}
 	};
 
@@ -99,21 +105,13 @@ const VideoSource = ({ videoUrl, thumbnail, isGridLayout }) => {
 			onMouseEnter={handleMouseEnter}
 			onMouseLeave={handleMouseLeave}
 		>
-			{videPlaying ? (
-				<video
-					className="w-full h-full object-cover"
-					ref={videoRef}
-					muted
-					playsInline
-				/>
-			) : (
-				<Image
-					src={thumbnail}
-					layout="fill"
-					className="object-cover rounded-md"
-					alt="Thumbnail"
-				/>
-			)}
+			<video
+				className="w-full h-full object-cover"
+				ref={videoRef}
+				muted
+				playsInline
+				poster={thumbnail}
+			/>
 		</div>
 	);
 };

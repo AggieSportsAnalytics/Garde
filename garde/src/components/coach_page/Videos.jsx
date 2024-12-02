@@ -174,6 +174,7 @@ const Videos = ({
 	const [isGridLayout, setIsGridLayout] = useState(true); // New state for layout toggle
 	const [isLooping, setIsLooping] = useState(false);
 	const [pinned, setPinned] = useState([]);
+	const [videoNumber, setVideoNumber] = useState(-1);
 	const bucketUrl = process.env.NEXT_PUBLIC_BUCKET_URL;
 
 	useEffect(() => {
@@ -238,7 +239,8 @@ const Videos = ({
 		fetchVideos();
 	}, [fencer]);
 
-	const handleVideoClick = (videoId) => {
+	const handleVideoClick = (i, videoId) => {
+		setVideoNumber(i);
 		setCurrentVideo(videoId);
 		setVideoUrl(`${bucketUrl}/${fencer.fencer_id}/${videoId}/playlist.m3u8`);
 	};
@@ -341,7 +343,7 @@ const Videos = ({
 										e.stopPropagation();
 										handleDownload(
 											`${bucketUrl}/${fencer.fencer_id}/${currentVideo}/full_video.webm`,
-											`Video_${i + 1}.webm`,
+											`Video_${videoNumber + 1}.webm`,
 										);
 									}}
 									className="inline-flex items-center hover:underline text-sm text-center gap-1"
@@ -401,7 +403,7 @@ const Videos = ({
 								{videos.map((video, i) => (
 									<div
 										key={video.key}
-										onClick={() => handleVideoClick(video.key)}
+										onClick={() => handleVideoClick(i, video.key)}
 										className="cursor-pointer focus:outline-none"
 									>
 										<div

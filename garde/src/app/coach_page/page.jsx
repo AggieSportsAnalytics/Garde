@@ -48,7 +48,7 @@ export default function CoachPage() {
 			console.error(error);
 			router.push("coach_signin");
 		}
-	}, []);
+	}, [refreshKey]);
 
 	// Update current fencer when fencers list changes
 	useEffect(() => {
@@ -61,7 +61,7 @@ export default function CoachPage() {
 				fencer_id: "",
 			});
 		}
-	}, [fencers]); // Runs whenever fencers list is updated
+	}, [fencers, refreshKey]); // Runs whenever fencers list is updated
 
 	async function getInfo(queryType, id) {
 		const workerUrl = `${process.env.NEXT_PUBLIC_GARDE_WORKER}/${queryType}/${id}`;

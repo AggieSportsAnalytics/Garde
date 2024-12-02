@@ -97,6 +97,7 @@ const HLSPlayer = ({ videoUrl, isLooping }) => {
 const VideoSource = ({ videoUrl, thumbnail, isGridLayout }) => {
 	const videoRef = useRef(null);
 	const hlsRef = useRef(null);
+	const [isBuffering, setIsBuffering] = useState(false);
 
 	useEffect(() => {
 		return () => {
@@ -108,6 +109,7 @@ const VideoSource = ({ videoUrl, thumbnail, isGridLayout }) => {
 	}, []);
 
 	const handleMouseEnter = () => {
+		setIsBuffering(true);
 		try {
 			if (Hls.isSupported()) {
 				const hls = new Hls();
@@ -116,6 +118,7 @@ const VideoSource = ({ videoUrl, thumbnail, isGridLayout }) => {
 				hls.attachMedia(videoRef.current);
 
 				hls.on(Hls.Events.MANIFEST_PARSED, () => {
+					setIsBuffering(false);
 					videoRef.current.play();
 				});
 			} else if (
@@ -125,11 +128,13 @@ const VideoSource = ({ videoUrl, thumbnail, isGridLayout }) => {
 				videoRef.current.play();
 			}
 		} catch (error) {
+			setIsBuffering(false);
 			console.error(error);
 		}
 	};
 
 	const handleMouseLeave = () => {
+		setIsBuffering(false);
 		if (videoRef.current) {
 			videoRef.current.pause();
 			videoRef.current.currentTime = 0;
@@ -141,23 +146,30 @@ const VideoSource = ({ videoUrl, thumbnail, isGridLayout }) => {
 	};
 
 	return (
-		<div
-			className={`relative overflow-hidden rounded-lg ${
-				isGridLayout
-					? "w-full aspect-video"
-					: "w-full max-w-sm md:max-w-md lg:max-w-lg aspect-video"
-			}`}
-			onMouseEnter={handleMouseEnter}
-			onMouseLeave={handleMouseLeave}
-		>
-			<video
-				className="w-full h-full object-cover"
-				ref={videoRef}
-				muted
-				playsInline
-				poster={thumbnail}
-			/>
-		</div>
+		<>
+			<div
+				className={`relative overflow-hidden rounded-lg ${
+					isGridLayout
+						? "w-full aspect-video"
+						: "w-full max-w-sm md:max-w-md lg:max-w-lg aspect-video"
+				}`}
+				onMouseEnter={handleMouseEnter}
+				onMouseLeave={handleMouseLeave}
+			>
+				<video
+					className="w-full h-full object-cover"
+					ref={videoRef}
+					muted
+					playsInline
+					poster={thumbnail}
+				/>
+				{isBuffering && (
+					<div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50">
+						<div className="w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
+					</div>
+				)}
+			</div>
+		</>
 	);
 };
 
@@ -228,6 +240,8 @@ const Videos = ({
 					setVideos(
 						vids.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp)),
 					);
+				} else {
+					setVideos([]);
 				}
 				setLoading(false);
 			} catch (error) {
@@ -464,7 +478,7 @@ const Videos = ({
 					<button
 						type="button"
 						onClick={handleRefresh}
-						className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-400 transition duration-200"
+						className="px-4 py-2 text-white rounded-md hover:bg-blue-400 transition duration-200"
 					>
 						<FiRefreshCw size={20} />
 					</button>

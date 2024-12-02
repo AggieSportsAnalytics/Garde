@@ -13,7 +13,7 @@ export default function Signin({ isSignUpDefault, type }) {
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
 	const [name, setName] = useState(""); // Only used for sign-up
-	const [error, setError] = useState(null);
+	const [error, setError] = useState("");
 	const [showAlert, setShowAlert] = useState(false);
 	const [success, setSuccess] = useState("");
 	const [loading, setLoading] = useState(false);

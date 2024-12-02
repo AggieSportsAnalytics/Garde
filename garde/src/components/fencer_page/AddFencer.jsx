@@ -21,8 +21,6 @@ export default function AddFencer({ decoded }) {
 
 			if (response.status >= 200 && response.status < 300) {
 				setStatus("Added to coach successfully!");
-			} else {
-				setStatus("Failed to add fencer.");
 			}
 			setCoachToken("");
 		} catch (error) {

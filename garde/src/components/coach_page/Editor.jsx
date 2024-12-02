@@ -9,6 +9,7 @@ import axios from "axios";
 
 function Editor({ fencer, coachName, currentVideo }) {
 	const [errorMessage, setErrorMessage] = useState("");
+	const [success, setSuccess] = useState("");
 
 	// Initialize editor with necessary extensions, including lists
 	const editor = useEditor({
@@ -30,11 +31,13 @@ function Editor({ fencer, coachName, currentVideo }) {
 
 		if (content === "" || content === "<p></p>") {
 			setErrorMessage("Feedback cannot be empty.");
+			setTimeout(() => {
+				setErrorMessage("");
+			}, 2000);
 			return;
 		}
 
 		editor.commands.setContent(""); // Clear content after submission
-		setErrorMessage("");
 
 		const queryData = {
 			fencerName: fencer.fencer_name,
@@ -46,11 +49,26 @@ function Editor({ fencer, coachName, currentVideo }) {
 				: null,
 		};
 
-		await axios.put("/api/send_feedback", queryData, {
-			headers: {
-				"Content-Type": "application/json",
-			},
-		});
+		try {
+			const res = await axios.put("/api/send_feedback", queryData, {
+				headers: {
+					"Content-Type": "application/json",
+				},
+			});
+
+			if (res.status >= 200 && res.status < 300) {
+				setSuccess("Successfully sent feedback!");
+				setTimeout(() => {
+					setSuccess("");
+				}, 2000);
+			}
+		} catch (error) {
+			setErrorMessage("Failed to send feedback");
+			setTimeout(() => {
+				setErrorMessage("");
+			}, 2000);
+			console.error(error);
+		}
 	};
 
 	const handleBold = () => editor?.chain().focus().toggleBold().run();
@@ -83,6 +101,7 @@ function Editor({ fencer, coachName, currentVideo }) {
 			</div>
 			{/* Error Message */}
 			{errorMessage && <p className="text-red-500 mt-2">{errorMessage}</p>}
+			{success && <p className="text-green-500 mt-2">{success}</p>}
 			{/* Submit Button */}
 			<div className="text-center">
 				<button

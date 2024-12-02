@@ -6,7 +6,7 @@ import { FaLinkedin, FaYoutube, FaInstagram } from "react-icons/fa";
 const Contact = () => {
 	const form = useRef();
 	const [loading, setLoading] = useState(false);
-	const [success, setSuccess] = useState(null);
+	const [success, setSuccess] = useState("");
 
 	const sendEmail = async (e) => {
 		e.preventDefault();
@@ -27,9 +27,6 @@ const Contact = () => {
 				setSuccess("Email sent successfully!");
 				form.current.reset();
 				setTimeout(() => setSuccess(""), 2000);
-			} else {
-				console.error("Failed to send email");
-				setSuccess("Failed to send email. Please try again.");
 			}
 		} catch (error) {
 			console.error("Error sending email:", error);

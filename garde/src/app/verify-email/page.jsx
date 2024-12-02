@@ -49,8 +49,6 @@ function VerifyEmail() {
 					setTimeout(() => {
 						router.push(`/${decoded.type}_signin`); // Redirect to sign-in page after 3 seconds
 					}, 3000);
-				} else {
-					setMessage("Error verifying email. Please try again.");
 				}
 			} catch (error) {
 				console.error(error);

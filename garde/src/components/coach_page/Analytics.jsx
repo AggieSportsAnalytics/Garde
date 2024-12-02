@@ -87,7 +87,7 @@ function Analytics({ fencer, currentVideo, videos }) {
 		datasets: [
 			{
 				label: "Speed (m/s)",
-				data: fencerSessions.map((session) => session.speed),
+				data: fencerSessions.map((session) => Math.abs(session.speed)),
 				borderColor: "rgba(255, 99, 132, 1)",
 				backgroundColor: "rgba(255, 99, 132, 0.2)",
 				fill: true,

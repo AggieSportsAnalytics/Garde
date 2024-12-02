@@ -38,13 +38,35 @@ export async function POST(req, { params }) {
 		// const metadata = await getVideoMetadata(tempInputPath);
 		await uploadMetadata({}, videoId, fencerId);
 
-		await uploadToR2(
-			arrayBuffer,
-			videoId,
-			`full_video.${fileExtension}`,
-			fencerId,
-			videoFile.type,
-		);
+		try {
+			const webmOutputPath = path.join("/tmp", `webm_output_${videoId}.webm`);
+
+			await transcodeToWebM(tempInputPath, webmOutputPath);
+			const transcodedBuffer = await fsPromises.readFile(webmOutputPath);
+
+			await uploadToR2(
+				transcodedBuffer,
+				videoId,
+				"full_video.webm",
+				fencerId,
+				"video/webm",
+			);
+
+			await fsPromises.rm(webmOutputPath);
+		} catch (error) {
+			try {
+				console.error(error);
+				await uploadToR2(
+					arrayBuffer,
+					videoId,
+					`full_video.${fileExtension}`,
+					fencerId,
+					videoFile.type,
+				);
+			} catch (error) {
+				console.error(error);
+			}
+		}
 
 		// If hls conversion fails, upload full video to bucket as failsafe so video is not lost
 		let files;
@@ -154,6 +176,20 @@ export async function POST(req, { params }) {
 			{ status: 500 },
 		);
 	}
+}
+
+async function transcodeToWebM(inputPath, outputPath) {
+	return new Promise((resolve, reject) => {
+		ffmpeg(inputPath)
+			.outputOptions(["-c:v libvpx", "-b:v 1M", "-c:a libvorbis"])
+			.on("end", () => {
+				resolve();
+			})
+			.on("error", (err) => {
+				reject(err);
+			})
+			.save(outputPath);
+	});
 }
 
 const uploadToR2 = async (

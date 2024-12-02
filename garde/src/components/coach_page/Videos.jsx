@@ -3,32 +3,81 @@
 import React, { useState, useEffect, useRef } from "react";
 import Hls from "hls.js";
 import axios from "axios";
-import { FiRefreshCw, FiGrid, FiAlignJustify } from "react-icons/fi";
+import {
+	FiRefreshCw,
+	FiGrid,
+	FiAlignJustify,
+	FiDownload,
+	FiShare2,
+	FiCheck,
+	FiRepeat,
+	FiBookmark,
+} from "react-icons/fi";
+import { FaBookmark } from "react-icons/fa";
 import Loader from "../ui/Loader";
 
-const HLSPlayer = ({ videoUrl }) => {
+const ShareButton = ({ link }) => {
+	const [copied, setCopied] = useState(false);
+
+	const handleCopy = async (e) => {
+		try {
+			e.stopPropagation();
+			await navigator.clipboard.writeText(link);
+			setCopied(true);
+
+			// Reset "Copied" message after 2 seconds
+			setTimeout(() => setCopied(false), 2000);
+		} catch (err) {
+			console.error("Failed to copy text:", err);
+		}
+	};
+
+	return (
+		<button
+			type="button"
+			onClick={(e) => handleCopy(e)}
+			className="inline-flex items-center text-blue-500 hover:underline text-sm text-center gap-1"
+		>
+			{copied ? (
+				<>
+					<FiCheck size={16} /> Copied!
+				</>
+			) : (
+				<>
+					<FiShare2 size={16} /> Share
+				</>
+			)}
+		</button>
+	);
+};
+
+const HLSPlayer = ({ videoUrl, isLooping }) => {
 	const videoRef = useRef(null);
 
 	useEffect(() => {
-		if (Hls.isSupported()) {
-			const hls = new Hls();
-			hls.loadSource(videoUrl);
-			hls.attachMedia(videoRef.current);
+		try {
+			if (Hls.isSupported()) {
+				const hls = new Hls();
+				hls.loadSource(videoUrl);
+				hls.attachMedia(videoRef.current);
 
-			hls.on(Hls.Events.MANIFEST_PARSED, () => {
-				videoRef.current.play();
-			});
+				hls.on(Hls.Events.MANIFEST_PARSED, () => {
+					videoRef.current.play();
+				});
 
-			return () => {
-				hls.destroy();
-			};
-		}
-		if (videoRef.current.canPlayType("application/vnd.apple.mpegurl")) {
-			// For Safari and other native HLS-supporting browsers
-			videoRef.current.src = videoUrl;
-			videoRef.current.addEventListener("loadedmetadata", () => {
-				videoRef.current.play();
-			});
+				return () => {
+					hls.destroy();
+				};
+			}
+			if (videoRef.current.canPlayType("application/vnd.apple.mpegurl")) {
+				// For Safari and other native HLS-supporting browsers
+				videoRef.current.src = videoUrl;
+				videoRef.current.addEventListener("loadedmetadata", () => {
+					videoRef.current.play();
+				});
+			}
+		} catch (error) {
+			console.error("HLS connection failed:", error);
 		}
 	}, [videoUrl]);
 
@@ -37,6 +86,7 @@ const HLSPlayer = ({ videoUrl }) => {
 			<video
 				ref={videoRef}
 				controls
+				loop={isLooping}
 				muted={false}
 				className="w-full max-w-full h-[445px] aspect-video rounded-lg"
 			/>
@@ -48,8 +98,6 @@ const VideoSource = ({ videoUrl, thumbnail, isGridLayout }) => {
 	const videoRef = useRef(null);
 	const hlsRef = useRef(null);
 
-	const [videPlaying, setVideoPlaying] = useState(false);
-
 	useEffect(() => {
 		return () => {
 			if (hlsRef.current) {
@@ -60,7 +108,6 @@ const VideoSource = ({ videoUrl, thumbnail, isGridLayout }) => {
 	}, []);
 
 	const handleMouseEnter = () => {
-		setVideoPlaying(true);
 		try {
 			if (Hls.isSupported()) {
 				const hls = new Hls();
@@ -79,12 +126,10 @@ const VideoSource = ({ videoUrl, thumbnail, isGridLayout }) => {
 			}
 		} catch (error) {
 			console.error(error);
-			setVideoPlaying(false);
 		}
 	};
 
 	const handleMouseLeave = () => {
-		setVideoPlaying(false);
 		if (videoRef.current) {
 			videoRef.current.pause();
 			videoRef.current.currentTime = 0;
@@ -95,8 +140,6 @@ const VideoSource = ({ videoUrl, thumbnail, isGridLayout }) => {
 		}
 	};
 
-	// need to add support for hover on mobile devices
-	// need to fix refresh button if stuff is deleted from DB
 	return (
 		<div
 			className={`relative overflow-hidden rounded-lg ${
@@ -121,6 +164,7 @@ const VideoSource = ({ videoUrl, thumbnail, isGridLayout }) => {
 const Videos = ({
 	fencer,
 	setCurrentVideo,
+	currentVideo,
 	videos,
 	setVideos,
 	handleRefresh,
@@ -128,6 +172,8 @@ const Videos = ({
 	const [videoUrl, setVideoUrl] = useState(null);
 	const [loading, setLoading] = useState(false);
 	const [isGridLayout, setIsGridLayout] = useState(true); // New state for layout toggle
+	const [isLooping, setIsLooping] = useState(false);
+	const [pinned, setPinned] = useState([]);
 	const bucketUrl = process.env.NEXT_PUBLIC_BUCKET_URL;
 
 	useEffect(() => {
@@ -174,6 +220,10 @@ const Videos = ({
 						}),
 					);
 
+					const pin = localStorage.getItem("pinned");
+					if (pin) {
+						setPinned(JSON.parse(pin));
+					}
 					setVideos(
 						vids.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp)),
 					);
@@ -193,6 +243,42 @@ const Videos = ({
 		setVideoUrl(`${bucketUrl}/${fencer.fencer_id}/${videoId}/playlist.m3u8`);
 	};
 
+	const handleDownload = async (videoUrl, filename) => {
+		try {
+			const response = await axios.get(videoUrl, { responseType: "blob" });
+
+			const blob = await response.data;
+			const blobUrl = window.URL.createObjectURL(blob);
+
+			// Create a temporary link element
+			const a = document.createElement("a");
+			a.href = blobUrl;
+			a.download = filename;
+			document.body.appendChild(a);
+			a.click();
+			document.body.removeChild(a);
+
+			// Revoke the object URL to free memory
+			window.URL.revokeObjectURL(blobUrl);
+		} catch (error) {
+			console.error("Error downloading video:", error);
+		}
+	};
+
+	const togglePin = (videoId) => {
+		if (pinned.find((vid) => vid === videoId)) {
+			const newPinned = pinned.filter((vid) => vid !== currentVideo);
+			setPinned(newPinned);
+			localStorage.setItem("pinned", JSON.stringify(newPinned));
+
+			return;
+		}
+
+		const newPinned = [...pinned, currentVideo];
+		setPinned(newPinned);
+		localStorage.setItem("pinned", JSON.stringify(newPinned));
+	};
+
 	return (
 		<>
 			<Loader loading={loading} />
@@ -201,12 +287,76 @@ const Videos = ({
 					{videoUrl ? (
 						<>
 							<div className="video-player mt-6">
-								<HLSPlayer videoUrl={videoUrl} />
+								<HLSPlayer videoUrl={videoUrl} isLooping={isLooping} />
+							</div>
+							<div className="mt-2 space-x-4 flex text-blue-500 justify-center">
+								<button
+									type="button"
+									className="flex gap-2 cursor-pointer"
+									onClick={() => setIsLooping(!isLooping)}
+								>
+									{isLooping ? (
+										<button
+											type="button"
+											className="inline-flex items-center hover:underline text-sm text-center gap-1"
+										>
+											<FiRepeat className="text-yellow-400" size={16} /> Stop
+											Loop
+										</button>
+									) : (
+										<button
+											type="button"
+											className="inline-flex items-center hover:underline text-sm text-center gap-1"
+										>
+											<FiRepeat size={16} /> Loop
+										</button>
+									)}
+								</button>
+								<button
+									type="button"
+									className="inline-flex items-center hover:underline text-sm text-center gap-1"
+								>
+									{pinned.find((video) => video === currentVideo) ? (
+										<button
+											onClick={() => togglePin(currentVideo)}
+											type="button"
+											className="inline-flex items-center hover:underline text-sm text-center gap-1"
+										>
+											<FaBookmark size={12} className="text-yellow-400" />{" "}
+											Unsave
+										</button>
+									) : (
+										<button
+											type="button"
+											className="inline-flex items-center hover:underline text-sm text-center gap-1"
+											onClick={() => togglePin(currentVideo)}
+										>
+											<FiBookmark size={16} /> Save
+										</button>
+									)}
+								</button>
+								<button
+									type="button"
+									onClick={(e) => {
+										e.stopPropagation();
+										handleDownload(
+											`${bucketUrl}/${fencer.fencer_id}/${currentVideo}/full_video.webm`,
+											`Video_${i + 1}.webm`,
+										);
+									}}
+									className="inline-flex items-center hover:underline text-sm text-center gap-1"
+								>
+									<FiDownload size={16} /> Download
+								</button>
+								<ShareButton
+									link={`${bucketUrl}/${fencer.fencer_id}/${currentVideo}/full_video.webm`}
+								/>
 							</div>
 							<div className="flex justify-center mt-4">
 								<button
 									type="button"
 									onClick={() => {
+										setIsLooping(false);
 										setVideoUrl(null);
 										setCurrentVideo(null);
 									}}
@@ -249,11 +399,10 @@ const Videos = ({
 								} max-h-96 overflow-y-auto`}
 							>
 								{videos.map((video, i) => (
-									<button
-										type="button"
+									<div
 										key={video.key}
 										onClick={() => handleVideoClick(video.key)}
-										className="focus:outline-none"
+										className="cursor-pointer focus:outline-none"
 									>
 										<div
 											className={`video-thumbnail border border-gray-300 p-2 rounded-lg shadow-lg bg-gray-800 hover:bg-gray-700 transition duration-200 ease-in-out ${
@@ -266,15 +415,42 @@ const Videos = ({
 												isGridLayout={isGridLayout}
 											/>
 											<div className={!isGridLayout ? "flex flex-col" : ""}>
-												<p className="mt-2 text-sm font-medium text-white text-center">
-													Video {i + 1}
-												</p>
+												{pinned.find((vid) => vid === video.key) ? (
+													<p className="mt-2 text-sm font-medium text-white text-center">
+														Video {i + 1}{" "}
+														<FaBookmark className="inline-block text-yellow-400" />
+													</p>
+												) : (
+													<p className="mt-2 text-sm font-medium text-white text-center">
+														Video {i + 1}
+													</p>
+												)}
+
 												<p className="text-xs text-gray-400 text-center">
 													{new Date(video.timestamp).toLocaleString()}{" "}
 												</p>
+
+												<div className="flex flex-col items-center mt-2 gap-1">
+													<button
+														type="button"
+														onClick={(e) => {
+															e.stopPropagation();
+															handleDownload(
+																`${bucketUrl}/${fencer.fencer_id}/${video.key}/full_video.webm`,
+																`Video_${i + 1}.webm`,
+															);
+														}}
+														className="inline-flex items-center text-blue-500 hover:underline text-sm"
+													>
+														<FiDownload size={16} /> Download
+													</button>
+													<ShareButton
+														link={`${bucketUrl}/${fencer.fencer_id}/${video.key}/full_video.webm`}
+													/>
+												</div>
 											</div>
 										</div>
-									</button>
+									</div>
 								))}
 							</div>
 						</>

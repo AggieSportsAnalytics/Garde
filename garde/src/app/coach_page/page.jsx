@@ -86,6 +86,7 @@ export default function CoachPage() {
 				fencer={currentFencer}
 				coachName={coachName}
 				setCurrentVideo={setCurrentVideo}
+				currentVideo={currentVideo}
 				videos={videos}
 				setVideos={setVideos}
 				handleRefresh={handleRefresh}
@@ -103,6 +104,7 @@ function Feedback({
 	fencer,
 	coachName,
 	setCurrentVideo,
+	currentVideo,
 	videos,
 	setVideos,
 	handleRefresh,
@@ -114,6 +116,7 @@ function Feedback({
 				<Videos
 					fencer={fencer}
 					setCurrentVideo={setCurrentVideo}
+					currentVideo={currentVideo}
 					videos={videos}
 					setVideos={setVideos}
 					handleRefresh={handleRefresh}

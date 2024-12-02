@@ -95,11 +95,38 @@ async function sendVerificationEmail(email, type) {
 	const verificationUrl = `${BASE_URL}/verify-email?token=${verificationToken}`;
 
 	const mailOptions = {
-		from: process.env.EMAIL_USER,
+		from: `"Garde" <${process.env.EMAIL_USER}>`,
 		to: email,
-		subject: "Email Verification",
-		text: `Click the link to verify your email: ${verificationUrl}`,
-		html: `<p>Click <a href="${verificationUrl}">here</a> to verify your email.</p>`,
+		subject: "Verify Your Email Address",
+		html: `
+			<div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #ddd; border-radius: 10px;">
+				<div style="text-align: center; margin-bottom: 20px;">
+					<img src="https://gardeai.com/images/garde-square.png" alt="Garde Logo" style="max-width: 150px; height: auto;">
+				</div>
+				<h2 style="color: #4CAF50; text-align: center;">Welcome to Garde!</h2>
+				<p>Hi there,</p>
+				<p>Thank you for signing up for Garde. We're excited to have you on board! Please verify your email address to activate your account.</p>
+				<p style="text-align: center;">
+					<a href="${verificationUrl}" style="background-color: #4CAF50; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block; font-weight: bold;">Verify Your Email</a>
+				</p>
+				<p>If the button above doesn't work, copy and paste the following link into your browser:</p>
+				<p style="word-break: break-all; color: #555;">${verificationUrl}</p>
+				<p>Thank you,<br>The Garde Team</p>
+				<hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;">
+				<p style="font-size: 0.9em; color: #888; text-align: center;">
+					You are receiving this email because you signed up for Garde. If you did not sign up, please ignore this email.
+				</p>
+			</div>
+		`,
+		text: `
+			Welcome to Garde!
+	
+			Thank you for signing up for Garde. Please verify your email address to activate your account.
+	
+			Verify Your Email: ${verificationUrl}
+	
+			If you did not sign up for Garde, please ignore this email.
+		`,
 	};
 
 	// Send the email using async/await

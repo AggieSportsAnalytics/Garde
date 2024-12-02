@@ -7,7 +7,7 @@ import { FaBold, FaItalic } from "react-icons/fa";
 import ListItem from "@tiptap/extension-list-item";
 import axios from "axios";
 
-function Editor({ fencer, coachName }) {
+function Editor({ fencer, coachName, currentVideo }) {
 	const [errorMessage, setErrorMessage] = useState("");
 
 	// Initialize editor with necessary extensions, including lists
@@ -37,9 +37,13 @@ function Editor({ fencer, coachName }) {
 		setErrorMessage("");
 
 		const queryData = {
+			fencerName: fencer.fencer_name,
 			data: content,
 			email: fencer.fencer_email,
 			coachName: coachName,
+			videoUrl: currentVideo
+				? `https://pub-8c962831e75547f6a9ca8e7d2bd89c9c.r2.dev/${fencer.fencer_id}/${currentVideo}/full_video.webm`
+				: null,
 		};
 
 		await axios.put("/api/send_feedback", queryData, {

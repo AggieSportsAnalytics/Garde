@@ -55,11 +55,7 @@ export default function CoachPage() {
 		if (fencers.length > 0) {
 			setCurrentFencer(fencers[0]);
 		} else {
-			setCurrentFencer({
-				coach_id: "",
-				fencer_name: "No fencers added",
-				fencer_id: "",
-			});
+			setCurrentFencer({});
 		}
 	}, [fencers, refreshKey]); // Runs whenever fencers list is updated
 
@@ -125,7 +121,11 @@ function Feedback({
 
 			{/* Editor Component */}
 			<div className="w-1/2">
-				<Editor fencer={fencer} coachName={coachName} />
+				<Editor
+					fencer={fencer}
+					coachName={coachName}
+					currentVideo={currentVideo}
+				/>
 			</div>
 		</div>
 	);

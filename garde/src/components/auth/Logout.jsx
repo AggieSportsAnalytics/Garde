@@ -13,12 +13,9 @@ export default function Logout() {
 		try {
 			setWaiting(true);
 
-			const response = await axios.get("/api/logout");
+			await axios.get("/api/logout");
 
-			if (response.status >= 200 && response.status < 300) {
-				// Redirect to the login page after logout
-				router.push("/");
-			}
+			router.push("/");
 		} catch (error) {
 			setWaiting(false);
 			console.error(error.message);

@@ -32,8 +32,8 @@ const navbar = () => {
 		<div
 			className={
 				shadow
-					? "navbar fixed md:w-[850px] w-[340px] mt-4 md:mt-12 left-1/2 transform -translate-x-1/2 h-16 z-[100] rounded-full duration-500"
-					: "fixed md:w-[850px] w-[340px] mt-4 md:mt-12 left-1/2 transform -translate-x-1/2 h-16 z-[100]"
+					? "navbar fixed md:w-[1000px] w-[340px] mt-4 md:mt-12 left-1/2 transform -translate-x-1/2 h-16 z-[100] rounded-full duration-500"
+					: "fixed md:w-[1000px] w-[340px] mt-4 md:mt-12 left-1/2 transform -translate-x-1/2 h-16 z-[100]"
 			}
 		>
 			<div className="flex justify-between items-center w-full h-full px-4">
@@ -73,6 +73,11 @@ const navbar = () => {
 							<span className="button-content font-bold">
 								Coach Login/Signup
 							</span>
+						</button>
+					</Link>
+					<Link href="/tournaments">
+						<button className="button text-sm">
+							<span className="button-content font-bold">Tournaments</span>
 						</button>
 					</Link>
 				</div>
@@ -127,6 +132,11 @@ const navbar = () => {
 									<span className="button-content font-bold">
 										Coach Login/Signup
 									</span>
+								</button>
+							</Link>
+							<Link href="/tournaments">
+								<button className="login mt-4 hover:text-[#ac4bac] transition-colors duration-500 text-md">
+									Tournaments
 								</button>
 							</Link>
 						</ul>

@@ -44,12 +44,10 @@ function VerifyEmail() {
 					headers: { "Content-Type": "application/json" },
 				});
 
-				if (response.status >= 200 && response.status < 300) {
-					setMessage("Email verified successfully! Redirecting...");
-					setTimeout(() => {
-						router.push(`/${decoded.type}_signin`); // Redirect to sign-in page after 3 seconds
-					}, 3000);
-				}
+				setMessage("Email verified successfully! Redirecting...");
+				setTimeout(() => {
+					router.push(`/${decoded.type}_signin`); // Redirect to sign-in page after 3 seconds
+				}, 3000);
 			} catch (error) {
 				console.error(error);
 				setMessage("Invalid or expired token.");

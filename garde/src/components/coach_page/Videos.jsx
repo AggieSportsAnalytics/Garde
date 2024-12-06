@@ -14,7 +14,6 @@ import {
 	FiBookmark,
 } from "react-icons/fi";
 import { FaBookmark } from "react-icons/fa";
-import Loader from "../ui/Loader";
 
 const ShareButton = ({ link }) => {
 	const [copied, setCopied] = useState(false);
@@ -180,9 +179,9 @@ const Videos = ({
 	videos,
 	setVideos,
 	handleRefresh,
+	setLoading,
 }) => {
 	const [videoUrl, setVideoUrl] = useState(null);
-	const [loading, setLoading] = useState(false);
 	const [isGridLayout, setIsGridLayout] = useState(true); // New state for layout toggle
 	const [isLooping, setIsLooping] = useState(false);
 	const [pinned, setPinned] = useState([]);
@@ -191,9 +190,6 @@ const Videos = ({
 
 	useEffect(() => {
 		const fetchVideos = async () => {
-			if (!fencer || !fencer.fencer_id) {
-				return;
-			}
 			try {
 				setLoading(true);
 				setVideoUrl(null);
@@ -243,10 +239,10 @@ const Videos = ({
 				} else {
 					setVideos([]);
 				}
-				setLoading(false);
 			} catch (error) {
-				setLoading(false);
 				console.error(error);
+			} finally {
+				setLoading(false);
 			}
 		};
 
@@ -297,7 +293,6 @@ const Videos = ({
 
 	return (
 		<>
-			<Loader loading={loading} />
 			{videos.length > 0 ? (
 				<>
 					{videoUrl ? (

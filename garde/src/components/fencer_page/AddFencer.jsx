@@ -15,13 +15,11 @@ export default function AddFencer({ decoded }) {
 				fencerEmail: decoded.email,
 			};
 
-			const response = await axios.put(workerUrl, queryData, {
+			await axios.put(workerUrl, queryData, {
 				headers: { "Content-Type": "application/json" },
 			});
 
-			if (response.status >= 200 && response.status < 300) {
-				setStatus("Added to coach successfully!");
-			}
+			setStatus("Added to coach successfully!");
 			setCoachToken("");
 		} catch (error) {
 			setStatus("Error adding fencer.");

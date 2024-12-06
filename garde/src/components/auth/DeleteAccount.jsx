@@ -27,16 +27,10 @@ export default function DeleteAccountButton({ type, userId }) {
 			// Replace with your actual DELETE API endpoint
 			const response = await axios.delete(workerUrl);
 
-			if (response.status >= 200 && response.status < 300) {
-				const res = await axios.get("/api/logout");
+			const res = await axios.get("/api/logout");
 
-				if (res.status >= 200 && res.status < 300) {
-					// Redirect to the login page after logout
-					router.push("/");
-				}
-				setSuccess("Your account has been successfully deleted.");
-				// Optionally, you can also log out the user or redirect them to another page
-			}
+			router.push("/");
+			setSuccess("Your account has been successfully deleted.");
 		} catch (err) {
 			setError("An error occurred while deleting your account.");
 		} finally {

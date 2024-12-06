@@ -50,6 +50,15 @@ export default {
 					return handleGetRequest();
 				}
 
+				if (path === "/getTournaments") {
+					return await getTournaments();
+				}
+
+				if (path.includes("/getMyTournaments")) {
+					const pathName = path.split("/");
+					return await getMyTournaments(pathName[pathName.length - 1]);
+				}
+
 				if (path === "/verify") {
 					return await verify(
 						url.searchParams.get("type"),
@@ -86,6 +95,16 @@ export default {
 				}
 
 				const body = await request.json();
+
+				if (path.includes("/putTournament")) {
+					const pathName = path.split("/");
+					return await putTournament(pathName[pathName.length - 1], body);
+				}
+
+				if (path.includes("/putOwned")) {
+					const pathName = path.split("/");
+					return await putOwned(pathName[pathName.length - 1], body);
+				}
 
 				if (path.includes("/putUserAngles")) {
 					const [_, __, fencerId, videoId, pose] = path.split("/");
@@ -193,6 +212,83 @@ async function putCoachFencer(fencerId, coachId, fencerName, fencerEmail) {
 
 	const res = new Response(
 		JSON.stringify({ message: "Successfully added fencer to coach" }),
+		{
+			status: 201,
+			headers: {
+				"Content-Type": "application/json",
+			},
+		},
+	);
+	return addCorsHeaders(res);
+}
+
+async function putOwned(userId, body) {
+	const query =
+		"INSERT OR IGNORE INTO owned_tournaments (user_id, user_type, tournament_id, relation) VALUES (?, ?, ?, ?);";
+	await DB.prepare(query)
+		.bind(userId, body.user_type, body.tournament_id, body.relation)
+		.run();
+
+	const res = new Response(
+		JSON.stringify({ message: "Successfully added tournament to user" }),
+		{
+			status: 201,
+			headers: {
+				"Content-Type": "application/json",
+			},
+		},
+	);
+	return addCorsHeaders(res);
+}
+
+async function putTournament(unique_id, body) {
+	const {
+		name,
+		user_id,
+		description,
+		category,
+		prize_pool,
+		organizer_name,
+		organizer_email,
+		organizer_phone,
+		location,
+		privacy,
+		start_time,
+		end_time,
+		registration_fee,
+		max_participants,
+		eligibility,
+		is_team_based,
+		rules,
+	} = body;
+
+	const query =
+		"INSERT OR IGNORE INTO tournaments (unique_id, user_id, event_name, description, category, prize_pool, organizer_name, organizer_email, organizer_phone, location, privacy, start_time, end_time, registration_fee, max_participants, eligibility, is_team_based, rules) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
+	await DB.prepare(query)
+		.bind(
+			unique_id,
+			user_id,
+			name,
+			description,
+			category,
+			prize_pool,
+			organizer_name,
+			organizer_email,
+			organizer_phone,
+			location,
+			privacy,
+			start_time,
+			end_time,
+			registration_fee,
+			max_participants,
+			eligibility,
+			is_team_based,
+			rules,
+		)
+		.run();
+
+	const res = new Response(
+		JSON.stringify({ message: "Successfully added tournament" }),
 		{
 			status: 201,
 			headers: {
@@ -378,6 +474,50 @@ async function authGoogle(id, email, name, type) {
 	);
 
 	return addCorsHeaders(res);
+}
+
+async function getMyTournaments(id) {
+	const query = `
+		SELECT t.*
+		FROM tournaments t
+		INNER JOIN owned_tournaments ot ON t.unique_id = ot.tournament_id
+		WHERE ot.user_id = ?;
+	`;
+
+	const tournaments = await DB.prepare(query).bind(id).all();
+
+	return addCorsHeaders(
+		new Response(
+			JSON.stringify({
+				message: "Successfully retrieved tournaments",
+				tournaments: tournaments.results || [],
+			}),
+			{
+				status: 200,
+				headers: {
+					"Content-Type": "application/json",
+				},
+			},
+		),
+	);
+}
+
+async function getTournaments() {
+	const tournaments = await DB.prepare("SELECT * FROM tournaments").all();
+	return addCorsHeaders(
+		new Response(
+			JSON.stringify({
+				message: "Successfully retrieved fencer instructions",
+				tournaments: tournaments.results,
+			}),
+			{
+				status: 200,
+				headers: {
+					"Content-Type": "application/json",
+				},
+			},
+		),
+	);
 }
 
 async function getFencerInstructions() {

@@ -637,10 +637,7 @@ const getIdealAngles = async () => {
 		const response = await axios.get(getWorkerUrl);
 		const idealAngles = response.data.angles;
 
-		if (response.status >= 200 && response.status < 300) {
-			return idealAngles;
-		}
-		return null;
+		return idealAngles;
 	} catch (error) {
 		console.error(error);
 		return null;

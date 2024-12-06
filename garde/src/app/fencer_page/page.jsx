@@ -157,10 +157,7 @@ export default function Fencer_Page2() {
 					headers: { "Content-Type": "application/json" },
 				});
 
-				if (response.status >= 200 && response.status < 300) {
-					return true;
-				}
-				return false;
+				return true;
 			} catch (error) {
 				console.error(error);
 				return false;
@@ -263,7 +260,10 @@ export default function Fencer_Page2() {
 
 			if (token) {
 				const decoded = jwtDecode(token);
-				if (decoded.type !== "fencer") {
+
+				const currentTime = Date.now() / 1000;
+
+				if (decoded.type !== "fencer" || decoded.exp <= currentTime) {
 					router.push("fencer_signin");
 				} else {
 					setFencerId(decoded.id);

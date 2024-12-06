@@ -56,12 +56,10 @@ function Editor({ fencer, coachName, currentVideo }) {
 				},
 			});
 
-			if (res.status >= 200 && res.status < 300) {
-				setSuccess("Successfully sent feedback!");
-				setTimeout(() => {
-					setSuccess("");
-				}, 2000);
-			}
+			setSuccess("Successfully sent feedback!");
+			setTimeout(() => {
+				setSuccess("");
+			}, 2000);
 		} catch (error) {
 			setErrorMessage("Failed to send feedback");
 			setTimeout(() => {

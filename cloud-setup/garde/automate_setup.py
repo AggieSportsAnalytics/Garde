@@ -43,11 +43,45 @@ CREATE TABLE IF NOT EXISTS fencer (
 );
 """
 
+create_tournaments_table = """
+CREATE TABLE IF NOT EXISTS tournaments (
+    unique_id TEXT PRIMARY KEY,
+    user_id TEXT NOT NULL,
+    event_name TEXT NOT NULL,
+    description TEXT,
+    category TEXT,
+    prize_pool REAL,
+    organizer_name TEXT NOT NULL,
+    organizer_email TEXT NOT NULL,
+    organizer_phone TEXT,
+    location TEXT NOT NULL,
+    privacy TEXT NOT NULL,
+    start_time TEXT NOT NULL,
+    end_time TEXT NOT NULL,
+    registration_fee REAL,
+    max_participants INTEGER,
+    eligibility TEXT,
+    is_team_based BOOLEAN,
+    rules TEXT
+);
+"""
+
+create_owned_tournaments_table = """
+CREATE TABLE IF NOT EXISTS owned_tournaments (
+    user_id TEXT,
+    user_type TEXT NOT NULL CHECK (user_type IN ('fencer', 'coach')),
+    tournament_id TEXT,
+    relation TEXT,
+    PRIMARY KEY (user_id, tournament_id),
+    FOREIGN KEY (tournament_id) REFERENCES tournaments(unique_id) ON DELETE CASCADE
+);
+"""
+
 # consider changing session_id to uuid specified on client/server side rather than autoincrement
 create_fencer_sessions_table = """
 CREATE TABLE IF NOT EXISTS fencer_sessions (
     fencer_id TEXT,
-    video_id TEXT,
+    video_id TEXT NOT NULL,
     pose TEXT,
     feet_distance REAL,
     speed REAL,
@@ -76,8 +110,8 @@ create_coach_fencers_table = """
 CREATE TABLE IF NOT EXISTS coach_fencer (
     coach_id TEXT,       
     fencer_id TEXT,
-    fencer_name TEXT,
-    fencer_email TEXT,
+    fencer_name TEXT NOT NULL,
+    fencer_email TEXT NOT NULL,
     PRIMARY KEY (coach_id, fencer_id),
     FOREIGN KEY (coach_id) REFERENCES coach(unique_id) ON DELETE CASCADE,
     FOREIGN KEY (fencer_id) REFERENCES fencer(unique_id) ON DELETE CASCADE
@@ -273,6 +307,8 @@ if __name__ == "__main__":
         execute_sql(database_name, insert_or_replace_fencer_instructions)
         execute_sql(database_name, insert_or_replace_ideal_angles)
         execute_sql(database_name, insert_or_replace_whitelist)
+        execute_sql(database_name, create_tournaments_table)
+        execute_sql(database_name, create_owned_tournaments_table)
         deploy_script()
     else:
         delete_d1_database(database_name)

@@ -1,14 +1,15 @@
 "use client";
 
-import "../globals.css";
-import TopBar from "../../components/coach_page/TopBar";
-import Videos from "../../components/coach_page/Videos";
-import Editor from "../../components/coach_page/Editor";
-import Analytics from "../../components/coach_page/Analytics";
+import "@/src/app/globals.css";
+import TopBar from "@/src/components/coach_page/TopBar";
+import Videos from "@/src/components/coach_page/Videos";
+import Editor from "@/src/components/coach_page/Editor";
+import Analytics from "@/src/components/coach_page/Analytics";
 import { useState, useEffect } from "react";
-import { jwtDecode } from "jwt-decode"; // Corrected import for jwtDecode
+import { jwtDecode } from "jwt-decode";
 import axios from "axios";
 import { useRouter } from "next/navigation";
+import CoachPageScaffold from "@/src/components/coach_page/CoachPageScaffold";
 
 export default function CoachPage() {
 	const [id, setId] = useState(""); // coach id
@@ -19,8 +20,10 @@ export default function CoachPage() {
 	const [videos, setVideos] = useState([]);
 	const router = useRouter();
 	const [refreshKey, setRefreshKey] = useState(0);
+	const [loading, setLoading] = useState(true);
 
 	const handleRefresh = () => {
+		setLoading(true);
 		setRefreshKey((prevKey) => prevKey + 1);
 	};
 
@@ -34,30 +37,23 @@ export default function CoachPage() {
 
 			if (token) {
 				const decoded = jwtDecode(token);
-				if (decoded.type !== "coach") {
-					router.push("coach_signin");
+				const currentTime = Date.now() / 1000;
+
+				if (decoded.type !== "coach" || decoded.exp <= currentTime) {
+					router.push("coach_signin?restricted=true");
 				}
 				setId(decoded.id);
 				setCoachName(decoded.name);
 				getInfo("getCoach", decoded.id);
 			} else {
 				console.error("No cookies found");
-				router.push("coach_signin");
+				router.push("coach_signin?restricted=true");
 			}
 		} catch (error) {
 			console.error(error);
-			router.push("coach_signin");
+			router.push("coach_signin?restricted=true");
 		}
 	}, [refreshKey]);
-
-	// Update current fencer when fencers list changes
-	useEffect(() => {
-		if (fencers.length > 0) {
-			setCurrentFencer(fencers[0]);
-		} else {
-			setCurrentFencer({});
-		}
-	}, [fencers, refreshKey]); // Runs whenever fencers list is updated
 
 	async function getInfo(queryType, id) {
 		const workerUrl = `${process.env.NEXT_PUBLIC_GARDE_WORKER}/${queryType}/${id}`;
@@ -65,34 +61,44 @@ export default function CoachPage() {
 		try {
 			const response = await axios.get(workerUrl);
 			setFencers(response.data.data);
+			if (response.data.data.length > 0) {
+				setCurrentFencer(response.data.data[0]);
+			} else {
+				setCurrentFencer({});
+			}
 		} catch (error) {
+			setLoading(false);
 			console.error(error);
 		}
 	}
 
 	return (
-		<div key={refreshKey}>
-			<TopBar
-				id={id}
-				fencers={fencers}
-				currentFencer={currentFencer}
-				setCurrentFencer={setCurrentFencer}
-			/>
-			<Feedback
-				fencer={currentFencer}
-				coachName={coachName}
-				setCurrentVideo={setCurrentVideo}
-				currentVideo={currentVideo}
-				videos={videos}
-				setVideos={setVideos}
-				handleRefresh={handleRefresh}
-			/>
-			<Analytics
-				fencer={currentFencer}
-				currentVideo={currentVideo}
-				videos={videos}
-			/>
-		</div>
+		<>
+			{loading && <CoachPageScaffold />}
+			<div key={refreshKey} className={`${loading && "hidden"}`}>
+				<TopBar
+					id={id}
+					fencers={fencers}
+					currentFencer={currentFencer}
+					setCurrentFencer={setCurrentFencer}
+				/>
+				<Feedback
+					fencer={currentFencer}
+					coachName={coachName}
+					setCurrentVideo={setCurrentVideo}
+					currentVideo={currentVideo}
+					videos={videos}
+					setVideos={setVideos}
+					handleRefresh={handleRefresh}
+					setLoading={setLoading}
+				/>
+				<Analytics
+					fencer={currentFencer}
+					currentVideo={currentVideo}
+					videos={videos}
+				/>
+			</div>
+		</>
 	);
 }
 
@@ -104,6 +110,7 @@ function Feedback({
 	videos,
 	setVideos,
 	handleRefresh,
+	setLoading,
 }) {
 	return (
 		<div className="flex flex-row mx-10 pt-10 text-white space-x-6">
@@ -116,6 +123,7 @@ function Feedback({
 					videos={videos}
 					setVideos={setVideos}
 					handleRefresh={handleRefresh}
+					setLoading={setLoading}
 				/>
 			</div>
 

@@ -58,6 +58,7 @@ CREATE TABLE IF NOT EXISTS tournaments (
     privacy TEXT NOT NULL,
     start_time TEXT NOT NULL,
     end_time TEXT NOT NULL,
+    signup_deadline TEXT NOT NULL,
     registration_fee REAL,
     max_participants INTEGER,
     eligibility TEXT,
@@ -70,8 +71,11 @@ create_owned_tournaments_table = """
 CREATE TABLE IF NOT EXISTS owned_tournaments (
     user_id TEXT,
     user_type TEXT NOT NULL CHECK (user_type IN ('fencer', 'coach')),
+    user_name TEXT NOT NULL,
+    user_email TEXT NOT NULL,
     tournament_id TEXT,
     relation TEXT,
+    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (user_id, tournament_id),
     FOREIGN KEY (tournament_id) REFERENCES tournaments(unique_id) ON DELETE CASCADE
 );

@@ -86,8 +86,9 @@ export default function Signin({ isSignUpDefault, type }) {
 				setError("");
 				setSuccess("Please wait, logging in...");
 
-				if (searchParams.get("redirect") === "tournaments") {
-					router.push("/tournaments");
+				const redirect = searchParams.get("redirect");
+				if (redirect) {
+					router.push(redirect);
 				} else {
 					router.push(`/${type}_page`);
 				}
@@ -117,7 +118,8 @@ export default function Signin({ isSignUpDefault, type }) {
 	// Handle Google Auth Success
 	const handleGoogleSuccess = async (response) => {
 		try {
-			if (searchParams.get("redirect") !== "tournaments") {
+			const redirect = searchParams.get("redirect");
+			if (redirect) {
 				setLoading(true);
 			}
 			setError("");
@@ -132,8 +134,8 @@ export default function Signin({ isSignUpDefault, type }) {
 
 			setSuccess("Please wait, logging in...");
 
-			if (searchParams.get("redirect") === "tournaments") {
-				router.push("/tournaments");
+			if (redirect) {
+				router.push(redirect);
 			} else {
 				router.push(`/${type}_page`);
 			}

@@ -5,36 +5,8 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import { jwtDecode } from "jwt-decode";
 import Link from "next/link";
+import TournamentCard from "@/src/components/tournaments/TournamentCard";
 
-function TournamentCard({ tournament, onClick }) {
-	return (
-		<button
-			type="button"
-			className="p-4 border border-gray-700 rounded-lg shadow-lg bg-gray-900 text-white hover:bg-gray-800 transition-transform duration-200 transform hover:scale-105 cursor-pointer"
-			onClick={onClick}
-		>
-			<h3 className="text-xl font-bold mb-2">{tournament.event_name}</h3>
-			<div className="text-gray-400 space-y-1">
-				<p>
-					<span className="font-semibold text-white">Organizer:</span>{" "}
-					{tournament.organizer_name}
-				</p>
-				<p>
-					<span className="font-semibold text-white">Location:</span>{" "}
-					{tournament.location}
-				</p>
-				<p>
-					<span className="font-semibold text-white">Privacy:</span>{" "}
-					{tournament.privacy}
-				</p>
-				<p>
-					<span className="font-semibold text-white">Start Time:</span>{" "}
-					{new Date(tournament.start_time).toLocaleString()}
-				</p>
-			</div>
-		</button>
-	);
-}
 export default function MyTournaments() {
 	const [pTournies, setPTournies] = useState([]);
 	const [oTournies, setOTournies] = useState([]);
@@ -117,7 +89,6 @@ export default function MyTournaments() {
 							<TournamentCard
 								key={`${tournament.id}_organizing`}
 								tournament={tournament}
-								onClick={() => router.push(`/tournaments/${tournament.id}`)}
 							/>
 						))}
 					</div>
@@ -139,7 +110,6 @@ export default function MyTournaments() {
 							<TournamentCard
 								key={`${tournament.id}_participating`}
 								tournament={tournament}
-								onClick={() => router.push(`/tournaments/${tournament.id}`)}
 							/>
 						))}
 					</div>

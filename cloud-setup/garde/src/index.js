@@ -45,6 +45,16 @@ export default {
 						url.searchParams.get("type"),
 					);
 				}
+
+				if (path.includes("/deleteTournament")) {
+					const pathName = path.split("/");
+					return await deleteTournament(pathName[pathName.length - 1]);
+				}
+
+				if (path.includes("/deleteParticipant")) {
+					const [_, __, tournament_id, user_id] = path.split("/");
+					return await deleteParticipant(tournament_id, user_id);
+				}
 			} else if (request.method === "GET") {
 				if (path === "/") {
 					return handleGetRequest();
@@ -52,6 +62,16 @@ export default {
 
 				if (path === "/getTournaments") {
 					return await getTournaments();
+				}
+
+				if (path.includes("/getParticipants")) {
+					const pathName = path.split("/");
+					return await getParticipants(pathName[pathName.length - 1]);
+				}
+
+				if (path.includes("/getTournament")) {
+					const pathName = path.split("/");
+					return await getTournament(pathName[pathName.length - 1]);
 				}
 
 				if (path.includes("/getMyTournaments")) {
@@ -99,6 +119,11 @@ export default {
 				if (path.includes("/putTournament")) {
 					const pathName = path.split("/");
 					return await putTournament(pathName[pathName.length - 1], body);
+				}
+
+				if (path.includes("/updateTournament")) {
+					const pathName = path.split("/");
+					return await updateTournament(pathName[pathName.length - 1], body);
 				}
 
 				if (path.includes("/putOwned")) {
@@ -224,15 +249,96 @@ async function putCoachFencer(fencerId, coachId, fencerName, fencerEmail) {
 
 async function putOwned(userId, body) {
 	const query =
-		"INSERT OR IGNORE INTO owned_tournaments (user_id, user_type, tournament_id, relation) VALUES (?, ?, ?, ?);";
+		"INSERT OR IGNORE INTO owned_tournaments (user_id, user_type, user_name, user_email, tournament_id, relation) VALUES (?, ?, ?, ?, ?, ?);";
 	await DB.prepare(query)
-		.bind(userId, body.user_type, body.tournament_id, body.relation)
+		.bind(
+			userId,
+			body.user_type,
+			body.user_name,
+			body.user_email,
+			body.tournament_id,
+			body.relation,
+		)
 		.run();
 
 	const res = new Response(
 		JSON.stringify({ message: "Successfully added tournament to user" }),
 		{
 			status: 201,
+			headers: {
+				"Content-Type": "application/json",
+			},
+		},
+	);
+	return addCorsHeaders(res);
+}
+
+async function updateTournament(unique_id, body) {
+	const {
+		name,
+		description,
+		category,
+		prize_pool,
+		organizer_phone,
+		location,
+		privacy,
+		start_time,
+		end_time,
+		registration_fee,
+		max_participants,
+		eligibility,
+		is_team_based,
+		rules,
+		signup_deadline,
+	} = body;
+
+	// Update the tournament with the matching unique_id
+	const query = `
+		UPDATE tournaments
+		SET 
+			event_name = ?,
+			description = ?,
+			category = ?,
+			prize_pool = ?,
+			organizer_phone = ?,
+			location = ?,
+			privacy = ?,
+			start_time = ?,
+			end_time = ?,
+			registration_fee = ?,
+			max_participants = ?,
+			eligibility = ?,
+			is_team_based = ?,
+			rules = ?,
+			signup_deadline = ?
+		WHERE unique_id = ?;
+	`;
+
+	await DB.prepare(query)
+		.bind(
+			name,
+			description,
+			category,
+			prize_pool,
+			organizer_phone,
+			location,
+			privacy,
+			start_time,
+			end_time,
+			registration_fee,
+			max_participants,
+			eligibility,
+			is_team_based,
+			rules,
+			signup_deadline,
+			unique_id,
+		)
+		.run();
+
+	const res = new Response(
+		JSON.stringify({ message: "Successfully updated tournament" }),
+		{
+			status: 200,
 			headers: {
 				"Content-Type": "application/json",
 			},
@@ -260,10 +366,11 @@ async function putTournament(unique_id, body) {
 		eligibility,
 		is_team_based,
 		rules,
+		signup_deadline,
 	} = body;
 
 	const query =
-		"INSERT OR IGNORE INTO tournaments (unique_id, user_id, event_name, description, category, prize_pool, organizer_name, organizer_email, organizer_phone, location, privacy, start_time, end_time, registration_fee, max_participants, eligibility, is_team_based, rules) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
+		"INSERT OR IGNORE INTO tournaments (unique_id, user_id, event_name, description, category, prize_pool, organizer_name, organizer_email, organizer_phone, location, privacy, start_time, end_time, registration_fee, max_participants, eligibility, is_team_based, rules, signup_deadline) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
 	await DB.prepare(query)
 		.bind(
 			unique_id,
@@ -284,6 +391,7 @@ async function putTournament(unique_id, body) {
 			eligibility,
 			is_team_based,
 			rules,
+			signup_deadline,
 		)
 		.run();
 
@@ -509,6 +617,50 @@ async function getTournaments() {
 			JSON.stringify({
 				message: "Successfully retrieved fencer instructions",
 				tournaments: tournaments.results,
+			}),
+			{
+				status: 200,
+				headers: {
+					"Content-Type": "application/json",
+				},
+			},
+		),
+	);
+}
+
+async function getParticipants(id) {
+	const tournament = await DB.prepare(
+		"SELECT * FROM owned_tournaments WHERE tournament_id = ?",
+	)
+		.bind(id)
+		.all();
+	return addCorsHeaders(
+		new Response(
+			JSON.stringify({
+				message: "Successfully retrieved users",
+				tournament: tournament.results,
+			}),
+			{
+				status: 200,
+				headers: {
+					"Content-Type": "application/json",
+				},
+			},
+		),
+	);
+}
+
+async function getTournament(id) {
+	const tournament = await DB.prepare(
+		"SELECT * FROM tournaments WHERE unique_id = ?",
+	)
+		.bind(id)
+		.all();
+	return addCorsHeaders(
+		new Response(
+			JSON.stringify({
+				message: "Successfully retrieved tournament",
+				tournament: tournament.results,
 			}),
 			{
 				status: 200,
@@ -753,6 +905,50 @@ async function deleteCoachFencers(fencerId, coachId) {
 			},
 		},
 	);
+
+	return addCorsHeaders(res);
+}
+
+async function deleteTournament(id) {
+	const query = `
+        DELETE FROM tournaments
+        WHERE unique_id = ?;
+    `;
+	await DB.prepare(query).bind(id).run();
+
+	const listResult = await BUCKET.list({ prefix: id });
+
+	if (listResult.objects.length > 0) {
+		await Promise.all(
+			listResult.objects.map(async (video) => {
+				await BUCKET.delete(video.key);
+			}),
+		);
+	}
+
+	const res = new Response(JSON.stringify({ message: "Tournament deleted" }), {
+		status: 200,
+		headers: {
+			"Content-Type": "application/json",
+		},
+	});
+
+	return addCorsHeaders(res);
+}
+
+async function deleteParticipant(tournament_id, user_id) {
+	const query = `
+		DELETE FROM owned_tournaments
+		WHERE tournament_id = ? AND user_id = ?;
+	`;
+	await DB.prepare(query).bind(tournament_id, user_id).run();
+
+	const res = new Response(JSON.stringify({ message: "Participant deleted" }), {
+		status: 200,
+		headers: {
+			"Content-Type": "application/json",
+		},
+	});
 
 	return addCorsHeaders(res);
 }

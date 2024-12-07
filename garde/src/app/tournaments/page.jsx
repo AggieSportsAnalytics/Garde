@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import axios from "axios";
 import Link from "next/link";
 import { jwtDecode } from "jwt-decode";
@@ -62,7 +62,15 @@ function Navbar({ setLoggedIn, loggedIn, setIsModalOpen }) {
 	);
 }
 
-export default function Tournaments() {
+export default function TournamentsPage() {
+	return (
+		<Suspense fallback={<div>Loading...</div>}>
+			<Tournaments />
+		</Suspense>
+	);
+}
+
+function Tournaments() {
 	const [tournaments, setTournaments] = useState([]);
 	const [loggedIn, setLoggedIn] = useState(false);
 	const [isModalOpen, setIsModalOpen] = useState(false);

@@ -1,12 +1,11 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, Suspense } from "react";
 import {
 	AiOutlineCheckCircle,
 	AiOutlineExclamationCircle,
 } from "react-icons/ai";
 import { useSearchParams, useRouter } from "next/navigation";
-import Loader from "@/src/components/ui/Loader";
 import { jwtDecode } from "jwt-decode";
 import axios from "axios";
 
@@ -98,4 +97,10 @@ function VerifyEmail() {
 	);
 }
 
-export default VerifyEmail;
+export default function VerifyEmailPage() {
+	return (
+		<Suspense fallback={<div>Loading...</div>}>
+			<VerifyEmail />
+		</Suspense>
+	);
+}

@@ -39,7 +39,7 @@ CREATE TABLE IF NOT EXISTS users (
     id TEXT PRIMARY KEY,
     type TEXT NOT NULL CHECK (type IN ('fencer', 'coach')),
     name TEXT NOT NULL,
-    email TEXT NOT NULL UNIQUE,
+    email TEXT NOT NULL,
     password TEXT NOT NULL,
     is_verified BOOLEAN DEFAULT false
 );

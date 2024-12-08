@@ -24,6 +24,16 @@ function Navbar({ setLoggedIn, loggedIn, setIsModalOpen }) {
 		}
 	};
 
+	const handleMyTournamentClick = () => {
+		if (loggedIn) {
+			router.push("/tournaments/my-tournaments");
+		} else {
+			window.alert(
+				"You must login to see tournaments you have organized/joined",
+			);
+		}
+	};
+
 	return (
 		<>
 			<nav className="relative flex items-center bg-gray-900 text-white p-4 shadow-md">
@@ -45,7 +55,7 @@ function Navbar({ setLoggedIn, loggedIn, setIsModalOpen }) {
 					<button
 						type="button"
 						className="hover:text-blue-500"
-						onClick={() => router.push("/tournaments/my-tournaments")}
+						onClick={handleMyTournamentClick}
 					>
 						My Tournaments
 					</button>

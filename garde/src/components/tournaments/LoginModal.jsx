@@ -21,7 +21,7 @@ export default function LoginModal({ isModalOpen, setIsModalOpen, redirect }) {
 			overlayClassName="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center"
 		>
 			<h2 className="text-xl font-semibold mb-4 text-center">
-				Are you a Fencer or a Coach?
+				Login: Are you a Fencer or a Coach?
 			</h2>
 			<div className="flex justify-center gap-4">
 				<button

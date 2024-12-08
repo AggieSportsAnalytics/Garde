@@ -32,20 +32,52 @@ Version 1.0.0 2024-09-12
 Created by Vikram Penumarti
 """
 
-# SQL commands to create the tables
-create_fencers_table = """
-CREATE TABLE IF NOT EXISTS fencer (
-    unique_id TEXT PRIMARY KEY, 
-    name TEXT NOT NULL,                   
+## SQL commands to create the tables
+
+create_users_table = """
+CREATE TABLE IF NOT EXISTS users (
+    id TEXT PRIMARY KEY,
+    type TEXT NOT NULL CHECK (type IN ('fencer', 'coach')),
+    name TEXT NOT NULL,
     email TEXT NOT NULL UNIQUE,
     password TEXT NOT NULL,
     is_verified BOOLEAN DEFAULT false
 );
 """
 
+create_coach_fencers_table = """
+CREATE TABLE IF NOT EXISTS coach_fencer (
+    coach_id TEXT,       
+    fencer_id TEXT,
+    fencer_name TEXT NOT NULL,
+    fencer_email TEXT NOT NULL,
+    PRIMARY KEY (coach_id, fencer_id),
+    FOREIGN KEY (coach_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (fencer_id) REFERENCES users(id) ON DELETE CASCADE
+);
+"""
+
+create_fencer_sessions_table = """
+CREATE TABLE IF NOT EXISTS fencer_sessions (
+    fencer_id TEXT NOT NULL,
+    video_id TEXT NOT NULL,
+    pose TEXT,
+    feet_distance REAL,
+    speed REAL,
+    elbow_left REAL, 
+    hip_left REAL, 
+    knee_left REAL, 
+    elbow_right REAL, 
+    hip_right REAL, 
+    knee_right REAL,
+    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (fencer_id) REFERENCES users(id) ON DELETE CASCADE
+);
+"""
+
 create_tournaments_table = """
 CREATE TABLE IF NOT EXISTS tournaments (
-    unique_id TEXT PRIMARY KEY,
+    tournament_id TEXT PRIMARY KEY,
     user_id TEXT NOT NULL,
     event_name TEXT NOT NULL,
     description TEXT,
@@ -63,62 +95,23 @@ CREATE TABLE IF NOT EXISTS tournaments (
     max_participants INTEGER,
     eligibility TEXT,
     is_team_based BOOLEAN,
-    rules TEXT
+    rules TEXT,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 """
 
-create_owned_tournaments_table = """
-CREATE TABLE IF NOT EXISTS owned_tournaments (
+create_tournament_users_table = """
+CREATE TABLE IF NOT EXISTS tournament_users (
     user_id TEXT,
+    tournament_id TEXT,
     user_type TEXT NOT NULL CHECK (user_type IN ('fencer', 'coach')),
     user_name TEXT NOT NULL,
     user_email TEXT NOT NULL,
-    tournament_id TEXT,
     relation TEXT,
     timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (user_id, tournament_id),
     FOREIGN KEY (tournament_id) REFERENCES tournaments(unique_id) ON DELETE CASCADE
-);
-"""
-
-# consider changing session_id to uuid specified on client/server side rather than autoincrement
-create_fencer_sessions_table = """
-CREATE TABLE IF NOT EXISTS fencer_sessions (
-    fencer_id TEXT,
-    video_id TEXT NOT NULL,
-    pose TEXT,
-    feet_distance REAL,
-    speed REAL,
-    elbow_left REAL, 
-    hip_left REAL, 
-    knee_left REAL, 
-    elbow_right REAL, 
-    hip_right REAL, 
-    knee_right REAL,
-    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (fencer_id) REFERENCES fencer(unique_id) ON DELETE CASCADE
-);
-"""
-
-create_coaches_table = """
-CREATE TABLE IF NOT EXISTS coach (
-    unique_id TEXT PRIMARY KEY, 
-    name TEXT NOT NULL,
-    email TEXT NOT NULL UNIQUE,
-    password TEXT NOT NULL,
-    is_verified BOOLEAN DEFAULT false
-);
-"""
-
-create_coach_fencers_table = """
-CREATE TABLE IF NOT EXISTS coach_fencer (
-    coach_id TEXT,       
-    fencer_id TEXT,
-    fencer_name TEXT NOT NULL,
-    fencer_email TEXT NOT NULL,
-    PRIMARY KEY (coach_id, fencer_id),
-    FOREIGN KEY (coach_id) REFERENCES coach(unique_id) ON DELETE CASCADE,
-    FOREIGN KEY (fencer_id) REFERENCES fencer(unique_id) ON DELETE CASCADE
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 """
 
@@ -138,7 +131,6 @@ VALUES
     ('sjbarman@ucdavis.edu');
 """
 
-# SQL command to create the ideal_angles table
 create_ideal_angles_table = """
 CREATE TABLE IF NOT EXISTS ideal_angles (
     name TEXT PRIMARY KEY,      
@@ -178,7 +170,6 @@ VALUES
     ('Double Retreat followed by Fast Advance');
 """
 
-# Insert or replace for ideal_angles table
 insert_or_replace_ideal_angles = """
 INSERT OR IGNORE INTO ideal_angles (name, elbow_left, hip_left, knee_left, elbow_right, hip_right, knee_right)
 VALUES 
@@ -301,9 +292,10 @@ if __name__ == "__main__":
     if not args.destroy:
         create_d1_database(database_name)
 
-        execute_sql(database_name, create_fencers_table)
+        execute_sql(database_name, create_users_table)
+        execute_sql(database_name, create_tournaments_table)
+        execute_sql(database_name, create_tournament_users_table)
         execute_sql(database_name, create_fencer_sessions_table)
-        execute_sql(database_name, create_coaches_table)
         execute_sql(database_name, create_coach_fencers_table)
         execute_sql(database_name, create_fencer_instruction_table)
         execute_sql(database_name, create_ideal_angles_table)
@@ -311,8 +303,71 @@ if __name__ == "__main__":
         execute_sql(database_name, insert_or_replace_fencer_instructions)
         execute_sql(database_name, insert_or_replace_ideal_angles)
         execute_sql(database_name, insert_or_replace_whitelist)
-        execute_sql(database_name, create_tournaments_table)
-        execute_sql(database_name, create_owned_tournaments_table)
         deploy_script()
     else:
         delete_d1_database(database_name)
+
+
+# create_fencers_table = """
+# CREATE TABLE IF NOT EXISTS fencer (
+#     unique_id TEXT PRIMARY KEY,
+#     name TEXT NOT NULL,
+#     email TEXT NOT NULL UNIQUE,
+#     password TEXT NOT NULL,
+#     is_verified BOOLEAN DEFAULT false
+# );
+# """
+
+# create_coaches_table = """
+# CREATE TABLE IF NOT EXISTS coach (
+#     unique_id TEXT PRIMARY KEY,
+#     name TEXT NOT NULL,
+#     email TEXT NOT NULL UNIQUE,
+#     password TEXT NOT NULL,
+#     is_verified BOOLEAN DEFAULT false
+# );
+# """
+
+# create_coach_fencers_table = """
+# CREATE TABLE IF NOT EXISTS coach_fencer (
+#     coach_id TEXT,
+#     fencer_id TEXT,
+#     fencer_name TEXT NOT NULL,
+#     fencer_email TEXT NOT NULL,
+#     PRIMARY KEY (coach_id, fencer_id),
+#     FOREIGN KEY (coach_id) REFERENCES coach(unique_id) ON DELETE CASCADE,
+#     FOREIGN KEY (fencer_id) REFERENCES fencer(unique_id) ON DELETE CASCADE
+# );
+# """
+
+# create_fencer_sessions_table = """
+# CREATE TABLE IF NOT EXISTS fencer_sessions (
+#     fencer_id TEXT,
+#     video_id TEXT NOT NULL,
+#     pose TEXT,
+#     feet_distance REAL,
+#     speed REAL,
+#     elbow_left REAL,
+#     hip_left REAL,
+#     knee_left REAL,
+#     elbow_right REAL,
+#     hip_right REAL,
+#     knee_right REAL,
+#     timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+#     FOREIGN KEY (fencer_id) REFERENCES fencer(unique_id) ON DELETE CASCADE
+# );
+# """
+
+# create_owned_tournaments_table = """
+# CREATE TABLE IF NOT EXISTS owned_tournaments (
+#     user_id TEXT,
+#     user_type TEXT NOT NULL CHECK (user_type IN ('fencer', 'coach')),
+#     user_name TEXT NOT NULL,
+#     user_email TEXT NOT NULL,
+#     tournament_id TEXT,
+#     relation TEXT,
+#     timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+#     PRIMARY KEY (user_id, tournament_id),
+#     FOREIGN KEY (tournament_id) REFERENCES tournaments(unique_id) ON DELETE CASCADE
+# );
+# """

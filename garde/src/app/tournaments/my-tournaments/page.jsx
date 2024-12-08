@@ -40,7 +40,7 @@ export default function MyTournaments() {
 				?.split("=")[1];
 
 			if (!token) {
-				router.push("/tournaments");
+				router.push("/tournaments?restricted=true");
 				return null;
 			}
 
@@ -48,13 +48,13 @@ export default function MyTournaments() {
 				const decoded = jwtDecode(token);
 				const currentTime = Date.now() / 1000;
 				if (decoded.exp <= currentTime) {
-					router.push("/tournaments");
+					router.push("/tournaments?restricted=true");
 					return null;
 				}
 				return decoded.id;
 			} catch (error) {
 				console.error("Invalid token:", error);
-				router.push("/tournaments");
+				router.push("/tournaments?restricted=true");
 				return null;
 			}
 		};

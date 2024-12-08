@@ -1,29 +1,24 @@
 import argparse
 import os
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 import boto3
+from botocore.config import Config
 from dotenv import load_dotenv
 from tqdm import tqdm
 
+# Load environment variables
 load_dotenv()
 
-program_name = """
-copy_vids.py
-"""
-program_usage = """
-copy_vids.py [options]
-"""
+# Program metadata
+program_name = "copy_vids.py"
+program_usage = "copy_vids.py [options]"
 program_description = """description:
-This is a python script to move files under any prefix intrabucket 
-"""
+This is a Python script to copy files under any prefix cross/intra bucket."""
 program_epilog = """
-You must create an AWS access key id and secret from cloudflare for whatever buckets 
-you need access to, please set TTL to 1 day only for security reasons
-"""
-program_version = """
-Version 1.0.0 2024-12-05
-Created by Vikram Penumarti
-"""
+You must create an AWS access key id and secret from Cloudflare for whatever buckets 
+you need access to, please set TTL to 1 day only for security reasons."""
+program_version = "Version 1.0.0 2024-12-05 Created by Vikram Penumarti"
 
 
 def set_parser(
@@ -82,6 +77,7 @@ def set_parser(
 
 
 def list_all_objects(s3_client, bucket_name, prefix):
+    """List all objects under a given prefix in the bucket."""
     objects = []
     continuation_token = None
 
@@ -89,7 +85,7 @@ def list_all_objects(s3_client, bucket_name, prefix):
         params = {
             "Bucket": bucket_name,
             "Prefix": prefix,
-            "MaxKeys": 1000,  # Max number of objects per request
+            "MaxKeys": 1000,
         }
         if continuation_token:
             params["ContinuationToken"] = continuation_token
@@ -100,7 +96,7 @@ def list_all_objects(s3_client, bucket_name, prefix):
             objects.extend(response["Contents"])
 
         # Check if there are more objects to fetch
-        if response.get("IsTruncated"):  # True if more objects are available
+        if response.get("IsTruncated"):
             continuation_token = response["NextContinuationToken"]
         else:
             break
@@ -108,10 +104,32 @@ def list_all_objects(s3_client, bucket_name, prefix):
     return objects
 
 
+def copy_file(
+    s3_client, source_bucket, source_key, destination_bucket, destination_key, dry
+):
+    """Copy a single file from the source bucket to the destination bucket."""
+
+    try:
+        if not dry:
+            s3_client.copy_object(
+                Bucket=destination_bucket,
+                CopySource={"Bucket": source_bucket, "Key": source_key},
+                Key=destination_key,
+            )
+        print(
+            f"Copying file from {source_bucket}/{source_key} to {destination_bucket}/{destination_key}"
+        )
+        return True
+    except Exception as e:
+        print(f"Failed to copy {source_key}: {e}")
+        return False
+
+
 def copy_files_in_bucket(
     dry, source_bucket, destination_bucket, prefix, destination_prefix
 ):
-    # Initialize the S3 client for Cloudflare R2
+    """Copy files in a bucket from one prefix to another."""
+    # Initialize the S3 client
     ID = os.getenv("AWS_ACCESS_KEY_ID")
     SECRET = os.getenv("AWS_SECRET_ACCESS_KEY")
 
@@ -119,40 +137,53 @@ def copy_files_in_bucket(
         print("Error: Environment variables are not set.")
         return
 
+    s3_config = Config(max_pool_connections=50)  # Increase connection pool
     s3_client = boto3.client(
         "s3",
         endpoint_url="https://aab5b28251de4c153b96e6f8d3179cbc.r2.cloudflarestorage.com",
         aws_access_key_id=ID,
         aws_secret_access_key=SECRET,
         region_name="auto",
+        config=s3_config,
     )
 
     try:
         # List objects under the source prefix
         videos = list_all_objects(s3_client, source_bucket, prefix)
-        print(f"Copying {len(videos)} files")
+        print(f"Found {len(videos)} files to copy.")
 
-        with tqdm(total=len(videos), desc="Copying files", unit="file") as pbar:
+        # Use ThreadPoolExecutor for concurrency
+        with ThreadPoolExecutor(max_workers=10) as executor, tqdm(
+            total=len(videos), desc="Copying files", unit="file"
+        ) as pbar:
+            futures = []
             for obj in videos:
                 source_key = obj["Key"]
-                # Construct destination key
                 destination_key = source_key.replace(prefix, destination_prefix, 1)
 
-                print(f"Copying {source_key} to {destination_key}...")
-
-                if not dry:
-                    s3_client.copy_object(
-                        Bucket=destination_bucket,
-                        CopySource={"Bucket": source_bucket, "Key": source_key},
-                        Key=destination_key,
+                futures.append(
+                    executor.submit(
+                        copy_file,
+                        s3_client,
+                        source_bucket,
+                        source_key,
+                        destination_bucket,
+                        destination_key,
+                        dry,
                     )
+                )
 
+            # Wait for all futures to complete
+            for future in as_completed(futures):
                 pbar.update(1)
+                future.result()
 
         if dry:
-            print("Dry run complete.")
-        print(f"All {len(videos)} files copied successfully.")
-
+            print(
+                f"Dry run complete. No files were copied.\n{len(videos)} files audited successfully."
+            )
+        else:
+            print(f"All {len(videos)} files copied successfully.")
     except Exception as e:
         print(f"Error copying files: {e}")
 

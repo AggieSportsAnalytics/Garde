@@ -4,10 +4,10 @@ import { useState, useEffect } from "react";
 import { GoogleLogin } from "@react-oauth/google";
 import { useRouter, useSearchParams } from "next/navigation";
 import axios from "axios";
-import { jwtDecode } from "jwt-decode";
 import Link from "next/link";
 import Loader from "../ui/Loader";
 import CoachPageScaffold from "../coach_page/CoachPageScaffold";
+import checkAuth from "@/src/app/hooks/jwt_decode";
 
 export default function Signin({ isSignUpDefault, type }) {
 	const [isSignUp, setIsSignUp] = useState(isSignUpDefault || false);
@@ -29,34 +29,15 @@ export default function Signin({ isSignUpDefault, type }) {
 	}, [searchParams]);
 
 	useEffect(() => {
-		const checkToken = async () => {
-			// Get the token from cookies
-			const token = document.cookie
-				.split("; ")
-				.find((row) => row.startsWith("token="))
-				?.split("=")[1];
-
-			if (token) {
-				try {
-					// Decode the token to check its validity
-					const decoded = jwtDecode(token);
-
-					// Check if the token is still valid (i.e., not expired)
-					const currentTime = Date.now() / 1000;
-					if (decoded.exp > currentTime) {
-						if (decoded.type === type) {
-							router.push(`/${type}_page`);
-						} else {
-							router.push(`/${type}_signin`);
-						}
-					}
-				} catch (error) {
-					console.error(error);
-				}
+		try {
+			const decoded = checkAuth(router, `${type}_signin`, type, true);
+			if (decoded) {
+				router.push(`${type}_page`);
 			}
-		};
-
-		checkToken();
+		} catch (error) {
+			console.error(error);
+			router.push(`${type}_signin?restricted=true`);
+		}
 	}, [router, type]);
 
 	const closeModal = () => {

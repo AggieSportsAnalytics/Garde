@@ -31,9 +31,9 @@ const Fencer_Stats = dynamic(
 	{ ssr: false },
 );
 import { useRouter } from "next/navigation";
-import { jwtDecode } from "jwt-decode";
 import axios from "axios";
 import Chatbot from "../../components/fencer_page/Chatbot";
+import checkAuth from "../hooks/jwt_decode";
 
 const MemoizedFencerStats = memo(Fencer_Stats);
 const MemoizedInstruction = memo(Instruction);
@@ -253,29 +253,12 @@ export default function Fencer_Page2() {
 		}
 
 		try {
-			const token = document.cookie
-				.split("; ")
-				.find((row) => row.startsWith("token="))
-				?.split("=")[1];
-
-			if (token) {
-				const decoded = jwtDecode(token);
-
-				const currentTime = Date.now() / 1000;
-
-				if (decoded.type !== "fencer" || decoded.exp <= currentTime) {
-					router.push("fencer_signin");
-				} else {
-					setFencerId(decoded.id);
-					setDecoded(decoded);
-				}
-			} else {
-				console.error("No cookies found");
-				router.push("fencer_signin");
-			}
+			const decoded = checkAuth(router, "fencer_signin", "fencer");
+			setFencerId(decoded.id);
+			setDecoded(decoded);
 		} catch (error) {
 			console.error(error);
-			router.push("fencer_signin");
+			router.push("fencer_signin?restricted=true");
 		}
 	}, []);
 

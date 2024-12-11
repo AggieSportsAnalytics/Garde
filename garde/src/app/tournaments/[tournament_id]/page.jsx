@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useSelector } from "react-redux";
 import { useEffect, useState } from "react";
 import axios from "axios";
@@ -15,9 +15,9 @@ import {
 	FaEdit,
 } from "react-icons/fa";
 import Link from "next/link";
-import { jwtDecode } from "jwt-decode";
 import LoginModal from "@/src/components/tournaments/LoginModal";
 import { FaVideo, FaUserPlus } from "react-icons/fa";
+import checkAuth from "../../hooks/jwt_decode";
 
 export default function TournamentPage({ params }) {
 	const [tournament, setTournament] = useState(null);
@@ -27,6 +27,8 @@ export default function TournamentPage({ params }) {
 	const { tournament_id } = params;
 	const [token, setToken] = useState("");
 	const router = useRouter();
+	const [showAlert, setShowAlert] = useState(false);
+	const searchParams = useSearchParams();
 
 	const selectedTournament = useSelector(
 		(state) => state.tournament.selectedTournament,
@@ -55,30 +57,23 @@ export default function TournamentPage({ params }) {
 				const response = await axios.get(workerUrl);
 
 				setTournament(response.data.tournament[0]);
+				const restricted = searchParams.get("restricted");
+				if (restricted === "true") {
+					setShowAlert(true);
+				}
 			} catch (error) {
 				console.error("Error fetching tournament:", error);
 			}
 		};
 
 		const checkToken = async () => {
-			const token = document.cookie
-				.split("; ")
-				.find((row) => row.startsWith("token="))
-				?.split("=")[1];
-
-			if (!token) {
-				return;
-			}
-
 			try {
-				const decoded = jwtDecode(token);
-				const currentTime = Date.now() / 1000;
-				if (decoded.exp <= currentTime) {
-					return null;
-				}
+				const decoded = checkAuth(router, "tournaments", "", true);
 				setToken(decoded);
 			} catch (error) {
-				console.error("Invalid token:", error);
+				router.push("tournaments?restricted=true");
+				console.error(error);
+				return null;
 			}
 		};
 
@@ -168,8 +163,30 @@ export default function TournamentPage({ params }) {
 		}
 	};
 
+	const closeModal = () => {
+		setShowAlert(false);
+		router.push(`/tournaments/${tournament_id}`);
+	};
+
 	return (
 		<>
+			{showAlert && (
+				<div className="text-white fixed inset-0 bg-opacity-50 flex justify-center items-center px-4">
+					<div className="p-6 bg-gray-900 rounded-lg shadow-lg max-w-sm w-full">
+						<h2 className="text-lg font-semibold mb-3">Restricted Access</h2>
+						<p className="mb-5">
+							You must sign in to access the requested page.
+						</p>
+						<button
+							type="button"
+							onClick={closeModal}
+							className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg w-full"
+						>
+							Dismiss
+						</button>
+					</div>
+				</div>
+			)}
 			<LoginModal
 				isModalOpen={isModalOpen}
 				setIsModalOpen={setIsModalOpen}

@@ -2,10 +2,10 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { jwtDecode } from "jwt-decode";
 import axios from "axios";
 import TournamentDetail from "@/src/components/tournaments/TournamentDetail";
 import { useSelector } from "react-redux";
+import checkAuth from "@/src/app/hooks/jwt_decode";
 
 export default function UpdateTournament({ params }) {
 	const router = useRouter();
@@ -51,28 +51,10 @@ export default function UpdateTournament({ params }) {
 					? selectedTournament
 					: await fetchTournament();
 
-			// Token validation
 			try {
-				const token = document.cookie
-					.split("; ")
-					.find((row) => row.startsWith("token="))
-					?.split("=")[1];
-
-				if (!token) {
-					console.error("No cookies found");
-					router.push("/tournaments?restricted=true");
-					return;
-				}
-
-				const decoded = jwtDecode(token);
-				const currentTime = Date.now() / 1000;
-
-				if (
-					decoded.exp <= currentTime ||
-					tournamentData?.user_id !== decoded?.id
-				) {
-					router.push("/tournaments?restricted=true");
-					return;
+				const decoded = checkAuth(router, "tournaments", "");
+				if (decoded?.id !== tournamentData?.user_id) {
+					router.push(`/tournaments/${tournament_id}?restricted=true`);
 				}
 
 				// Set form data if validation passes
@@ -95,7 +77,7 @@ export default function UpdateTournament({ params }) {
 				});
 			} catch (error) {
 				console.error("Token validation error:", error);
-				router.push("/tournaments?restricted=true");
+				router.push(`/tournaments/${tournament_id}?restricted=true`);
 			}
 		};
 

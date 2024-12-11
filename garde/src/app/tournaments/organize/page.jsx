@@ -3,9 +3,9 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { v4 as uuidv4 } from "uuid";
-import { jwtDecode } from "jwt-decode";
 import axios from "axios";
 import TournamentDetail from "@/src/components/tournaments/TournamentDetail";
+import checkAuth from "../../hooks/jwt_decode";
 
 export default function OrganizeTournament() {
 	const router = useRouter();
@@ -34,22 +34,8 @@ export default function OrganizeTournament() {
 
 	useEffect(() => {
 		try {
-			const token = document.cookie
-				.split("; ")
-				.find((row) => row.startsWith("token="))
-				?.split("=")[1];
+			const decoded = checkAuth(router, "tournaments", "");
 
-			if (!token) {
-				console.error("No cookies found");
-				router.push("/tournaments?restricted=true");
-			}
-
-			const decoded = jwtDecode(token);
-			const currentTime = Date.now() / 1000;
-
-			if (decoded.exp <= currentTime) {
-				router.push("/tournaments?restricted=true");
-			}
 			setToken(decoded);
 
 			setFormData({

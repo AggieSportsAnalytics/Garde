@@ -3,9 +3,9 @@
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import axios from "axios";
-import { jwtDecode } from "jwt-decode";
 import Link from "next/link";
 import TournamentCard from "@/src/components/tournaments/TournamentCard";
+import checkAuth from "../../hooks/jwt_decode";
 
 export default function MyTournaments() {
 	const [pTournies, setPTournies] = useState([]);
@@ -34,28 +34,12 @@ export default function MyTournaments() {
 		};
 
 		const checkToken = async () => {
-			const token = document.cookie
-				.split("; ")
-				.find((row) => row.startsWith("token="))
-				?.split("=")[1];
-
-			if (!token) {
-				router.push("/tournaments?restricted=true");
-				return null;
-			}
-
 			try {
-				const decoded = jwtDecode(token);
-				const currentTime = Date.now() / 1000;
-				if (decoded.exp <= currentTime) {
-					router.push("/tournaments?restricted=true");
-					return null;
-				}
-				return decoded.id;
+				const decoded = checkAuth(router, "tournaments", "");
+				return decoded?.id;
 			} catch (error) {
-				console.error("Invalid token:", error);
+				console.error(error);
 				router.push("/tournaments?restricted=true");
-				return null;
 			}
 		};
 

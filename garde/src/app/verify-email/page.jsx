@@ -16,7 +16,7 @@ function VerifyEmail() {
 
 	useEffect(() => {
 		const workerUrl = `${process.env.NEXT_PUBLIC_GARDE_WORKER}/verifyEmail`;
-		const token = searchParams.get("token"); // Get the token from the URL
+		const token = searchParams.get("token");
 
 		const verifyEmail = async () => {
 			if (!token) {
@@ -25,11 +25,15 @@ function VerifyEmail() {
 			}
 
 			try {
-				// Verify the token here (client-side or in a Next.js backend route)
+				await axios.get("/api/verify_jwt", {
+					headers: {
+						Authorization: `Bearer ${token}`,
+					},
+				});
+
 				const decoded = jwtDecode(token);
 
-				// Example: Add more checks if necessary (e.g., check expiration)
-				if (!decoded || !decoded.email || !decoded.type) {
+				if (!decoded?.email || !decoded.type) {
 					throw new Error("Invalid token");
 				}
 
@@ -38,14 +42,13 @@ function VerifyEmail() {
 					type: decoded.type,
 				};
 
-				// Token is valid, send POST request to Cloudflare Worker
-				const response = await axios.post(workerUrl, queryData, {
+				await axios.post(workerUrl, queryData, {
 					headers: { "Content-Type": "application/json" },
 				});
 
 				setMessage("Email verified successfully! Redirecting...");
 				setTimeout(() => {
-					router.push(`/${decoded.type}_signin`); // Redirect to sign-in page after 3 seconds
+					router.push(`/${decoded.type}_signin`);
 				}, 3000);
 			} catch (error) {
 				console.error(error);

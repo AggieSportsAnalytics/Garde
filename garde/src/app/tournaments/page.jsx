@@ -4,9 +4,9 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useState, useEffect, Suspense } from "react";
 import axios from "axios";
 import Link from "next/link";
-import { jwtDecode } from "jwt-decode";
 import TournamentCard from "@/src/components/tournaments/TournamentCard";
 import LoginModal from "@/src/components/tournaments/LoginModal";
+import checkAuth from "../hooks/jwt_decode";
 
 function Navbar({ setLoggedIn, loggedIn, setIsModalOpen }) {
 	const router = useRouter();
@@ -100,26 +100,15 @@ function Tournaments() {
 		};
 
 		const checkToken = async () => {
-			// Get the token from cookies
-			const token = document.cookie
-				.split("; ")
-				.find((row) => row.startsWith("token="))
-				?.split("=")[1];
-
-			if (token) {
-				try {
-					// Decode the token to check its validity
-					const decoded = jwtDecode(token);
-
-					// Check if the token is still valid (i.e., not expired)
-					const currentTime = Date.now() / 1000;
-					if (decoded.exp > currentTime) {
-						setLoggedIn(true);
-					}
-				} catch (error) {
-					setLoggedIn(false);
-					console.error(error);
+			try {
+				const decoded = checkAuth(router, "tournaments", "", true);
+				if (decoded) {
+					setLoggedIn(true);
 				}
+			} catch (error) {
+				console.error(error);
+				router.push("tournaments?restricted=true");
+				setLoggedIn(false);
 			}
 		};
 

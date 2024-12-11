@@ -89,7 +89,7 @@ async function sendVerificationEmail(email, type) {
 	});
 
 	const verificationToken = jwt.sign({ email: email, type: type }, JWT_SECRET, {
-		expiresIn: "1h",
+		expiresIn: "15m",
 	});
 
 	const verificationUrl = `${BASE_URL}/verify-email?token=${verificationToken}`;
@@ -105,7 +105,7 @@ async function sendVerificationEmail(email, type) {
 				</div>
 				<h2 style="color: #4CAF50; text-align: center;">Welcome to Garde!</h2>
 				<p>Hi there,</p>
-				<p>Thank you for signing up for Garde. We're excited to have you on board! Please verify your email address to activate your account.</p>
+				<p>Thank you for signing up for Garde. We're excited to have you on board! Please verify your email address within the next 15 minutes to activate your account.</p>
 				<p style="text-align: center;">
 					<a href="${verificationUrl}" style="background-color: #4CAF50; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block; font-weight: bold;">Verify Your Email</a>
 				</p>

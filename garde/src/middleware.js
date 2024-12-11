@@ -5,8 +5,19 @@ const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
 export async function middleware(req) {
 	const token = req.cookies.get("token")?.value;
 	const requestedPage = req.nextUrl.pathname;
-	const redirect =
-		requestedPage === "/coach_page" ? "/coach_signin" : "/fencer_signin";
+
+	let redirect = "/";
+	if (requestedPage.includes("/coach_page")) {
+		redirect = "/coach_signin";
+	} else if (requestedPage.includes("/fencer_page")) {
+		redirect = "/fencer_signin";
+	} else if (
+		requestedPage.includes("/tournaments/organize") ||
+		requestedPage.includes("/tournaments/my-tournaments") ||
+		/^\/tournaments\/[0-9a-fA-F-]+\/update$/.test(requestedPage)
+	) {
+		redirect = "/tournaments";
+	}
 
 	// Check if token is present
 	if (!token) {
@@ -17,30 +28,33 @@ export async function middleware(req) {
 
 	try {
 		const res = await fetch(`${BASE_URL}/api/verify_jwt`, {
-			method: "POST", // Use the POST method to match your API route
 			headers: {
-				cookie: req.headers.get("cookie"), // Forward cookies to the API
+				Authorization: `Bearer ${token}`,
 			},
 		});
 
-		// If the token is invalid or the API returns an error
 		if (res.status !== 200) {
 			const url = new URL(redirect, req.url);
 			url.searchParams.set("restricted", "true");
 			return NextResponse.redirect(url);
 		}
 
-		// If valid, continue
 		return NextResponse.next();
 	} catch (error) {
-		console.error("Error in middleware fetch:", error);
-		// Handle error, e.g., redirect to an error page
-		const url = new URL("/error", req.url);
+		console.error(error);
+		const url = new URL(redirect, req.url);
+		url.searchParams.set("restricted", "true");
 		return NextResponse.redirect(url);
 	}
 }
 
 // Only run middleware on protected routes
 export const config = {
-	matcher: ["/coach_page", "/fencer_page"],
+	matcher: [
+		"/coach_page",
+		"/fencer_page",
+		"/tournaments/organize",
+		"/tournaments/my-tournaments",
+		"/tournaments/:path/update",
+	],
 };

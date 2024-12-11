@@ -6,10 +6,10 @@ import Videos from "@/src/components/coach_page/Videos";
 import Editor from "@/src/components/coach_page/Editor";
 import Analytics from "@/src/components/coach_page/Analytics";
 import { useState, useEffect } from "react";
-import { jwtDecode } from "jwt-decode";
 import axios from "axios";
 import { useRouter } from "next/navigation";
 import CoachPageScaffold from "@/src/components/coach_page/CoachPageScaffold";
+import checkAuth from "@/src/app/hooks/jwt_decode";
 
 export default function CoachPage() {
 	const [id, setId] = useState(""); // coach id
@@ -30,25 +30,10 @@ export default function CoachPage() {
 	// Fetch the coach ID and fencers
 	useEffect(() => {
 		try {
-			const token = document.cookie
-				.split("; ")
-				.find((row) => row.startsWith("token="))
-				?.split("=")[1];
-
-			if (token) {
-				const decoded = jwtDecode(token);
-				const currentTime = Date.now() / 1000;
-
-				if (decoded.type !== "coach" || decoded.exp <= currentTime) {
-					router.push("coach_signin?restricted=true");
-				}
-				setId(decoded.id);
-				setCoachName(decoded.name);
-				getInfo("getCoach", decoded.id);
-			} else {
-				console.error("No cookies found");
-				router.push("coach_signin?restricted=true");
-			}
+			const decoded = checkAuth(router, "coach_signin", "coach");
+			setId(decoded.id);
+			setCoachName(decoded.name);
+			getInfo("getCoach", decoded.id);
 		} catch (error) {
 			console.error(error);
 			router.push("coach_signin?restricted=true");

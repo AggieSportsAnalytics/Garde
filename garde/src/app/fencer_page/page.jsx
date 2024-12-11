@@ -258,7 +258,7 @@ export default function Fencer_Page2() {
 			setDecoded(decoded);
 		} catch (error) {
 			console.error(error);
-			router.push("fencer_signin?restricted=true");
+			router.push("/fencer_signin?restricted=true");
 		}
 	}, []);
 

@@ -13,10 +13,12 @@ export async function middleware(req) {
 		redirect = "/fencer_signin";
 	} else if (
 		requestedPage.includes("/tournaments/organize") ||
-		requestedPage.includes("/tournaments/my-tournaments") ||
-		/^\/tournaments\/[0-9a-fA-F-]+\/update$/.test(requestedPage)
+		requestedPage.includes("/tournaments/my-tournaments")
 	) {
 		redirect = "/tournaments";
+	} else if (/^\/tournaments\/[0-9a-fA-F-]+\/update$/.test(requestedPage)) {
+		const tId = requestedPage.split("/")[2];
+		redirect = `/tournaments/${tId}`;
 	}
 
 	// Check if token is present

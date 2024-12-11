@@ -21,20 +21,20 @@ const checkAuth = (router, redirect, type, noRedirect = false) => {
 					!decoded.name) &&
 				!noRedirect
 			) {
-				router.push(`${redirect}?restricted=true`);
+				router.push(`/${redirect}?restricted=true`);
 				return null;
 			}
 		} else {
 			console.error("No token found");
 			if (!noRedirect) {
-				router.push(`${redirect}?restricted=true`);
+				router.push(`/${redirect}?restricted=true`);
 			}
 			return null;
 		}
 	} catch (error) {
 		console.error("Authentication error:", error);
 		if (!noRedirect) {
-			router.push(`${redirect}?restricted=true`);
+			router.push(`/${redirect}?restricted=true`);
 		}
 		return null;
 	}

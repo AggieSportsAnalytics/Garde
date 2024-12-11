@@ -1,12 +1,13 @@
 "use client";
 
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useState, useEffect, Suspense } from "react";
 import axios from "axios";
 import Link from "next/link";
 import TournamentCard from "@/src/components/tournaments/TournamentCard";
-import LoginModal from "@/src/components/tournaments/LoginModal";
 import checkAuth from "../hooks/jwt_decode";
+import RestrictedAlert from "@/src/components/ui/RestrictedAlert";
+import LoginModal from "@/src/components/tournaments/LoginModal";
 
 function Navbar({ setLoggedIn, loggedIn, setIsModalOpen }) {
 	const router = useRouter();
@@ -84,8 +85,7 @@ function Tournaments() {
 	const [tournaments, setTournaments] = useState([]);
 	const [loggedIn, setLoggedIn] = useState(false);
 	const [isModalOpen, setIsModalOpen] = useState(false);
-	const [showAlert, setShowAlert] = useState(false);
-	const searchParams = useSearchParams();
+	const router = useRouter();
 
 	useEffect(() => {
 		const fetchTournaments = async () => {
@@ -112,29 +112,16 @@ function Tournaments() {
 			}
 		};
 
-		const restricted = searchParams.get("restricted");
-		if (restricted === "true") {
-			setShowAlert(true);
-		}
-
 		checkToken();
 		fetchTournaments();
-	}, [searchParams]);
-
-	const router = useRouter();
+	}, [router]);
 
 	const handleOrganize = () => {
 		if (loggedIn) {
 			router.push("/tournaments/organize");
 		} else {
 			window.alert("You must login to organize tournaments");
-			setIsModalOpen(true);
 		}
-	};
-
-	const closeModal = () => {
-		setShowAlert(false);
-		router.push("/tournaments");
 	};
 
 	return (
@@ -172,23 +159,7 @@ function Tournaments() {
 				setIsModalOpen={setIsModalOpen}
 				redirect={"/tournaments"}
 			/>
-			{showAlert && (
-				<div className="fixed inset-0 bg-opacity-50 flex justify-center items-center px-4">
-					<div className="p-6 bg-gray-900 rounded-lg shadow-lg max-w-sm w-full">
-						<h2 className="text-lg font-semibold mb-3">Restricted Access</h2>
-						<p className="mb-5">
-							You must sign in to access the requested page.
-						</p>
-						<button
-							type="button"
-							onClick={closeModal}
-							className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg w-full"
-						>
-							Dismiss
-						</button>
-					</div>
-				</div>
-			)}
+			<RestrictedAlert redirect={"/tournaments"} />
 		</div>
 	);
 }

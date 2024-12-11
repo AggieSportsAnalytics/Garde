@@ -8,6 +8,7 @@ import Link from "next/link";
 import Loader from "../ui/Loader";
 import CoachPageScaffold from "../coach_page/CoachPageScaffold";
 import checkAuth from "@/src/app/hooks/jwt_decode";
+import RestrictedAlert from "../ui/RestrictedAlert";
 
 export default function Signin({ isSignUpDefault, type }) {
 	const [isSignUp, setIsSignUp] = useState(isSignUpDefault || false);
@@ -15,18 +16,10 @@ export default function Signin({ isSignUpDefault, type }) {
 	const [password, setPassword] = useState("");
 	const [name, setName] = useState(""); // Only used for sign-up
 	const [error, setError] = useState("");
-	const [showAlert, setShowAlert] = useState(false);
 	const [success, setSuccess] = useState("");
 	const [loading, setLoading] = useState(false);
 	const router = useRouter();
 	const searchParams = useSearchParams();
-
-	useEffect(() => {
-		const restricted = searchParams.get("restricted");
-		if (restricted === "true") {
-			setShowAlert(true);
-		}
-	}, [searchParams]);
 
 	useEffect(() => {
 		try {
@@ -39,11 +32,6 @@ export default function Signin({ isSignUpDefault, type }) {
 			router.push(`${type}_signin?restricted=true`);
 		}
 	}, [router, type]);
-
-	const closeModal = () => {
-		setShowAlert(false);
-		router.push(`/${type}_signin`);
-	};
 
 	// Handle form submission for both sign-in and sign-up
 	const handleSubmit = async (e) => {
@@ -167,25 +155,7 @@ export default function Signin({ isSignUpDefault, type }) {
 						</Link>
 					</div>
 
-					{showAlert && (
-						<div className="fixed inset-0 bg-opacity-50 flex justify-center items-center px-4">
-							<div className="p-6 bg-gray-900 rounded-lg shadow-lg max-w-sm w-full">
-								<h2 className="text-lg font-semibold mb-3">
-									Restricted Access
-								</h2>
-								<p className="mb-5">
-									You must sign in to access the requested page.
-								</p>
-								<button
-									type="button"
-									onClick={closeModal}
-									className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg w-full"
-								>
-									Dismiss
-								</button>
-							</div>
-						</div>
-					)}
+					<RestrictedAlert redirect={`${type}_signin`} />
 					<div className="bg-gray-800 p-8 rounded-lg shadow-lg max-w-md w-full">
 						<h1 className="text-center text-2xl font-semibold mb-6">
 							{isSignUp ? "Sign Up" : "Sign In"}

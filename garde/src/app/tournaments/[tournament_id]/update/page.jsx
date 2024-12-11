@@ -52,7 +52,7 @@ export default function UpdateTournament({ params }) {
 					: await fetchTournament();
 
 			try {
-				const decoded = checkAuth(router, "tournaments", "");
+				const decoded = checkAuth(router, `tournaments/${tournament_id}`, "");
 				if (decoded?.id !== tournamentData?.user_id) {
 					router.push(`/tournaments/${tournament_id}?restricted=true`);
 				}

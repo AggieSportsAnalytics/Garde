@@ -36,7 +36,7 @@ export default function CoachPage() {
 			getInfo("getCoach", decoded.id);
 		} catch (error) {
 			console.error(error);
-			router.push("coach_signin?restricted=true");
+			router.push("/coach_signin?restricted=true");
 		}
 	}, [refreshKey]);
 

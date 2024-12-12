@@ -2,11 +2,9 @@
 
 import Hero from "../components/landing_page/Hero";
 import About from "../components/landing_page/About";
-import Features from "../components/landing_page/Features";
 import Contact from "../components/landing_page/Contact";
 import Footer from "../components/landing_page/Footer";
 import Showcase from "../components/landing_page/Showcase";
-import Banner from "../components/landing_page/Banner";
 import { useEffect } from "react";
 import Navbar from "../components/landing_page/Navbar";
 
@@ -29,11 +27,8 @@ export default function Home() {
 			<Hero />
 			<About />
 			<Showcase />
-			{/* <Features /> */}
-			{/* <Banner /> */}
 			<Contact />
 			<Footer />
-			{/**/}
 		</div>
 	);
 }

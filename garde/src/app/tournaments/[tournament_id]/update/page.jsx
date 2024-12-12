@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import axios from "axios";
 import TournamentDetail from "@/src/components/tournaments/TournamentDetail";
 import { useSelector } from "react-redux";
-import checkAuth from "@/src/app/hooks/jwt_decode";
+import checkAuth from "@/src/app/hooks/jwt_verify";
 
 export default function UpdateTournament({ params }) {
 	const router = useRouter();
@@ -52,7 +52,11 @@ export default function UpdateTournament({ params }) {
 					: await fetchTournament();
 
 			try {
-				const decoded = checkAuth(router, `tournaments/${tournament_id}`, "");
+				const decoded = await checkAuth(
+					router,
+					`tournaments/${tournament_id}`,
+					"",
+				);
 				if (decoded?.id !== tournamentData?.user_id) {
 					router.push(`/tournaments/${tournament_id}?restricted=true`);
 				}

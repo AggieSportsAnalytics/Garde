@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { v4 as uuidv4 } from "uuid";
 import axios from "axios";
 import TournamentDetail from "@/src/components/tournaments/TournamentDetail";
-import checkAuth from "../../hooks/jwt_decode";
+import checkAuth from "../../hooks/jwt_verify";
 
 export default function OrganizeTournament() {
 	const router = useRouter();
@@ -33,21 +33,25 @@ export default function OrganizeTournament() {
 	});
 
 	useEffect(() => {
-		try {
-			const decoded = checkAuth(router, "tournaments", "");
+		const initPage = async () => {
+			try {
+				const decoded = await checkAuth(router, "tournaments", "");
 
-			setToken(decoded);
+				setToken(decoded);
 
-			setFormData({
-				...formData,
-				organizer_name: decoded.name,
-				organizer_email: decoded.email,
-				user_id: decoded.id,
-			});
-		} catch (error) {
-			console.error(error);
-			router.push("/tournaments?restricted=true");
-		}
+				setFormData({
+					...formData,
+					organizer_name: decoded.name,
+					organizer_email: decoded.email,
+					user_id: decoded.id,
+				});
+			} catch (error) {
+				console.error(error);
+				router.push("/tournaments?restricted=true");
+			}
+		};
+
+		initPage();
 	}, [router]);
 
 	const handleSubmit = async () => {

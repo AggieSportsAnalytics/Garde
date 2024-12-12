@@ -9,7 +9,7 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import { useRouter } from "next/navigation";
 import CoachPageScaffold from "@/src/components/coach_page/CoachPageScaffold";
-import checkAuth from "@/src/app/hooks/jwt_decode";
+import checkAuth from "@/src/app/hooks/jwt_verify";
 
 export default function CoachPage() {
 	const [id, setId] = useState(""); // coach id
@@ -29,15 +29,20 @@ export default function CoachPage() {
 
 	// Fetch the coach ID and fencers
 	useEffect(() => {
-		try {
-			const decoded = checkAuth(router, "coach_signin", "coach");
-			setId(decoded.id);
-			setCoachName(decoded.name);
-			getInfo("getCoach", decoded.id);
-		} catch (error) {
-			console.error(error);
-			router.push("/coach_signin?restricted=true");
-		}
+		const initPage = async () => {
+			try {
+				const decoded = await checkAuth(router, "coach_signin", "coach");
+
+				setId(decoded.id);
+				setCoachName(decoded.name);
+				getInfo("getCoach", decoded.id);
+			} catch (error) {
+				console.error(error);
+				router.push("/coach_signin?restricted=true");
+			}
+		};
+
+		initPage();
 	}, [refreshKey]);
 
 	async function getInfo(queryType, id) {

@@ -5,7 +5,7 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import Link from "next/link";
 import TournamentCard from "@/src/components/tournaments/TournamentCard";
-import checkAuth from "../../hooks/jwt_decode";
+import checkAuth from "../../hooks/jwt_verify";
 
 export default function MyTournaments() {
 	const [pTournies, setPTournies] = useState([]);
@@ -35,7 +35,7 @@ export default function MyTournaments() {
 
 		const checkToken = async () => {
 			try {
-				const decoded = checkAuth(router, "tournaments", "");
+				const decoded = await checkAuth(router, "tournaments", "");
 				return decoded?.id;
 			} catch (error) {
 				console.error(error);

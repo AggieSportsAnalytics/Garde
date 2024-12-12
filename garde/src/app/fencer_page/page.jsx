@@ -33,7 +33,7 @@ const Fencer_Stats = dynamic(
 import { useRouter } from "next/navigation";
 import axios from "axios";
 import Chatbot from "../../components/fencer_page/Chatbot";
-import checkAuth from "../hooks/jwt_decode";
+import checkAuth from "../hooks/jwt_verify";
 
 const MemoizedFencerStats = memo(Fencer_Stats);
 const MemoizedInstruction = memo(Instruction);
@@ -246,20 +246,24 @@ export default function Fencer_Page2() {
 	}, [videoId, uploadAngles]);
 
 	useEffect(() => {
-		if (typeof window !== "undefined") {
-			const userAgent = navigator.userAgent;
-			const mobileDevice = /iPhone|iPad|iPod|Android/i.test(userAgent);
-			setIsMobile(mobileDevice);
-		}
+		const fetchAuthData = async () => {
+			if (typeof window !== "undefined") {
+				const userAgent = navigator.userAgent;
+				const mobileDevice = /iPhone|iPad|iPod|Android/i.test(userAgent);
+				setIsMobile(mobileDevice);
+			}
 
-		try {
-			const decoded = checkAuth(router, "fencer_signin", "fencer");
-			setFencerId(decoded.id);
-			setDecoded(decoded);
-		} catch (error) {
-			console.error(error);
-			router.push("/fencer_signin?restricted=true");
-		}
+			try {
+				const decoded = await checkAuth(router, "fencer_signin", "fencer");
+				setFencerId(decoded.id);
+				setDecoded(decoded);
+			} catch (error) {
+				console.error(error);
+				router.push("/fencer_signin?restricted=true");
+			}
+		};
+
+		fetchAuthData();
 	}, []);
 
 	useEffect(() => {

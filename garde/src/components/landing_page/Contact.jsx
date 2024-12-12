@@ -23,11 +23,9 @@ const Contact = () => {
 			// Send a POST request to the backend
 			const response = await axios.put("/api/contact_us", formData);
 
-			if (response.status === 200) {
-				setSuccess("Email sent successfully!");
-				form.current.reset();
-				setTimeout(() => setSuccess(""), 2000);
-			}
+			setSuccess("Email sent successfully!");
+			form.current.reset();
+			setTimeout(() => setSuccess(""), 2000);
 		} catch (error) {
 			console.error("Error sending email:", error);
 			setSuccess("Error sending email. Please try again.");

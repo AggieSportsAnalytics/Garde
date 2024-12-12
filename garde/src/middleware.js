@@ -30,12 +30,23 @@ export async function middleware(req) {
 
 	try {
 		const res = await fetch(`${BASE_URL}/api/verify_jwt`, {
+			credentials: "include",
 			headers: {
-				Authorization: `Bearer ${token}`,
+				Authorization: `Bearer ${req.cookies.get("token")?.value}`,
 			},
 		});
 
-		if (res.status !== 200) {
+		const { decoded } = await res.json();
+
+		if (
+			!res.ok ||
+			!decoded?.email ||
+			!decoded.name ||
+			!decoded.id ||
+			!decoded.type ||
+			(requestedPage.includes("/fencer_page") && decoded.type !== "fencer") ||
+			(requestedPage.includes("/coach_page") && decoded.type !== "coach")
+		) {
 			const url = new URL(redirect, req.url);
 			url.searchParams.set("restricted", "true");
 			return NextResponse.redirect(url);

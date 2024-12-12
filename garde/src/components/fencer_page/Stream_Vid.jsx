@@ -52,9 +52,6 @@ const Stream_Vid = ({
 					"Content-Type": "multipart/form-data",
 				},
 			});
-			if (res.status < 200 || res.status >= 300) {
-				console.error("Failed to upload file");
-			}
 		} catch (error) {
 			console.error("Error during file upload:", error);
 		}

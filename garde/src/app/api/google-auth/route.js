@@ -16,7 +16,7 @@ export async function POST(req) {
 		const id = uuidv4();
 		const uploadRes = await uploadToD1(id, decoded.email, decoded.name, type);
 
-		if (uploadRes.status !== 200 && uploadRes.status !== 201) {
+		if (uploadRes.status < 200 || uploadRes.status >= 300) {
 			return NextResponse.json(
 				{ error: uploadRes.data.error },
 				{ status: uploadRes.status },
@@ -42,7 +42,7 @@ export async function POST(req) {
 
 		// Set the cookie
 		response.cookies.set("token", token, {
-			httpOnly: false,
+			httpOnly: true,
 			maxAge: 25 * 60 * 60,
 			sameSite: "Strict",
 			secure: process.env.NODE_ENV === "production",

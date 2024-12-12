@@ -7,7 +7,7 @@ import axios from "axios";
 import Link from "next/link";
 import Loader from "../ui/Loader";
 import CoachPageScaffold from "../coach_page/CoachPageScaffold";
-import checkAuth from "@/src/app/hooks/jwt_decode";
+import checkAuth from "@/src/app/hooks/jwt_verify";
 import RestrictedAlert from "../ui/RestrictedAlert";
 
 export default function Signin({ isSignUpDefault, type }) {
@@ -22,15 +22,20 @@ export default function Signin({ isSignUpDefault, type }) {
 	const searchParams = useSearchParams();
 
 	useEffect(() => {
-		try {
-			const decoded = checkAuth(router, `${type}_signin`, type, true);
-			if (decoded) {
-				router.push(`${type}_page`);
+		const initPage = async () => {
+			try {
+				const decoded = await checkAuth(router, `${type}_signin`, type, true);
+
+				if (decoded?.type === type) {
+					router.push(`${type}_page`);
+				}
+			} catch (error) {
+				console.error(error);
+				router.push(`${type}_signin?restricted=true`);
 			}
-		} catch (error) {
-			console.error(error);
-			router.push(`${type}_signin?restricted=true`);
-		}
+		};
+
+		initPage();
 	}, [router, type]);
 
 	// Handle form submission for both sign-in and sign-up

@@ -17,7 +17,7 @@ import {
 import Link from "next/link";
 import LoginModal from "@/src/components/tournaments/LoginModal";
 import { FaVideo, FaUserPlus } from "react-icons/fa";
-import checkAuth from "../../hooks/jwt_decode";
+import checkAuth from "../../hooks/jwt_verify";
 import RestrictedAlert from "../../../components/ui/RestrictedAlert";
 
 export default function TournamentPage({ params }) {
@@ -67,7 +67,7 @@ export default function TournamentPage({ params }) {
 
 		const checkToken = async () => {
 			try {
-				const decoded = checkAuth(
+				const decoded = await checkAuth(
 					router,
 					`tournaments/${tournament_id}`,
 					"",

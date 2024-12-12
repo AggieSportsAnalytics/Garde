@@ -6,7 +6,6 @@ import {
 	AiOutlineExclamationCircle,
 } from "react-icons/ai";
 import { useSearchParams, useRouter } from "next/navigation";
-import { jwtDecode } from "jwt-decode";
 import axios from "axios";
 
 function VerifyEmail() {
@@ -25,13 +24,13 @@ function VerifyEmail() {
 			}
 
 			try {
-				await axios.get("/api/verify_jwt", {
+				const res = await axios.get("/api/verify_email", {
 					headers: {
 						Authorization: `Bearer ${token}`,
 					},
 				});
 
-				const decoded = jwtDecode(token);
+				const { decoded } = res.data;
 
 				if (!decoded?.email || !decoded.type) {
 					throw new Error("Invalid token");

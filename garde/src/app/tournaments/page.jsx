@@ -5,7 +5,7 @@ import { useState, useEffect, Suspense } from "react";
 import axios from "axios";
 import Link from "next/link";
 import TournamentCard from "@/src/components/tournaments/TournamentCard";
-import checkAuth from "../hooks/jwt_decode";
+import checkAuth from "../hooks/jwt_verify";
 import RestrictedAlert from "@/src/components/ui/RestrictedAlert";
 import LoginModal from "@/src/components/tournaments/LoginModal";
 
@@ -26,13 +26,7 @@ function Navbar({ setLoggedIn, loggedIn, setIsModalOpen }) {
 	};
 
 	const handleMyTournamentClick = () => {
-		if (loggedIn) {
-			router.push("/tournaments/my-tournaments");
-		} else {
-			window.alert(
-				"You must login to see tournaments you have organized/joined",
-			);
-		}
+		router.push("/tournaments/my-tournaments");
 	};
 
 	return (
@@ -101,7 +95,8 @@ function Tournaments() {
 
 		const checkToken = async () => {
 			try {
-				const decoded = checkAuth(router, "tournaments", "", true);
+				const decoded = await checkAuth(router, "tournaments", "", true);
+
 				if (decoded) {
 					setLoggedIn(true);
 				}
@@ -117,11 +112,7 @@ function Tournaments() {
 	}, [router]);
 
 	const handleOrganize = () => {
-		if (loggedIn) {
-			router.push("/tournaments/organize");
-		} else {
-			window.alert("You must login to organize tournaments");
-		}
+		router.push("/tournaments/organize");
 	};
 
 	return (

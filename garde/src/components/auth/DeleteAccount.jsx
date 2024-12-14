@@ -25,13 +25,14 @@ export default function DeleteAccountButton({ type, userId }) {
 			const workerUrl = `${process.env.NEXT_PUBLIC_GARDE_WORKER}/deleteUser?id=${userId}&type=${type}`;
 
 			// Replace with your actual DELETE API endpoint
-			const response = await axios.delete(workerUrl);
+			const response = await axios.delete(workerUrl, { withCredentials: true });
 
-			const res = await axios.get("/api/logout");
+			const res = await axios.get("/api/logout", { withCredentials: true });
 
 			router.push("/");
 			setSuccess("Your account has been successfully deleted.");
 		} catch (err) {
+			console.error(err);
 			setError("An error occurred while deleting your account.");
 		} finally {
 			setLoading(false);

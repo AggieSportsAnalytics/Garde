@@ -1,21 +1,28 @@
-import jwt from "jsonwebtoken";
+import { jwtVerify } from "jose";
 
-export function verifyAuth(req) {
+export default async function verifyAuth(req, JWT_SECRET) {
 	try {
-		const authorization = req.headers.get("authorization")?.split(" ")[1];
+		const token =
+			req.headers
+				?.get("Cookie")
+				?.split("; ")
+				?.find((row) => row.startsWith("token="))
+				?.split("=")[1] ||
+			req.headers?.get("Authorization")?.split("Bearer ")[1];
 
-		if (!authorization) {
+		if (!token) {
 			return { message: "Token missing", status: 401 };
 		}
 
-		const decoded = jwt.verify(cookies, JWT_SECRET);
+		const { payload } = await jwtVerify(token, JWT_SECRET);
 
-		if (!decoded) {
-			return { message: "Decoding failed" };
+		if (!payload) {
+			return { message: "Decoding failed", status: 500 };
 		}
 
 		return { message: "Authorization successful", status: 200 };
 	} catch (error) {
+		console.error("JWT Verification Error:", error);
 		return { message: "Authorization failed", status: 500 };
 	}
 }

@@ -13,7 +13,7 @@ export default function Logout() {
 		try {
 			setWaiting(true);
 
-			await axios.get("/api/logout");
+			await axios.get("/api/logout", { withCredentials: true });
 
 			router.push("/");
 		} catch (error) {

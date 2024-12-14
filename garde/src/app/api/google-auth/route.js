@@ -14,7 +14,13 @@ export async function POST(req) {
 
 	try {
 		const id = uuidv4();
-		const uploadRes = await uploadToD1(id, decoded.email, decoded.name, type);
+		const uploadRes = await uploadToD1(
+			req,
+			id,
+			decoded.email,
+			decoded.name,
+			type,
+		);
 
 		if (uploadRes.status < 200 || uploadRes.status >= 300) {
 			return NextResponse.json(
@@ -59,7 +65,7 @@ export async function POST(req) {
 	}
 }
 
-async function uploadToD1(id, email, name, type) {
+async function uploadToD1(req, id, email, name, type) {
 	const workerUrl = `${process.env.NEXT_PUBLIC_GARDE_WORKER}/authGoogle`;
 
 	try {
@@ -71,7 +77,10 @@ async function uploadToD1(id, email, name, type) {
 		};
 
 		const response = await axios.post(workerUrl, queryData, {
-			headers: { "Content-Type": "application/json" },
+			headers: {
+				"Content-Type": "application/json",
+				Authorization: `Bearer ${req.cookies?.get("token")?.value}`,
+			},
 		});
 
 		return response; // Return the actual Axios response if successful

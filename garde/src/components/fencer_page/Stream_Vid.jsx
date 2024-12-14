@@ -48,6 +48,7 @@ const Stream_Vid = ({
 
 		try {
 			const res = await axios.post(`/api/convert-video/${fencerId}`, formData, {
+				withCredentials: true,
 				headers: {
 					"Content-Type": "multipart/form-data",
 				},

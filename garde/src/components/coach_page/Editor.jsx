@@ -51,6 +51,7 @@ function Editor({ fencer, coachName, currentVideo }) {
 
 		try {
 			const res = await axios.put("/api/send_feedback", queryData, {
+				withCredentials: true,
 				headers: {
 					"Content-Type": "application/json",
 				},

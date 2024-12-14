@@ -33,7 +33,10 @@ export async function POST(req) {
 
 		// Send user data to the worker
 		const response = await axios.post(workerUrl, queryData, {
-			headers: { "Content-Type": "application/json" },
+			headers: {
+				"Content-Type": "application/json",
+				Authorization: `Bearer ${req.cookies?.get("token")?.value}`,
+			},
 		});
 
 		// Send verification email

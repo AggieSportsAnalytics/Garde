@@ -1,9 +1,12 @@
 import { NextResponse } from "next/server";
+import { SignJWT, jwtVerify } from "jose";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
+const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET);
 
 export async function middleware(req) {
 	const token = req.cookies.get("token")?.value;
+
 	const requestedPage = req.nextUrl.pathname;
 
 	let redirect = "/";
@@ -19,6 +22,12 @@ export async function middleware(req) {
 	} else if (/^\/tournaments\/[0-9a-fA-F-]+\/update$/.test(requestedPage)) {
 		const tId = requestedPage.split("/")[2];
 		redirect = `/tournaments/${tId}`;
+	} else if (
+		requestedPage.includes("/tournaments") ||
+		requestedPage.includes("/api/") ||
+		requestedPage.includes("/verify-email")
+	) {
+		return await unProtectedMiddleware(req);
 	}
 
 	// Check if token is present
@@ -29,23 +38,15 @@ export async function middleware(req) {
 	}
 
 	try {
-		const res = await fetch(`${BASE_URL}/api/verify_jwt`, {
-			credentials: "include",
-			headers: {
-				Authorization: `Bearer ${req.cookies.get("token")?.value}`,
-			},
-		});
-
-		const { decoded } = await res.json();
+		const { payload } = await jwtVerify(token, JWT_SECRET);
 
 		if (
-			!res.ok ||
-			!decoded?.email ||
-			!decoded.name ||
-			!decoded.id ||
-			!decoded.type ||
-			(requestedPage.includes("/fencer_page") && decoded.type !== "fencer") ||
-			(requestedPage.includes("/coach_page") && decoded.type !== "coach")
+			!payload?.email ||
+			!payload.name ||
+			!payload.id ||
+			!payload.type ||
+			(requestedPage.includes("/fencer_page") && payload.type !== "fencer") ||
+			(requestedPage.includes("/coach_page") && payload.type !== "coach")
 		) {
 			const url = new URL(redirect, req.url);
 			url.searchParams.set("restricted", "true");
@@ -61,6 +62,37 @@ export async function middleware(req) {
 	}
 }
 
+async function unProtectedMiddleware(req) {
+	try {
+		const token = req.cookies.get("token")?.value;
+
+		let webToken;
+		const response = NextResponse.next();
+
+		if (!token) {
+			webToken = await new SignJWT({ purpose: "authentication" })
+				.setProtectedHeader({ alg: "HS256" })
+				.setExpirationTime("25h")
+				.sign(JWT_SECRET);
+
+			response.cookies.set("token", webToken, {
+				httpOnly: false,
+				maxAge: 25 * 60 * 60,
+				sameSite: "Strict",
+				secure: process.env.NODE_ENV === "production",
+				path: "/",
+			});
+		} else {
+			const { payload } = await jwtVerify(token, JWT_SECRET);
+		}
+
+		return response;
+	} catch (error) {
+		console.error(error);
+		return NextResponse.next();
+	}
+}
+
 // Only run middleware on protected routes
 export const config = {
 	matcher: [
@@ -69,5 +101,12 @@ export const config = {
 		"/tournaments/organize",
 		"/tournaments/my-tournaments",
 		"/tournaments/:path/update",
+
+		"/tournaments",
+		"/tournaments/:path*",
+
+		"/api/:path*",
+
+		"/verify-email",
 	],
 };

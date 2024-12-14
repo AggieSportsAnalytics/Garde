@@ -27,9 +27,13 @@ export default function Chatbot({ darkMode }) {
 		]);
 
 		try {
-			const response = await axios.post("/api/query", {
-				query: userInput,
-			});
+			const response = await axios.post(
+				"/api/query",
+				{
+					query: userInput,
+				},
+				{ withCredentials: true },
+			);
 
 			const formattedMessage = formatResponse(response.data.response);
 

@@ -25,6 +25,7 @@ function VerifyEmail() {
 
 			try {
 				const res = await axios.get("/api/verify_email", {
+					withCredentials: true,
 					headers: {
 						Authorization: `Bearer ${token}`,
 					},
@@ -42,6 +43,7 @@ function VerifyEmail() {
 				};
 
 				await axios.post(workerUrl, queryData, {
+					withCredentials: true,
 					headers: { "Content-Type": "application/json" },
 				});
 

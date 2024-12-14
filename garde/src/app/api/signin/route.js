@@ -13,7 +13,9 @@ export async function POST(req) {
 		const workerUrl = `${process.env.NEXT_PUBLIC_GARDE_WORKER}/verify?type=${type}&email=${email}`;
 
 		// Check the worker API to validate credentials
-		const response = await axios.get(workerUrl);
+		const response = await axios.get(workerUrl, {
+			headers: { Authorization: `Bearer ${req.cookies?.get("token")?.value}` },
+		});
 
 		const data = response?.data?.data; // Safeguard check
 

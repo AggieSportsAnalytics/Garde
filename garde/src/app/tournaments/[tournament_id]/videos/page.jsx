@@ -192,7 +192,7 @@ export default function Videos({ params }) {
 				setLoading(true);
 				setVideoUrl(null);
 				const listUrl = `/api/get-videos/${tournament_id}`;
-				const response = await axios.get(listUrl);
+				const response = await axios.get(listUrl, { withCredentials: true });
 				const vidNames = response.data.videos;
 
 				if (vidNames) {
@@ -255,7 +255,10 @@ export default function Videos({ params }) {
 
 	const handleDownload = async (videoUrl, filename) => {
 		try {
-			const response = await axios.get(videoUrl, { responseType: "blob" });
+			const response = await axios.get(videoUrl, {
+				withCredentials: true,
+				responseType: "blob",
+			});
 
 			const blob = await response.data;
 			const blobUrl = window.URL.createObjectURL(blob);

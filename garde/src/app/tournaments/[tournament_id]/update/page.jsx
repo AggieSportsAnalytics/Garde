@@ -37,7 +37,7 @@ export default function UpdateTournament({ params }) {
 		const fetchTournament = async () => {
 			try {
 				const workerUrl = `${process.env.NEXT_PUBLIC_GARDE_WORKER}/getTournament/${tournament_id}`;
-				const response = await axios.get(workerUrl);
+				const response = await axios.get(workerUrl, { withCredentials: true });
 				return response.data.tournament[0];
 			} catch (error) {
 				console.error("Error fetching tournament:", error);
@@ -101,6 +101,7 @@ export default function UpdateTournament({ params }) {
 			};
 
 			await axios.put(tournamentUrl, updatedFormData, {
+				withCredentials: true,
 				headers: { "Content-Type": "application/json" },
 			});
 		} catch (error) {

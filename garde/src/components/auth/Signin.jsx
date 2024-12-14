@@ -50,6 +50,7 @@ export default function Signin({ isSignUpDefault, type }) {
 
 		try {
 			const res = await axios.post(endpoint, body, {
+				withCredentials: true,
 				headers: {
 					"Content-Type": "application/json",
 				},
@@ -103,6 +104,7 @@ export default function Signin({ isSignUpDefault, type }) {
 				type: type,
 			};
 			const res = await axios.post("/api/google-auth", queryData, {
+				withCredentials: true,
 				headers: { "Content-Type": "application/json" },
 			});
 

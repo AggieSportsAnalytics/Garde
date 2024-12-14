@@ -36,7 +36,7 @@ export default function TournamentPage({ params }) {
 	const fetchParticipants = async () => {
 		try {
 			const workerUrl = `${process.env.NEXT_PUBLIC_GARDE_WORKER}/getParticipants/${tournament_id}`;
-			const response = await axios.get(workerUrl);
+			const response = await axios.get(workerUrl, { withCredentials: true });
 
 			setUsers(
 				response.data.tournament.filter(
@@ -53,7 +53,7 @@ export default function TournamentPage({ params }) {
 			try {
 				// Fetch the tournament from the backend
 				const workerUrl = `${process.env.NEXT_PUBLIC_GARDE_WORKER}/getTournament/${tournament_id}`;
-				const response = await axios.get(workerUrl);
+				const response = await axios.get(workerUrl, { withCredentials: true });
 
 				if (!response.data.tournament[0]) {
 					router.push("/tournaments");
@@ -124,6 +124,7 @@ export default function TournamentPage({ params }) {
 				};
 
 				await axios.put(workerUrl, queryData, {
+					withCredentials: true,
 					headers: { "Content-Type": "application/json" },
 				});
 				setJoining(false);
@@ -150,7 +151,7 @@ export default function TournamentPage({ params }) {
 
 		try {
 			const workerUrl = `${process.env.NEXT_PUBLIC_GARDE_WORKER}/deleteTournament/${tournament_id}`;
-			await axios.delete(workerUrl);
+			await axios.delete(workerUrl, { withCredentials: true });
 			router.push("/tournaments");
 		} catch (error) {
 			console.error(error);
@@ -160,7 +161,7 @@ export default function TournamentPage({ params }) {
 	const handleDeleteParticipant = async (user_id) => {
 		try {
 			const workerUrl = `${process.env.NEXT_PUBLIC_GARDE_WORKER}/deleteParticipant/${tournament_id}/${user_id}`;
-			await axios.delete(workerUrl);
+			await axios.delete(workerUrl, { withCredentials: true });
 			fetchParticipants();
 		} catch (error) {
 			console.error(error);

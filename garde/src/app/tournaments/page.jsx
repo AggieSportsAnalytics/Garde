@@ -15,7 +15,7 @@ function Navbar({ setLoggedIn, loggedIn, setIsModalOpen }) {
 	const handleAuth = async () => {
 		if (loggedIn) {
 			try {
-				await axios.get("/api/logout");
+				await axios.get("/api/logout", { withCredentials: true });
 				setLoggedIn(false);
 			} catch (error) {
 				console.error(error);
@@ -85,7 +85,7 @@ function Tournaments() {
 		const fetchTournaments = async () => {
 			try {
 				const workerUrl = `${process.env.NEXT_PUBLIC_GARDE_WORKER}/getTournaments`;
-				const response = await axios.get(workerUrl);
+				const response = await axios.get(workerUrl, { withCredentials: true });
 
 				setTournaments(response.data.tournaments);
 			} catch (error) {

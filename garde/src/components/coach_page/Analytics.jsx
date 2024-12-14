@@ -44,7 +44,7 @@ function Analytics({ fencer, currentVideo, videos }) {
 		const getFencerData = async () => {
 			try {
 				const workerUrl = `${process.env.NEXT_PUBLIC_GARDE_WORKER}/getFencerAngles/${fencer.fencer_id}`;
-				const response = await axios.get(workerUrl);
+				const response = await axios.get(workerUrl, { withCredentials: true });
 				setFencerSessions(
 					response.data.angles.results.filter(
 						(session) => session.pose === selectedPose,

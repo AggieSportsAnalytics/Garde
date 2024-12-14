@@ -67,6 +67,7 @@ export default function OrganizeTournament() {
 			};
 
 			await axios.put(tournamentUrl, updatedFormData, {
+				withCredentials: true,
 				headers: { "Content-Type": "application/json" },
 			});
 
@@ -80,6 +81,7 @@ export default function OrganizeTournament() {
 			};
 
 			await axios.put(workerUrl, queryData, {
+				withCredentials: true,
 				headers: { "Content-Type": "application/json" },
 			});
 		} catch (error) {

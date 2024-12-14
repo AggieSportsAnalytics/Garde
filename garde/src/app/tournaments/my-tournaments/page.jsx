@@ -16,7 +16,7 @@ export default function MyTournaments() {
 		const fetchTournaments = async (id) => {
 			try {
 				const workerUrl = `${process.env.NEXT_PUBLIC_GARDE_WORKER}/getMyTournaments/${id}`;
-				const response = await axios.get(workerUrl);
+				const response = await axios.get(workerUrl, { withCredentials: true });
 
 				const allTournaments = response.data.tournaments;
 				const participating = allTournaments.filter(

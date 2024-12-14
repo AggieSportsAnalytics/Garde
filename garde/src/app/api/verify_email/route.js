@@ -5,16 +5,18 @@ const JWT_SECRET = process.env.JWT_SECRET;
 
 export async function GET(req) {
 	try {
-		const cookies = req.headers.get("authorization")?.split(" ")[1];
+		const cookies = req.cookies?.get("token")?.value;
+		const token = req.headers?.get("Authorization")?.split("Bearer ")[1];
 
-		if (!cookies) {
+		if (!cookies || !token) {
 			return NextResponse.json({ message: "Token missing" }, { status: 401 });
 		}
 
-		const decoded = verifyJwt(cookies);
+		jwt.verify(cookies, JWT_SECRET);
+		const decoded = jwt.verify(token, JWT_SECRET);
 
 		if (!decoded) {
-			throw Error("Decoding failed");
+			throw new Error("Decoding failed");
 		}
 
 		return NextResponse.json(

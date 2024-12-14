@@ -2,6 +2,7 @@ import axios from "axios";
 
 const checkAuth = async (router, redirect, type, noRedirect = false) => {
 	try {
+		// maybe if confident enough just replace with jwtDecode
 		const response = await axios.get("/api/verify_jwt", {
 			withCredentials: true,
 		});

@@ -327,6 +327,7 @@ const WebcamPose = ({
 
 		try {
 			const res = await axios.post(`/api/convert-video/${fencerId}`, formData, {
+				withCredentials: true,
 				headers: {
 					"Content-Type": "multipart/form-data",
 				},
@@ -631,7 +632,7 @@ const getIdealAngles = async () => {
 	const getWorkerUrl = `${process.env.NEXT_PUBLIC_GARDE_WORKER}/getIdealAngles`;
 
 	try {
-		const response = await axios.get(getWorkerUrl);
+		const response = await axios.get(getWorkerUrl, { withCredentials: true });
 		const idealAngles = response.data.angles;
 
 		return idealAngles;

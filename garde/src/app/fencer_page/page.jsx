@@ -154,6 +154,7 @@ export default function Fencer_Page2() {
 
 			try {
 				const response = await axios.put(putWorkerUrl, body, {
+					withCredentials: true,
 					headers: { "Content-Type": "application/json" },
 				});
 

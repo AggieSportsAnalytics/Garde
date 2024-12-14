@@ -5,18 +5,16 @@ const JWT_SECRET = process.env.JWT_SECRET;
 
 export async function GET(req) {
 	try {
-		const token =
-			req.cookies.get("token")?.value ||
-			req.headers.get("authorization")?.split("Bearer ")[1];
+		const token = req.cookies.get("token")?.value;
 
 		if (!token) {
-			throw Error("No token");
+			throw new Error("No token");
 		}
 
 		const decoded = verifyJwt(token);
 
 		if (!decoded) {
-			throw Error("Decoding failed");
+			throw new Error("Decoding failed");
 		}
 
 		return NextResponse.json(
@@ -24,7 +22,7 @@ export async function GET(req) {
 			{ status: 200 },
 		);
 	} catch (error) {
-		console.error(error);
+		// console.error(error);
 		return NextResponse.json(
 			{ message: "Invalid token", error: error.message },
 			{ status: 401 },
@@ -42,7 +40,7 @@ function verifyJwt(token) {
 
 		return decoded;
 	} catch (error) {
-		console.error(error);
+		// console.error(error);
 		return null;
 	}
 }

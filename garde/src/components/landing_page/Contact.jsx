@@ -21,7 +21,9 @@ const Contact = () => {
 
 		try {
 			// Send a POST request to the backend
-			const response = await axios.put("/api/contact_us", formData);
+			const response = await axios.put("/api/contact_us", formData, {
+				withCredentials: true,
+			});
 
 			setSuccess("Email sent successfully!");
 			form.current.reset();

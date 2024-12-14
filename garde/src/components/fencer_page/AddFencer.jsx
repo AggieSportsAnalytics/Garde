@@ -16,6 +16,7 @@ export default function AddFencer({ decoded }) {
 			};
 
 			await axios.put(workerUrl, queryData, {
+				withCredentials: true,
 				headers: { "Content-Type": "application/json" },
 			});
 

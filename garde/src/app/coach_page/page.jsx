@@ -49,7 +49,7 @@ export default function CoachPage() {
 		const workerUrl = `${process.env.NEXT_PUBLIC_GARDE_WORKER}/${queryType}/${id}`;
 
 		try {
-			const response = await axios.get(workerUrl);
+			const response = await axios.get(workerUrl, { withCredentials: true });
 			setFencers(response.data.data);
 			if (response.data.data.length > 0) {
 				setCurrentFencer(response.data.data[0]);

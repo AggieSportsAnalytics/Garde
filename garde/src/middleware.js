@@ -10,10 +10,11 @@ export async function middleware(req) {
 	const requestedPage = req.nextUrl.pathname;
 
 	let redirect = "/";
-	if (requestedPage.includes("/coach_page")) {
-		redirect = "/coach_signin";
-	} else if (requestedPage.includes("/fencer_page")) {
-		redirect = "/fencer_signin";
+	if (
+		requestedPage.includes("/fencer_page") ||
+		requestedPage.includes("/coach_page")
+	) {
+		redirect = "/signin";
 	} else if (
 		requestedPage.includes("/tournaments/organize") ||
 		requestedPage.includes("/tournaments/my-tournaments")
@@ -38,6 +39,8 @@ export async function middleware(req) {
 	}
 
 	try {
+		console.log("weofgiuhwofgwhig");
+
 		const { payload } = await jwtVerify(token, JWT_SECRET);
 
 		if (
@@ -48,6 +51,7 @@ export async function middleware(req) {
 			(requestedPage.includes("/fencer_page") && payload.type !== "fencer") ||
 			(requestedPage.includes("/coach_page") && payload.type !== "coach")
 		) {
+			console.log(payload);
 			const url = new URL(redirect, req.url);
 			url.searchParams.set("restricted", "true");
 			return NextResponse.redirect(url);

@@ -143,6 +143,13 @@ CREATE TABLE IF NOT EXISTS ideal_angles (
 );
 """
 
+create_attempted_signins_table = """
+CREATE TABLE IF NOT EXISTS attempted_signins (
+    name TEXT NOT NULL,
+    email TEXT NOT NULL
+);
+"""
+
 create_fencer_instruction_table = """
 CREATE TABLE IF NOT EXISTS fencer_instructions (
     name TEXT PRIMARY KEY
@@ -300,6 +307,7 @@ if __name__ == "__main__":
         execute_sql(database_name, create_fencer_instruction_table)
         execute_sql(database_name, create_ideal_angles_table)
         execute_sql(database_name, create_whitelist_table)
+        execute_sql(database_name, create_attempted_signins_table)
         execute_sql(database_name, insert_or_replace_fencer_instructions)
         execute_sql(database_name, insert_or_replace_ideal_angles)
         execute_sql(database_name, insert_or_replace_whitelist)

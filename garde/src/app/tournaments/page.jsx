@@ -7,9 +7,8 @@ import Link from "next/link";
 import TournamentCard from "@/src/components/tournaments/TournamentCard";
 import checkAuth from "../hooks/jwt_verify";
 import RestrictedAlert from "@/src/components/ui/RestrictedAlert";
-import LoginModal from "@/src/components/tournaments/LoginModal";
 
-function Navbar({ setLoggedIn, loggedIn, setIsModalOpen }) {
+function Navbar({ setLoggedIn, loggedIn }) {
 	const router = useRouter();
 
 	const handleAuth = async () => {
@@ -21,7 +20,7 @@ function Navbar({ setLoggedIn, loggedIn, setIsModalOpen }) {
 				console.error(error);
 			}
 		} else {
-			setIsModalOpen(true);
+			router.push("/signin?redirect=/tournaments");
 		}
 	};
 
@@ -78,7 +77,6 @@ export default function TournamentsPage() {
 function Tournaments() {
 	const [tournaments, setTournaments] = useState([]);
 	const [loggedIn, setLoggedIn] = useState(false);
-	const [isModalOpen, setIsModalOpen] = useState(false);
 	const router = useRouter();
 
 	useEffect(() => {
@@ -117,11 +115,7 @@ function Tournaments() {
 
 	return (
 		<div className="bg-black text-white min-h-screen">
-			<Navbar
-				setLoggedIn={setLoggedIn}
-				loggedIn={loggedIn}
-				setIsModalOpen={setIsModalOpen}
-			/>
+			<Navbar setLoggedIn={setLoggedIn} loggedIn={loggedIn} />
 			<div className="p-6 max-w-7xl mx-auto">
 				<section className="mb-12">
 					<h2 className="text-2xl font-semibold mb-4">Popular Tournaments</h2>
@@ -145,11 +139,6 @@ function Tournaments() {
 					</button>
 				</div>
 			</div>
-			<LoginModal
-				isModalOpen={isModalOpen}
-				setIsModalOpen={setIsModalOpen}
-				redirect={"/tournaments"}
-			/>
 			<RestrictedAlert redirect={"/tournaments"} />
 		</div>
 	);

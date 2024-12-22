@@ -10,7 +10,7 @@ import CoachPageScaffold from "../coach_page/CoachPageScaffold";
 import checkAuth from "@/src/app/hooks/jwt_verify";
 import RestrictedAlert from "../ui/RestrictedAlert";
 
-export default function Signin({ isSignUpDefault, type }) {
+export default function Signin({ isSignUpDefault }) {
 	const [isSignUp, setIsSignUp] = useState(isSignUpDefault || false);
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
@@ -18,6 +18,7 @@ export default function Signin({ isSignUpDefault, type }) {
 	const [error, setError] = useState("");
 	const [success, setSuccess] = useState("");
 	const [loading, setLoading] = useState(false);
+	const [type, setType] = useState("");
 	const router = useRouter();
 	const searchParams = useSearchParams();
 
@@ -40,6 +41,11 @@ export default function Signin({ isSignUpDefault, type }) {
 
 	// Handle form submission for both sign-in and sign-up
 	const handleSubmit = async (e) => {
+		if (!type) {
+			window.alert("You must select a type");
+			return;
+		}
+
 		setLoading(true);
 		e.preventDefault();
 
@@ -76,6 +82,7 @@ export default function Signin({ isSignUpDefault, type }) {
 			setLoading(false);
 			setName("");
 			setEmail("");
+			setType("");
 			setPassword("");
 			setSuccess("");
 			setError(error.response.data.error || "Failed to login/sign up");
@@ -83,6 +90,7 @@ export default function Signin({ isSignUpDefault, type }) {
 			setEmail("");
 			setPassword("");
 			setName("");
+			setType("");
 			setTimeout(() => {
 				setSuccess("");
 				setError("");
@@ -92,6 +100,11 @@ export default function Signin({ isSignUpDefault, type }) {
 
 	// Handle Google Auth Success
 	const handleGoogleSuccess = async (response) => {
+		if (!type) {
+			window.alert("You must select a type");
+			return;
+		}
+
 		try {
 			const redirect = searchParams.get("redirect");
 			if (redirect) {
@@ -135,6 +148,7 @@ export default function Signin({ isSignUpDefault, type }) {
 		setName("");
 		setEmail("");
 		setPassword("");
+		setType("");
 		setIsSignUp(!isSignUp);
 	};
 
@@ -169,6 +183,25 @@ export default function Signin({ isSignUpDefault, type }) {
 						</h1>
 
 						<form onSubmit={handleSubmit} className="space-y-6">
+							<div>
+								<label htmlFor="type" className="block text-sm font-medium">
+									Type
+								</label>
+								<select
+									id="type"
+									className="mt-1 block w-full p-2 bg-gray-700 border border-gray-600 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm"
+									value={type}
+									onChange={(e) => setType(e.target.value)}
+									required
+								>
+									<option value="" disabled>
+										Select a type
+									</option>
+									<option value="fencer">Fencer</option>
+									<option value="coach">Coach</option>
+								</select>
+							</div>
+
 							{isSignUp && (
 								<div>
 									<label htmlFor="name" className="block text-sm font-medium">
@@ -224,13 +257,28 @@ export default function Signin({ isSignUpDefault, type }) {
 							</button>
 						</form>
 
-						{/* Google Auth Button */}
-						<div className="mt-4 flex justify-center">
+						{/* <div className="mt-4 flex justify-center">
 							<GoogleLogin
 								width="280"
 								onSuccess={handleGoogleSuccess}
 								onError={handleGoogleError}
 							/>
+						</div> */}
+						<div className="mt-4 flex justify-center">
+							{!type ? (
+								<div
+									className="w-[280px] text-sm p-2 bg-gray-700 text-center text-gray-400 rounded-sm opacity-50 cursor-not-allowed"
+									aria-disabled="true"
+								>
+									Select type to enable Google Login
+								</div>
+							) : (
+								<GoogleLogin
+									width="280"
+									onSuccess={handleGoogleSuccess}
+									onError={handleGoogleError}
+								/>
+							)}
 						</div>
 
 						<button

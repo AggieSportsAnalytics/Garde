@@ -455,8 +455,10 @@ async function putAngleData(fencerId, videoId, pose, body) {
 }
 
 async function verifyEmail(email, type) {
-	const query = `SELECT * FROM ${type} WHERE email = ?`;
-	const user = await DB.prepare(query).bind(email).all();
+	// const query = `SELECT * FROM ${type} WHERE email = ?`;
+	const query = "SELECT * FROM users WHERE email = ? AND type = ?";
+	// const user = await DB.prepare(query).bind(email).all();
+	const user = await DB.prepare(query).bind(email, type).all();
 
 	// Check if the user exists
 	if (user.results.length === 0) {
@@ -470,8 +472,11 @@ async function verifyEmail(email, type) {
 		);
 	}
 
-	const updateQuery = `UPDATE ${type} SET is_verified = 1 WHERE email = ?`;
-	await DB.prepare(updateQuery).bind(email).run();
+	// const updateQuery = `UPDATE ${type} SET is_verified = 1 WHERE email = ?`;
+	const updateQuery =
+		"UPDATE users SET is_verified = 1 WHERE email = ? AND type = ?";
+	// await DB.prepare(updateQuery).bind(email).run();
+	await DB.prepare(updateQuery).bind(email, type).run();
 
 	const newUser = await DB.prepare(query).bind(email).all();
 
@@ -500,6 +505,13 @@ async function authGoogle(id, email, name, type) {
 	// remove this code once Garde goes public
 	const isWhitelisted = await isOnWhitelist(email, DB);
 	if (!isWhitelisted) {
+		await DB.prepare(`
+			INSERT OR IGNORE INTO attempted_signins (name, email)
+			VALUES (?, ?);
+		`)
+			.bind(name, email)
+			.run();
+
 		return addCorsHeaders(
 			new Response(
 				JSON.stringify({
@@ -519,8 +531,13 @@ async function authGoogle(id, email, name, type) {
 	const googlePassword = "google";
 
 	// Check if the user already exists in the database
-	const fetched = await DB.prepare(`SELECT * FROM ${type} WHERE email = ?`)
-		.bind(email)
+	// const fetched = await DB.prepare(`SELECT * FROM ${type} WHERE email = ?`)
+	// 	.bind(email)
+	// 	.all();
+	const fetched = await DB.prepare(
+		"SELECT * FROM users WHERE email = ? AND type = ?",
+	)
+		.bind(email, type)
 		.all();
 
 	let user;
@@ -533,7 +550,7 @@ async function authGoogle(id, email, name, type) {
 				JSON.stringify({
 					message: "User exists, logging in",
 					data: {
-						id: user.unique_id,
+						id: user.id,
 					},
 				}),
 				{
@@ -563,11 +580,17 @@ async function authGoogle(id, email, name, type) {
 	}
 
 	// User does not exist, create a new user
+	// const result = await DB.prepare(`
+	//     INSERT OR IGNORE INTO ${type} (unique_id, name, email, password, is_verified)
+	//     VALUES (?, ?, ?, ?, ?);
+	// `)
+	// 	.bind(id, name, email, googlePassword, 1)
+	// 	.run();
 	const result = await DB.prepare(`
-        INSERT INTO ${type} (unique_id, name, email, password, is_verified)
-        VALUES (?, ?, ?, ?, ?);
+        INSERT OR IGNORE INTO users (id, name, email, password, is_verified, type)
+        VALUES (?, ?, ?, ?, ?, ?);
     `)
-		.bind(id, name, email, googlePassword, 1)
+		.bind(id, name, email, googlePassword, 1, type)
 		.run();
 
 	if (!result.success) {
@@ -724,6 +747,13 @@ async function auth(type, name, email, password, id) {
 	// remove this code once Garde goes public
 	const isWhitelisted = await isOnWhitelist(email, DB);
 	if (!isWhitelisted) {
+		await DB.prepare(`
+			INSERT OR IGNORE INTO attempted_signins (name, email)
+			VALUES (?, ?);
+		`)
+			.bind(name, email)
+			.run();
+
 		return addCorsHeaders(
 			new Response(
 				JSON.stringify({
@@ -741,8 +771,13 @@ async function auth(type, name, email, password, id) {
 	}
 
 	// Check if the user already exists in the database
-	const fetched = await DB.prepare(`SELECT * FROM ${type} WHERE email = ?`)
-		.bind(email)
+	// const fetched = await DB.prepare(`SELECT * FROM ${type} WHERE email = ?`)
+	// 	.bind(email)
+	// 	.all();
+	const fetched = await DB.prepare(
+		"SELECT * FROM users WHERE email = ? AND type = ?",
+	)
+		.bind(email, type)
 		.all();
 
 	if (fetched.results.length > 0) {
@@ -762,11 +797,17 @@ async function auth(type, name, email, password, id) {
 	}
 
 	// User does not exist, create a new user
+	// const result = await DB.prepare(`
+	//     INSERT OR IGNORE INTO ${type} (unique_id, name, email, password, is_verified)
+	//     VALUES (?, ?, ?, ?, ?);
+	// `)
+	// 	.bind(id, name, email, password, 0)
+	// 	.run();
 	const result = await DB.prepare(`
-        INSERT OR IGNORE INTO ${type} (unique_id, name, email, password, is_verified)
-        VALUES (?, ?, ?, ?, ?);
+        INSERT OR IGNORE INTO users (id, name, email, password, is_verified, type)
+        VALUES (?, ?, ?, ?, ?, ?);
     `)
-		.bind(id, name, email, password, 0)
+		.bind(id, name, email, password, 0, type)
 		.run();
 
 	if (!result.success) {
@@ -846,8 +887,13 @@ async function getCoach(id) {
 
 async function verify(type, email) {
 	// Query the user by email
-	const fetched = await DB.prepare(`SELECT * FROM ${type} WHERE email = ?`)
-		.bind(email)
+	// const fetched = await DB.prepare(`SELECT * FROM ${type} WHERE email = ?`)
+	// 	.bind(email)
+	// 	.all();
+	const fetched = await DB.prepare(
+		"SELECT * FROM users WHERE email = ? AND type = ?",
+	)
+		.bind(email, type)
 		.all();
 
 	if (fetched.results.length === 0) {
@@ -887,7 +933,7 @@ async function verify(type, email) {
 	const res = new Response(
 		JSON.stringify({
 			data: {
-				id: user.unique_id,
+				id: user.id,
 				name: user.name,
 				password: user.password,
 			},
@@ -969,9 +1015,14 @@ async function deleteParticipant(tournament_id, user_id) {
 }
 
 async function deleteUser(id, type) {
+	// const query = `
+	//     DELETE FROM ${type}
+	//     WHERE unique_id = ?;
+	// `;
+	// await DB.prepare(query).bind(id).run();
 	const query = `
-        DELETE FROM ${type}
-        WHERE unique_id = ?;
+        DELETE FROM users
+        WHERE id = ?;
     `;
 	await DB.prepare(query).bind(id).run();
 

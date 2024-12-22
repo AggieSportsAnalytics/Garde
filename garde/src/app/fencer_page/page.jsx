@@ -255,12 +255,12 @@ export default function Fencer_Page2() {
 			}
 
 			try {
-				const decoded = await checkAuth(router, "fencer_signin", "fencer");
+				const decoded = await checkAuth(router, "signin", "fencer");
 				setFencerId(decoded.id);
 				setDecoded(decoded);
 			} catch (error) {
 				console.error(error);
-				router.push("/fencer_signin?restricted=true");
+				router.push("/signin?restricted=true");
 			}
 		};
 

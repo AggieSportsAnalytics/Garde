@@ -15,14 +15,12 @@ import {
 	FaEdit,
 } from "react-icons/fa";
 import Link from "next/link";
-import LoginModal from "@/src/components/tournaments/LoginModal";
 import { FaVideo, FaUserPlus } from "react-icons/fa";
 import checkAuth from "../../hooks/jwt_verify";
 import RestrictedAlert from "../../../components/ui/RestrictedAlert";
 
 export default function TournamentPage({ params }) {
 	const [tournament, setTournament] = useState(null);
-	const [isModalOpen, setIsModalOpen] = useState(false);
 	const [users, setUsers] = useState([]);
 	const [joining, setJoining] = useState(false);
 	const { tournament_id } = params;
@@ -92,7 +90,7 @@ export default function TournamentPage({ params }) {
 
 	const handleJoin = async () => {
 		try {
-			if (token.email === tournament.organizer_email) {
+			if (token?.email === tournament.organizer_email) {
 				window.alert("Organizers are automatically joined");
 				return;
 			}
@@ -131,7 +129,7 @@ export default function TournamentPage({ params }) {
 				fetchParticipants();
 			} else {
 				window.alert("You must login to join tournaments");
-				setIsModalOpen(true);
+				router.push(`/signin?redirect=/tournaments/${tournament_id}`);
 			}
 		} catch (error) {
 			setJoining(false);
@@ -171,11 +169,6 @@ export default function TournamentPage({ params }) {
 	return (
 		<>
 			<RestrictedAlert redirect={`/tournaments/${tournament_id}`} />
-			<LoginModal
-				isModalOpen={isModalOpen}
-				setIsModalOpen={setIsModalOpen}
-				redirect={`/tournaments/${tournament_id}`}
-			/>
 			<div className="p-6 w-full bg-gray-900 text-white min-h-screen shadow-lg">
 				<div className="border-b border-gray-700 pb-6 mb-6">
 					<div className="flex items-center justify-between">
@@ -224,7 +217,7 @@ export default function TournamentPage({ params }) {
 						tournament?.max_participants === "") &&
 					new Date() < new Date(tournament?.signup_deadline) &&
 					!users.some((user) => user.user_email === token?.email) &&
-					token.email !== tournament.organizer_email ? (
+					token?.email !== tournament.organizer_email ? (
 						<button
 							type="button"
 							className="flex items-center gap-2 px-6 py-3 bg-green-500 hover:bg-green-600 text-white font-semibold rounded shadow-md transition-transform duration-200 hover:scale-105"
@@ -235,13 +228,27 @@ export default function TournamentPage({ params }) {
 							{joining ? "Joining..." : "Join Tournament"}
 						</button>
 					) : (
-						<button
-							type="button"
-							className="flex items-center gap-2 px-6 py-3 bg-gray-500 text-white font-semibold rounded shadow-md cursor-not-allowed"
-							disabled
-						>
-							<FaUserPlus className="text-lg" /> Join Tournament
-						</button>
+						<>
+							{!users.some((user) => user.user_email === token?.email) ? (
+								<button
+									type="button"
+									className="flex items-center gap-2 px-6 py-3 bg-gray-500 text-white font-semibold rounded shadow-md cursor-not-allowed"
+									disabled
+								>
+									<FaUserPlus className="text-lg" /> Join Tournament
+								</button>
+							) : (
+								<>
+									<button
+										type="button"
+										className="flex items-center gap-2 px-6 py-3 bg-red-600 hover:bg-red-500 text-white font-semibold rounded shadow-md cursor-pointer"
+										onClick={() => handleDeleteParticipant(token?.id)}
+									>
+										<FaTrashAlt className="text-lg" /> Leave Tournament
+									</button>
+								</>
+							)}
+						</>
 					)}
 
 					<Link href={`/tournaments/${tournament_id}/videos`} passHref>

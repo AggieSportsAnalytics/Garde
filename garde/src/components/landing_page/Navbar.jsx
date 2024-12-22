@@ -32,8 +32,8 @@ const navbar = () => {
 		<div
 			className={
 				shadow
-					? "navbar fixed md:w-[1000px] w-[340px] mt-4 md:mt-12 left-1/2 transform -translate-x-1/2 h-16 z-[100] rounded-full duration-500"
-					: "fixed md:w-[1000px] w-[340px] mt-4 md:mt-12 left-1/2 transform -translate-x-1/2 h-16 z-[100]"
+					? "navbar fixed md:w-[800px] w-[340px] mt-4 md:mt-12 left-1/2 transform -translate-x-1/2 h-16 z-[100] rounded-full duration-500"
+					: "fixed md:w-[800px] w-[340px] mt-4 md:mt-12 left-1/2 transform -translate-x-1/2 h-16 z-[100]"
 			}
 		>
 			<div className="flex justify-between items-center w-full h-full px-4">
@@ -63,20 +63,13 @@ const navbar = () => {
 							Contact
 						</span>
 					</Link>
-					<Link href="/fencer_signin">
-						<button className="login text-sm hover:text-[#5bb1d5] transition-colors duration-500">
-							Fencer Login/Signup
-						</button>
-					</Link>
-					<Link href="/coach_signin">
-						<button className="button text-sm">
-							<span className="button-content font-bold">
-								Coach Login/Signup
-							</span>
+					<Link href="/signin">
+						<button type="button" className="button text-sm">
+							<span className="button-content font-bold">Login/Signup</span>
 						</button>
 					</Link>
 					<Link href="/tournaments">
-						<button className="button text-sm">
+						<button type="button" className="button text-sm">
 							<span className="button-content font-bold">Tournaments</span>
 						</button>
 					</Link>
@@ -122,16 +115,9 @@ const navbar = () => {
 									Contact
 								</li>
 							</Link>
-							<Link href="/fencer_signin">
-								<button className="login mt-4 hover:text-[#ac4bac] transition-colors duration-500 text-md">
-									Fencer Login/Signup
-								</button>
-							</Link>
-							<Link href="/coach_signin">
+							<Link href="/signin">
 								<button className="button mt-2">
-									<span className="button-content font-bold">
-										Coach Login/Signup
-									</span>
+									<span className="button-content font-bold">Login/Signup</span>
 								</button>
 							</Link>
 							<Link href="/tournaments">

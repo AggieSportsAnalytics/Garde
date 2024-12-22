@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { SignJWT, jwtVerify } from "jose";
+import { SignJWT, jwtVerify, decodeJwt } from "jose";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
 const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET);
@@ -26,7 +26,8 @@ export async function middleware(req) {
 	} else if (
 		requestedPage.includes("/tournaments") ||
 		requestedPage.includes("/api/") ||
-		requestedPage.includes("/verify-email")
+		requestedPage.includes("/verify-email") ||
+		requestedPage.includes("/signin")
 	) {
 		return await unProtectedMiddleware(req);
 	}
@@ -39,8 +40,6 @@ export async function middleware(req) {
 	}
 
 	try {
-		console.log("weofgiuhwofgwhig");
-
 		const { payload } = await jwtVerify(token, JWT_SECRET);
 
 		if (
@@ -51,7 +50,6 @@ export async function middleware(req) {
 			(requestedPage.includes("/fencer_page") && payload.type !== "fencer") ||
 			(requestedPage.includes("/coach_page") && payload.type !== "coach")
 		) {
-			console.log(payload);
 			const url = new URL(redirect, req.url);
 			url.searchParams.set("restricted", "true");
 			return NextResponse.redirect(url);
@@ -73,7 +71,7 @@ async function unProtectedMiddleware(req) {
 		let webToken;
 		const response = NextResponse.next();
 
-		if (!token) {
+		if (!token || decodeJwt(token)?.exp < Math.floor(Date.now() / 1000)) {
 			webToken = await new SignJWT({ purpose: "authentication" })
 				.setProtectedHeader({ alg: "HS256" })
 				.setExpirationTime("25h")
@@ -112,5 +110,7 @@ export const config = {
 		"/api/:path*",
 
 		"/verify-email",
+
+		"/signin",
 	],
 };

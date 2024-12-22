@@ -11,10 +11,10 @@ from tqdm import tqdm
 load_dotenv()
 
 # Program metadata
-program_name = "copy_vids.py"
-program_usage = "copy_vids.py [options]"
+program_name = "delete_files.py"
+program_usage = "delete_files.py [options]"
 program_description = """description:
-This is a Python script to copy files under any prefix cross/intra bucket."""
+This is a Python script to delete files under any prefix from any bucket."""
 program_epilog = """
 You must create an AWS access key id and secret from Cloudflare for whatever buckets 
 you need access to, please set TTL to 1 day only for security reasons."""
@@ -51,31 +51,11 @@ def set_parser(
         help="[Required] Name of the source bucket",
     )
     parser.add_argument(
-        "-db",
-        "--destination-bucket",
-        type=str,
-        required=True,
-        help="[Required] Name of the destination bucket",
-    )
-    parser.add_argument(
         "-sp",
         "--source-prefix",
         type=str,
         default="",
-        help="[Optional] Prefix of files to copy in the source bucket (default: root of the bucket)",
-    )
-    parser.add_argument(
-        "-dp",
-        "--destination-prefix",
-        type=str,
-        default="",
-        help="[Optional] Prefix for copied files in the destination bucket (default: root of the bucket)",
-    )
-    parser.add_argument(
-        "--delete",
-        type=str,
-        default="",
-        help="[Optional] Whether to delete the files from the source bucket/prefix or not (default: false)",
+        help="[Optional] Prefix of files to delete in the source bucket (default: root of the bucket)",
     )
     parser.add_argument("-v", "--version", action="version", version=program_version)
 
@@ -110,43 +90,24 @@ def list_all_objects(s3_client, bucket_name, prefix):
     return objects
 
 
-def copy_file(
-    s3_client,
-    source_bucket,
-    source_key,
-    destination_bucket,
-    destination_key,
-    dry,
-    delete,
-):
+def copy_file(s3_client, source_bucket, source_key, dry):
     """Copy a single file from the source bucket to the destination bucket."""
 
     try:
         if not dry:
-            s3_client.copy_object(
-                Bucket=destination_bucket,
-                CopySource={"Bucket": source_bucket, "Key": source_key},
-                Key=destination_key,
+            s3_client.delete_object(
+                Bucket=source_bucket,
+                Key=source_key,
             )
-
-            if delete:
-                s3_client.delete_object(
-                    Bucket=source_bucket,
-                    Key=source_key,
-                )
-        tqdm.write(
-            f"Copying file from {source_bucket}/{source_key} to {destination_bucket}/{destination_key}"
-        )
+        tqdm.write(f"Deleted file {source_bucket}/{source_key}")
         return True
     except Exception as e:
         print(f"Failed to copy {source_key}: {e}")
         return False
 
 
-def copy_files_in_bucket(
-    dry, source_bucket, destination_bucket, prefix, destination_prefix, delete
-):
-    """Copy files in a bucket from one prefix to another."""
+def copy_files_in_bucket(dry, source_bucket, prefix):
+    """Delete files in a bucket from a prefix."""
     # Initialize the S3 client
     ID = os.getenv("AWS_ACCESS_KEY_ID")
     SECRET = os.getenv("AWS_SECRET_ACCESS_KEY")
@@ -168,7 +129,7 @@ def copy_files_in_bucket(
     try:
         # List objects under the source prefix
         videos = list_all_objects(s3_client, source_bucket, prefix)
-        print(f"Found {len(videos)} files to copy.")
+        print(f"Found {len(videos)} files to delete.")
 
         # Use ThreadPoolExecutor for concurrency
         with ThreadPoolExecutor(max_workers=10) as executor, tqdm(
@@ -177,18 +138,10 @@ def copy_files_in_bucket(
             futures = []
             for obj in videos:
                 source_key = obj["Key"]
-                destination_key = source_key.replace(prefix, destination_prefix, 1)
 
                 futures.append(
                     executor.submit(
-                        copy_file,
-                        s3_client,
-                        source_bucket,
-                        source_key,
-                        destination_bucket,
-                        destination_key,
-                        dry,
-                        delete,
+                        copy_file, s3_client, source_bucket, source_key, dry
                     )
                 )
 
@@ -199,12 +152,12 @@ def copy_files_in_bucket(
 
         if dry:
             print(
-                f"Dry run complete. No files were copied.\n{len(videos)} files audited successfully."
+                f"Dry run complete. No files were deleted.\n{len(videos)} files audited successfully."
             )
         else:
-            print(f"All {len(videos)} files copied successfully.")
+            print(f"All {len(videos)} files deleted successfully.")
     except Exception as e:
-        print(f"Error copying files: {e}")
+        print(f"Error deleting files: {e}")
 
 
 if __name__ == "__main__":
@@ -220,8 +173,5 @@ if __name__ == "__main__":
     copy_files_in_bucket(
         dry=args.dry,
         source_bucket=args.source_bucket,
-        destination_bucket=args.destination_bucket,
         prefix=args.source_prefix,
-        destination_prefix=args.destination_prefix,
-        delete=args.delete,
     )

@@ -256,7 +256,6 @@ export default function Videos({ params }) {
 	const handleDownload = async (videoUrl, filename) => {
 		try {
 			const response = await axios.get(videoUrl, {
-				withCredentials: true,
 				responseType: "blob",
 			});
 

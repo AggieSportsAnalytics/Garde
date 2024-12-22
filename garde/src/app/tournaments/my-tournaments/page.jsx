@@ -19,10 +19,10 @@ export default function MyTournaments() {
 				const response = await axios.get(workerUrl, { withCredentials: true });
 
 				const allTournaments = response.data.tournaments;
-				const participating = allTournaments.filter(
+				const participating = allTournaments?.filter(
 					(tournament) => tournament.user_id !== id,
 				);
-				const organizing = allTournaments.filter(
+				const organizing = allTournaments?.filter(
 					(tournament) => tournament.user_id === id,
 				);
 
@@ -36,7 +36,7 @@ export default function MyTournaments() {
 		const checkToken = async () => {
 			try {
 				const decoded = await checkAuth(router, "tournaments", "");
-				return decoded?.id;
+				return decoded;
 			} catch (error) {
 				console.error(error);
 				router.push("/tournaments?restricted=true");
@@ -44,9 +44,17 @@ export default function MyTournaments() {
 		};
 
 		(async () => {
-			const id = await checkToken();
-			if (id) {
-				await fetchTournaments(id);
+			const decoded = await checkToken();
+			if (decoded?.id) {
+				await fetchTournaments(decoded.id);
+
+				const expirationTime = decoded?.exp * 1000 - Date.now();
+				const timer = setTimeout(() => {
+					alert("Your session has expired. Please log in again.");
+					router.push("/tournaments");
+				}, expirationTime);
+
+				return () => clearTimeout(timer);
 			}
 		})();
 	}, [router]);
@@ -67,9 +75,9 @@ export default function MyTournaments() {
 			{/* Organizing Tournaments */}
 			<section className="mb-12">
 				<h2 className="text-2xl font-semibold mb-4">Organizing Tournaments</h2>
-				{oTournies.length > 0 ? (
+				{oTournies?.length > 0 ? (
 					<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-						{oTournies.map((tournament) => (
+						{oTournies?.map((tournament) => (
 							<TournamentCard
 								key={`${tournament.id}_organizing`}
 								tournament={tournament}
@@ -88,9 +96,9 @@ export default function MyTournaments() {
 				<h2 className="text-2xl font-semibold mb-4">
 					Participating Tournaments
 				</h2>
-				{pTournies.length > 0 ? (
+				{pTournies?.length > 0 ? (
 					<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-						{pTournies.map((tournament) => (
+						{pTournies?.map((tournament) => (
 							<TournamentCard
 								key={`${tournament.id}_participating`}
 								tournament={tournament}

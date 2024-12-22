@@ -154,16 +154,11 @@ export default function Signin({ isSignUpDefault }) {
 
 	return (
 		<>
-			{loading ? (
-				<>
-					{type === "coach" ? (
-						<CoachPageScaffold />
-					) : (
-						<Loader loading={loading} />
-					)}
-				</>
+			{loading && type === "coach" ? (
+				<CoachPageScaffold />
 			) : (
 				<div className="min-h-screen flex items-center justify-center bg-gray-900 text-white px-4">
+					{loading && <Loader loading={loading} />}
 					<div className="absolute top-4 left-4">
 						<Link href="/" className="cursor-pointer">
 							<button
@@ -257,13 +252,6 @@ export default function Signin({ isSignUpDefault }) {
 							</button>
 						</form>
 
-						{/* <div className="mt-4 flex justify-center">
-							<GoogleLogin
-								width="280"
-								onSuccess={handleGoogleSuccess}
-								onError={handleGoogleError}
-							/>
-						</div> */}
 						<div className="mt-4 flex justify-center">
 							{!type ? (
 								<div

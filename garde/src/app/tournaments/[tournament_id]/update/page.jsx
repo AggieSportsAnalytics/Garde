@@ -79,6 +79,14 @@ export default function UpdateTournament({ params }) {
 					is_team_based: tournamentData?.is_team_based || false,
 					rules: tournamentData?.rules || "",
 				});
+
+				const expirationTime = decoded?.exp * 1000 - Date.now();
+				const timer = setTimeout(() => {
+					alert("Your session has expired. Please log in again.");
+					router.push("/tournaments");
+				}, expirationTime);
+
+				return () => clearTimeout(timer);
 			} catch (error) {
 				console.error("Token validation error:", error);
 				router.push(`/tournaments/${tournament_id}?restricted=true`);

@@ -269,7 +269,7 @@ async function putCoachFencer(fencerId, coachId, fencerName, fencerEmail) {
 
 async function putOwned(userId, body) {
 	const query =
-		"INSERT OR IGNORE INTO owned_tournaments (user_id, user_type, user_name, user_email, tournament_id, relation) VALUES (?, ?, ?, ?, ?, ?);";
+		"INSERT OR IGNORE INTO tournament_users (user_id, user_type, user_name, user_email, tournament_id, relation) VALUES (?, ?, ?, ?, ?, ?);";
 	await DB.prepare(query)
 		.bind(
 			userId,
@@ -331,7 +331,7 @@ async function updateTournament(unique_id, body) {
 			is_team_based = ?,
 			rules = ?,
 			signup_deadline = ?
-		WHERE unique_id = ?;
+		WHERE tournament_id = ?;
 	`;
 
 	await DB.prepare(query)
@@ -390,7 +390,7 @@ async function putTournament(unique_id, body) {
 	} = body;
 
 	const query =
-		"INSERT OR IGNORE INTO tournaments (unique_id, user_id, event_name, description, category, prize_pool, organizer_name, organizer_email, organizer_phone, location, privacy, start_time, end_time, registration_fee, max_participants, eligibility, is_team_based, rules, signup_deadline) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
+		"INSERT OR IGNORE INTO tournaments (tournament_id, user_id, event_name, description, category, prize_pool, organizer_name, organizer_email, organizer_phone, location, privacy, start_time, end_time, registration_fee, max_participants, eligibility, is_team_based, rules, signup_deadline) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
 	await DB.prepare(query)
 		.bind(
 			unique_id,
@@ -631,7 +631,7 @@ async function getMyTournaments(id) {
 	const query = `
 		SELECT t.*
 		FROM tournaments t
-		INNER JOIN owned_tournaments ot ON t.unique_id = ot.tournament_id
+		INNER JOIN tournament_users ot ON t.tournament_id = ot.tournament_id
 		WHERE ot.user_id = ?;
 	`;
 
@@ -673,7 +673,7 @@ async function getTournaments() {
 
 async function getParticipants(id) {
 	const tournament = await DB.prepare(
-		"SELECT * FROM owned_tournaments WHERE tournament_id = ?",
+		"SELECT * FROM tournament_users WHERE tournament_id = ?",
 	)
 		.bind(id)
 		.all();
@@ -695,7 +695,7 @@ async function getParticipants(id) {
 
 async function getTournament(id) {
 	const tournament = await DB.prepare(
-		"SELECT * FROM tournaments WHERE unique_id = ?",
+		"SELECT * FROM tournaments WHERE tournament_id = ?",
 	)
 		.bind(id)
 		.all();
@@ -1004,7 +1004,7 @@ async function deleteCoachFencers(fencerId, coachId) {
 async function deleteTournament(id) {
 	const query = `
         DELETE FROM tournaments
-        WHERE unique_id = ?;
+        WHERE tournament_id = ?;
     `;
 	await DB.prepare(query).bind(id).run();
 
@@ -1030,7 +1030,7 @@ async function deleteTournament(id) {
 
 async function deleteParticipant(tournament_id, user_id) {
 	const query = `
-		DELETE FROM owned_tournaments
+		DELETE FROM tournament_users
 		WHERE tournament_id = ? AND user_id = ?;
 	`;
 	await DB.prepare(query).bind(tournament_id, user_id).run();

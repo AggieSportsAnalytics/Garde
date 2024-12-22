@@ -98,6 +98,16 @@ function Tournaments() {
 				if (decoded) {
 					setLoggedIn(true);
 				}
+
+				const expirationTime = decoded?.exp * 1000 - Date.now();
+				if (!Number.isNaN(expirationTime)) {
+					const timer = setTimeout(() => {
+						alert("Your session has expired. Please log in again.");
+						setLoggedIn(false);
+					}, expirationTime);
+
+					return () => clearTimeout(timer);
+				}
 			} catch (error) {
 				console.error(error);
 				router.push("tournaments?restricted=true");

@@ -45,6 +45,14 @@ export default function OrganizeTournament() {
 					organizer_email: decoded.email,
 					user_id: decoded.id,
 				});
+
+				const expirationTime = decoded?.exp * 1000 - Date.now();
+				const timer = setTimeout(() => {
+					alert("Your session has expired. Please log in again.");
+					router.push("/tournaments");
+				}, expirationTime);
+
+				return () => clearTimeout(timer);
 			} catch (error) {
 				console.error(error);
 				router.push("/tournaments?restricted=true");

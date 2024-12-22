@@ -261,9 +261,17 @@ export default function Fencer_Page2() {
 				setFencerId(decoded.id);
 				setDecoded(decoded);
 
+				const expirationTime = decoded?.exp * 1000 - Date.now();
+				const timer = setTimeout(() => {
+					alert("Your session has expired. Please log in again.");
+					router.push("/signin");
+				}, expirationTime);
+
 				const workerUrl = `${process.env.NEXT_PUBLIC_GARDE_WORKER}/getAllFC/${decoded.id}`;
 				const response = await axios.get(workerUrl, { withCredentials: true });
 				setCoaches(response.data.data);
+
+				return () => clearTimeout(timer);
 			} catch (error) {
 				console.error(error);
 				router.push("/signin?restricted=true");

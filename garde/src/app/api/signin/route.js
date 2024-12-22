@@ -19,7 +19,7 @@ export async function POST(req) {
 
 		const data = response?.data?.data; // Safeguard check
 
-		if (data.password === "google") {
+		if (data?.password === "google") {
 			return NextResponse.json(
 				{ error: "Google sign in detected, please login with google" },
 				{ status: 401 },
@@ -30,7 +30,7 @@ export async function POST(req) {
 		const matched = await checkPassword(password, data.password);
 
 		// Check if valid data is returned
-		if (data?.id && data.name && matched) {
+		if (data?.id && data?.name && matched) {
 			const token = jwt.sign(
 				{
 					id: data.id,
@@ -61,6 +61,7 @@ export async function POST(req) {
 		return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
 	} catch (error) {
 		// Handle Axios errors and other errors properly
+		console.error(error);
 		return NextResponse.json(
 			{ error: error?.response?.data?.error || "Internal server error" },
 			{ status: error?.response?.status || 500 },

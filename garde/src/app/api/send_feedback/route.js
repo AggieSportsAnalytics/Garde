@@ -108,7 +108,7 @@ async function sendFeedback(data, email, coachName, fencerName, videoUrl) {
 
 	try {
 		const info = await transporter.sendMail(mailOptions);
-		console.log("Verification email sent: ", info.response);
+		console.log("Feedback email sent: ", info.response);
 		return { success: true };
 	} catch (error) {
 		console.error("Error sending email: ", error);

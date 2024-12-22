@@ -25,14 +25,14 @@ export default function Signin({ isSignUpDefault }) {
 	useEffect(() => {
 		const initPage = async () => {
 			try {
-				const decoded = await checkAuth(router, `${type}_signin`, type, true);
+				const decoded = await checkAuth(router, "signin", type, true);
 
-				if (decoded?.type === type) {
-					router.push(`${type}_page`);
+				if (decoded?.type) {
+					router.push(`${decoded.type}_page`);
 				}
 			} catch (error) {
 				console.error(error);
-				router.push(`${type}_signin?restricted=true`);
+				router.push("signin?restricted=true");
 			}
 		};
 
@@ -176,7 +176,7 @@ export default function Signin({ isSignUpDefault }) {
 						</Link>
 					</div>
 
-					<RestrictedAlert redirect={`${type}_signin`} />
+					<RestrictedAlert redirect="signin" />
 					<div className="bg-gray-800 p-8 rounded-lg shadow-lg max-w-md w-full">
 						<h1 className="text-center text-2xl font-semibold mb-6">
 							{isSignUp ? "Sign Up" : "Sign In"}

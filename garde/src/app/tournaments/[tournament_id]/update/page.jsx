@@ -47,7 +47,7 @@ export default function UpdateTournament({ params }) {
 
 		const validateAndSetData = async () => {
 			const tournamentData =
-				selectedTournament?.unique_id === tournament_id
+				selectedTournament?.tournament_id === tournament_id
 					? selectedTournament
 					: await fetchTournament();
 

@@ -31,14 +31,14 @@ export default function CoachPage() {
 	useEffect(() => {
 		const initPage = async () => {
 			try {
-				const decoded = await checkAuth(router, "coach_signin", "coach");
+				const decoded = await checkAuth(router, "signin", "coach");
 
 				setId(decoded.id);
 				setCoachName(decoded.name);
 				getInfo("getCoach", decoded.id);
 			} catch (error) {
 				console.error(error);
-				router.push("/coach_signin?restricted=true");
+				router.push("/signin?restricted=true");
 			}
 		};
 
@@ -71,6 +71,7 @@ export default function CoachPage() {
 					fencers={fencers}
 					currentFencer={currentFencer}
 					setCurrentFencer={setCurrentFencer}
+					handleRefresh={handleRefresh}
 				/>
 				<Feedback
 					fencer={currentFencer}

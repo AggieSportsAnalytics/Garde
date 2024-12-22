@@ -79,7 +79,10 @@ export default function TournamentPage({ params }) {
 			}
 		};
 
-		if (selectedTournament && selectedTournament.unique_id === tournament_id) {
+		if (
+			selectedTournament &&
+			selectedTournament.tournament_id === tournament_id
+		) {
 			setTournament(selectedTournament);
 		} else {
 			fetchTournament();

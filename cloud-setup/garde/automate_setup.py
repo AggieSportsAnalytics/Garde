@@ -110,7 +110,7 @@ CREATE TABLE IF NOT EXISTS tournament_users (
     relation TEXT,
     timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (user_id, tournament_id),
-    FOREIGN KEY (tournament_id) REFERENCES tournaments(unique_id) ON DELETE CASCADE
+    FOREIGN KEY (tournament_id) REFERENCES tournaments(tournament_id) ON DELETE CASCADE
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 """
@@ -314,68 +314,3 @@ if __name__ == "__main__":
         deploy_script()
     else:
         delete_d1_database(database_name)
-
-
-# create_fencers_table = """
-# CREATE TABLE IF NOT EXISTS fencer (
-#     unique_id TEXT PRIMARY KEY,
-#     name TEXT NOT NULL,
-#     email TEXT NOT NULL UNIQUE,
-#     password TEXT NOT NULL,
-#     is_verified BOOLEAN DEFAULT false
-# );
-# """
-
-# create_coaches_table = """
-# CREATE TABLE IF NOT EXISTS coach (
-#     unique_id TEXT PRIMARY KEY,
-#     name TEXT NOT NULL,
-#     email TEXT NOT NULL UNIQUE,
-#     password TEXT NOT NULL,
-#     is_verified BOOLEAN DEFAULT false
-# );
-# """
-
-# create_coach_fencers_table = """
-# CREATE TABLE IF NOT EXISTS coach_fencer (
-#     coach_id TEXT,
-#     fencer_id TEXT,
-#     fencer_name TEXT NOT NULL,
-#     fencer_email TEXT NOT NULL,
-#     PRIMARY KEY (coach_id, fencer_id),
-#     FOREIGN KEY (coach_id) REFERENCES coach(unique_id) ON DELETE CASCADE,
-#     FOREIGN KEY (fencer_id) REFERENCES fencer(unique_id) ON DELETE CASCADE
-# );
-# """
-
-# create_fencer_sessions_table = """
-# CREATE TABLE IF NOT EXISTS fencer_sessions (
-#     fencer_id TEXT,
-#     video_id TEXT NOT NULL,
-#     pose TEXT,
-#     feet_distance REAL,
-#     speed REAL,
-#     elbow_left REAL,
-#     hip_left REAL,
-#     knee_left REAL,
-#     elbow_right REAL,
-#     hip_right REAL,
-#     knee_right REAL,
-#     timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
-#     FOREIGN KEY (fencer_id) REFERENCES fencer(unique_id) ON DELETE CASCADE
-# );
-# """
-
-# create_owned_tournaments_table = """
-# CREATE TABLE IF NOT EXISTS owned_tournaments (
-#     user_id TEXT,
-#     user_type TEXT NOT NULL CHECK (user_type IN ('fencer', 'coach')),
-#     user_name TEXT NOT NULL,
-#     user_email TEXT NOT NULL,
-#     tournament_id TEXT,
-#     relation TEXT,
-#     timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
-#     PRIMARY KEY (user_id, tournament_id),
-#     FOREIGN KEY (tournament_id) REFERENCES tournaments(unique_id) ON DELETE CASCADE
-# );
-# """

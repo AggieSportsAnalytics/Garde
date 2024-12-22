@@ -8,9 +8,16 @@ import DeleteAccountButton from "../auth/DeleteAccount";
 import { FaCog } from "react-icons/fa";
 import { FiX } from "react-icons/fi";
 import UuidReveal from "./UuidReveal";
+import axios from "axios";
 // import AddFencerInstruction from "./AddFencerInstruction";
 
-function TopBar({ id, fencers, currentFencer, setCurrentFencer }) {
+function TopBar({
+	id,
+	fencers,
+	currentFencer,
+	setCurrentFencer,
+	handleRefresh,
+}) {
 	const [isModalVisible, setIsModalVisible] = useState(false);
 
 	const showModal = () => {
@@ -19,6 +26,16 @@ function TopBar({ id, fencers, currentFencer, setCurrentFencer }) {
 
 	const handleCancel = () => {
 		setIsModalVisible(false);
+	};
+
+	const removeFencer = async () => {
+		try {
+			const workerUrl = `${process.env.NEXT_PUBLIC_GARDE_WORKER}/deleteCoachFencer?coachId=${id}&fencerId=${currentFencer.fencer_id}`;
+			await axios.delete(workerUrl, { withCredentials: true });
+			handleRefresh();
+		} catch (error) {
+			console.error(error);
+		}
 	};
 
 	return (
@@ -35,32 +52,43 @@ function TopBar({ id, fencers, currentFencer, setCurrentFencer }) {
 				</Link>
 
 				{fencers.length > 0 ? (
-					<span className="flex-grow text-center text-2xl font-semibold relative">
-						<label htmlFor="fencer-select" className="sr-only">
-							Select Fencer
-						</label>
-						<select
-							id="fencer-select"
-							value={currentFencer.fencer_id}
-							onChange={(e) => {
-								const selectedFencer = fencers.find(
-									(f) => f.fencer_id === e.target.value,
-								);
-								setCurrentFencer(selectedFencer);
-							}}
-							className="ml-4 px-2 py-1 bg-gray-700 text-white border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 hover:bg-gray-600 transition duration-200"
-						>
-							{fencers.map((fencer) => (
-								<option
-									className="bg-gray-800 text-white"
-									key={fencer.fencer_id}
-									value={fencer.fencer_id}
-								>
-									{fencer.fencer_name}
-								</option>
-							))}
-						</select>
-					</span>
+					<>
+						<span className="flex-grow text-center text-2xl font-semibold relative">
+							<label htmlFor="fencer-select" className="sr-only">
+								Select Fencer
+							</label>
+							<select
+								id="fencer-select"
+								value={currentFencer.fencer_id}
+								onChange={(e) => {
+									const selectedFencer = fencers.find(
+										(f) => f.fencer_id === e.target.value,
+									);
+									setCurrentFencer(selectedFencer);
+								}}
+								className="ml-4 px-2 py-1 bg-gray-700 text-white border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 hover:bg-gray-600 transition duration-200"
+							>
+								{fencers.map((fencer) => (
+									<option
+										className="bg-gray-800 text-white"
+										key={fencer.fencer_id}
+										value={fencer.fencer_id}
+									>
+										{fencer.fencer_name}
+									</option>
+								))}
+							</select>
+						</span>
+						<div className="relative">
+							<button
+								onClick={removeFencer}
+								className="whitespace-nowrap absolute top-1/2 transform -translate-y-1/2 right-5 bg-red-600 px-3 py-2 hover:bg-red-500 text-white font-semibold rounded shadow-md cursor-pointer"
+								type="button"
+							>
+								Remove Fencer
+							</button>
+						</div>
+					</>
 				) : (
 					<div className="font-bold text-2xl">No Fencers Added</div>
 				)}

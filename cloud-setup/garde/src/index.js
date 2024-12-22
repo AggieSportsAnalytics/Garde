@@ -114,6 +114,11 @@ export default {
 					return await getCoach(pathName[pathName.length - 1]);
 				}
 
+				if (path.includes("/getAllFC")) {
+					const pathName = path.split("/");
+					return await getAllFC(pathName[pathName.length - 1]);
+				}
+
 				if (path.includes("/getFencer")) {
 					const pathName = path.split("/");
 					return await getFencer(pathName[pathName.length - 1]);
@@ -873,6 +878,32 @@ async function getCoach(id) {
 		JSON.stringify({
 			data: result.results,
 			message: "Successfully got coach's fencers",
+		}),
+		{
+			status: 200,
+			headers: {
+				"Content-Type": "application/json",
+			},
+		},
+	);
+
+	return addCorsHeaders(res);
+}
+
+async function getAllFC(id) {
+	const result = await DB.prepare(
+		`SELECT coach_fencer.*, users.name AS coach_name
+		 FROM coach_fencer
+		 JOIN users ON coach_fencer.coach_id = users.id
+		 WHERE coach_fencer.fencer_id = ?`,
+	)
+		.bind(id)
+		.all();
+
+	const res = new Response(
+		JSON.stringify({
+			data: result.results,
+			message: "Successfully got fencer's coaches",
 		}),
 		{
 			status: 200,

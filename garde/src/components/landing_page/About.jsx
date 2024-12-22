@@ -16,9 +16,7 @@ const About = () => {
 			</div>
 
 			<div className="flex flex-col space-y-10">
-				{/* First Row */}
 				<div className="flex flex-row space-x-10">
-					{/* Card for Fencers */}
 					<div className="flex justify-center mt-8 md:mt-14 w-full">
 						<CardSpotlight className="w-full max-w-md md:max-w-lg lg:max-w-3xl h-auto p-4">
 							<h1 className="flex justify-center text-white font-bold text-xl md:text-2xl mt-[-20px] md:mt-[-30px] font-platypi">
@@ -48,7 +46,6 @@ const About = () => {
 						</CardSpotlight>
 					</div>
 
-					{/* Card for Coaches */}
 					<div className="flex justify-center mt-8 md:mt-14 w-full">
 						<CardSpotlight className="w-full max-w-md md:max-w-lg lg:max-w-3xl h-auto p-4">
 							<h1 className="flex justify-center text-white font-bold text-xl md:text-2xl mt-[-20px] md:mt-[-30px] font-platypi">
@@ -80,7 +77,6 @@ const About = () => {
 					</div>
 				</div>
 
-				{/* Second Row */}
 				<div className="flex justify-center mt-8 md:mt-14 w-full">
 					<CardSpotlight className="w-full max-w-md md:max-w-lg lg:max-w-3xl h-auto p-4">
 						<h1 className="flex justify-center text-white font-bold text-xl md:text-2xl mt-[-20px] md:mt-[-30px] font-platypi">

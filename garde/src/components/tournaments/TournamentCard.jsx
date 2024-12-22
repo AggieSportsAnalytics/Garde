@@ -8,7 +8,7 @@ function TournamentCard({ tournament }) {
 
 	const onClick = () => {
 		dispatch(selectTournament(tournament));
-		router.push(`/tournaments/${tournament.unique_id}`);
+		router.push(`/tournaments/${tournament.tournament_id}`);
 	};
 
 	return (

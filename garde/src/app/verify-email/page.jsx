@@ -49,7 +49,7 @@ function VerifyEmail() {
 
 				setMessage("Email verified successfully! Redirecting...");
 				setTimeout(() => {
-					router.push(`/${decoded.type}_signin`);
+					router.push("/signin");
 				}, 3000);
 			} catch (error) {
 				console.error(error);

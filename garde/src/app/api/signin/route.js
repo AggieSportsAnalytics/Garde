@@ -13,11 +13,13 @@ export async function POST(req) {
 		const workerUrl = `${process.env.NEXT_PUBLIC_GARDE_WORKER}/verify?type=${type}&email=${email}`;
 
 		// Check the worker API to validate credentials
-		const response = await axios.get(workerUrl);
+		const response = await axios.get(workerUrl, {
+			headers: { Authorization: `Bearer ${req.cookies?.get("token")?.value}` },
+		});
 
 		const data = response?.data?.data; // Safeguard check
 
-		if (data.password === "google") {
+		if (data?.password === "google") {
 			return NextResponse.json(
 				{ error: "Google sign in detected, please login with google" },
 				{ status: 401 },
@@ -28,7 +30,7 @@ export async function POST(req) {
 		const matched = await checkPassword(password, data.password);
 
 		// Check if valid data is returned
-		if (data?.id && data.name && matched) {
+		if (data?.id && data?.name && matched) {
 			const token = jwt.sign(
 				{
 					id: data.id,
@@ -47,7 +49,7 @@ export async function POST(req) {
 				{ status: 200 },
 			);
 			response.cookies.set("token", token, {
-				httpOnly: false,
+				httpOnly: true,
 				maxAge: 25 * 60 * 60, // 25 hours
 				secure: process.env.NODE_ENV === "production",
 				path: "/",
@@ -59,6 +61,7 @@ export async function POST(req) {
 		return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
 	} catch (error) {
 		// Handle Axios errors and other errors properly
+		console.error(error);
 		return NextResponse.json(
 			{ error: error?.response?.data?.error || "Internal server error" },
 			{ status: error?.response?.status || 500 },

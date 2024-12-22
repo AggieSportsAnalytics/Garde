@@ -6,7 +6,7 @@ import { FaLinkedin, FaYoutube, FaInstagram } from "react-icons/fa";
 const Contact = () => {
 	const form = useRef();
 	const [loading, setLoading] = useState(false);
-	const [success, setSuccess] = useState(null);
+	const [success, setSuccess] = useState("");
 
 	const sendEmail = async (e) => {
 		e.preventDefault();
@@ -21,16 +21,13 @@ const Contact = () => {
 
 		try {
 			// Send a POST request to the backend
-			const response = await axios.put("/api/contact_us", formData);
+			const response = await axios.put("/api/contact_us", formData, {
+				withCredentials: true,
+			});
 
-			if (response.status === 200) {
-				setSuccess("Email sent successfully!");
-				form.current.reset();
-				setTimeout(() => setSuccess(""), 2000);
-			} else {
-				console.error("Failed to send email");
-				setSuccess("Failed to send email. Please try again.");
-			}
+			setSuccess("Email sent successfully!");
+			form.current.reset();
+			setTimeout(() => setSuccess(""), 2000);
 		} catch (error) {
 			console.error("Error sending email:", error);
 			setSuccess("Error sending email. Please try again.");

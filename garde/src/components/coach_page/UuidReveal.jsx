@@ -19,11 +19,11 @@ function UuidReveal({ uuid }) {
 	};
 
 	return (
-		<div className="flex flex-col items-center justify-center mt-4 w-full max-w-sm mx-auto">
+		<div className="flex flex-col items-center justify-center mt-6 w-full max-w-md mx-auto">
 			<button
 				onClick={handleToggle}
 				type="button"
-				className="flex items-center w-full max-w-xs px-3 py-2 bg-blue-600 text-white rounded-lg shadow-md hover:bg-blue-700 transition-colors duration-200 text-sm sm:text-base"
+				className="flex items-center justify-center w-full px-4 py-2 bg-blue-600 text-white font-medium rounded-lg shadow hover:bg-blue-700 focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 transition-colors duration-200 sm:text-base text-sm"
 			>
 				{isRevealed ? (
 					<>
@@ -38,18 +38,22 @@ function UuidReveal({ uuid }) {
 				)}
 			</button>
 
-			<span className="mt-3 text-sm sm:text-lg font-mono text-gray-900 bg-gray-200 py-2 rounded-lg shadow-sm w-full text-center flex items-center justify-between px-2">
-				<span>{isRevealed ? uuid : "••••••••••••••••••••••••••••••••••"}</span>
-				{isRevealed && (
-					<button
-						type="button"
-						onClick={handleCopy}
-						className="ml-2 text-gray-600 hover:text-black transition duration-200"
-						title="Copy to clipboard"
-					>
-						{copied ? <FiCheck size={20} /> : <FiCopy size={20} />}
-					</button>
-				)}
+			<span className="mt-4 flex items-center justify-between w-full px-4 py-3 bg-gray-100 text-gray-800 rounded-lg shadow-md sm:text-lg text-sm">
+				<span className={`truncate ${isRevealed ? "" : "select-none"}`}>
+					{isRevealed ? uuid : "••••••••••••••••••••••••••••••••••"}
+				</span>
+				<button
+					type="button"
+					onClick={handleCopy}
+					className="ml-3 text-gray-500 hover:text-gray-800 transition duration-200"
+					title="Copy to clipboard"
+				>
+					{copied ? (
+						<FiCheck size={20} className="text-green-500" />
+					) : (
+						<FiCopy size={20} />
+					)}
+				</button>
 			</span>
 		</div>
 	);

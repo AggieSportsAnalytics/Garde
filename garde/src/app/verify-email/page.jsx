@@ -1,18 +1,21 @@
 "use client";
 
-import React, { Suspense, useEffect, useState } from "react";
+import React, { useEffect, useState, Suspense } from "react";
+import {
+	AiOutlineCheckCircle,
+	AiOutlineExclamationCircle,
+} from "react-icons/ai";
 import { useSearchParams, useRouter } from "next/navigation";
-import { jwtDecode } from "jwt-decode"; // If you are verifying the token client-side
 import axios from "axios";
 
-function VerifyEmailContent() {
+function VerifyEmail() {
 	const [message, setMessage] = useState("Verifying...");
 	const searchParams = useSearchParams();
 	const router = useRouter();
 
 	useEffect(() => {
 		const workerUrl = `${process.env.NEXT_PUBLIC_GARDE_WORKER}/verifyEmail`;
-		const token = searchParams.get("token"); // Get the token from the URL
+		const token = searchParams.get("token");
 
 		const verifyEmail = async () => {
 			if (!token) {
@@ -21,11 +24,16 @@ function VerifyEmailContent() {
 			}
 
 			try {
-				// Verify the token here (client-side or in a Next.js backend route)
-				const decoded = jwtDecode(token);
+				const res = await axios.get("/api/verify_email", {
+					withCredentials: true,
+					headers: {
+						Authorization: `Bearer ${token}`,
+					},
+				});
 
-				// Example: Add more checks if necessary (e.g., check expiration)
-				if (!decoded || !decoded.email || !decoded.type) {
+				const { decoded } = res.data;
+
+				if (!decoded?.email || !decoded.type) {
 					throw new Error("Invalid token");
 				}
 
@@ -34,19 +42,15 @@ function VerifyEmailContent() {
 					type: decoded.type,
 				};
 
-				// Token is valid, send POST request to Cloudflare Worker
-				const response = await axios.post(workerUrl, queryData, {
+				await axios.post(workerUrl, queryData, {
+					withCredentials: true,
 					headers: { "Content-Type": "application/json" },
 				});
 
-				if (response.status >= 200 && response.status < 300) {
-					setMessage("Email verified successfully! Redirecting...");
-					setTimeout(() => {
-						router.push(`/${decoded.type}_signin`); // Redirect to sign-in page after 3 seconds
-					}, 3000);
-				} else {
-					setMessage("Error verifying email. Please try again.");
-				}
+				setMessage("Email verified successfully! Redirecting...");
+				setTimeout(() => {
+					router.push("/signin");
+				}, 3000);
 			} catch (error) {
 				console.error(error);
 				setMessage("Invalid or expired token.");
@@ -57,16 +61,50 @@ function VerifyEmailContent() {
 	}, []);
 
 	return (
-		<div className="min-h-screen flex items-center justify-center text-white">
-			<p>{message}</p>
+		<div className="min-h-screen bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 flex flex-col items-center justify-center text-white p-4">
+			<div className="absolute top-4 left-4">
+				<img
+					src="/images/garde-square.png"
+					alt="Logo"
+					className="w-24 h-auto"
+				/>
+			</div>
+			<div className="bg-gray-800 p-6 rounded-lg shadow-lg text-center max-w-md">
+				{message === "Verifying..." ? (
+					<div className="flex flex-col items-center space-y-4">
+						<div className="loader spinner-border animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-white" />
+						<p className="text-lg font-semibold">{message}</p>
+					</div>
+				) : message === "Email verified successfully! Redirecting..." ? (
+					<div className="flex flex-col items-center space-y-4 text-green-400">
+						<AiOutlineCheckCircle className="w-10 h-10" />
+						<p className="text-lg font-semibold">{message}</p>
+					</div>
+				) : (
+					<div className="flex flex-col items-center space-y-4 text-red-400">
+						<AiOutlineExclamationCircle className="w-10 h-10" />
+						<p className="text-lg font-semibold">{message}</p>
+						<button
+							type="button"
+							onClick={() => router.push("/#contact")}
+							className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+						>
+							Contact Support
+						</button>
+					</div>
+				)}
+			</div>
+			<footer className="mt-8 text-sm text-gray-200">
+				© 2024-2025 Garde™. All Rights Reserved.
+			</footer>
 		</div>
 	);
 }
 
-export default function VerifyEmail() {
+export default function VerifyEmailPage() {
 	return (
 		<Suspense fallback={<div>Loading...</div>}>
-			<VerifyEmailContent />
+			<VerifyEmail />
 		</Suspense>
 	);
 }

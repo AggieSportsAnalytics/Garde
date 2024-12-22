@@ -1,20 +1,23 @@
+"use client";
+
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 import axios from "axios";
 
 export default function Logout() {
+	const [waiting, setWaiting] = useState(false);
+
 	const router = useRouter();
 
 	const handleLogout = async () => {
 		try {
-			const response = await axios.get("/api/logout");
+			setWaiting(true);
 
-			if (response.status >= 200 && response.status < 300) {
-				// Redirect to the login page after logout
-				router.push("/");
-			} else {
-				console.error("Failed to log out");
-			}
+			await axios.get("/api/logout", { withCredentials: true });
+
+			router.push("/");
 		} catch (error) {
+			setWaiting(false);
 			console.error(error.message);
 		}
 	};
@@ -25,7 +28,7 @@ export default function Logout() {
 			onClick={handleLogout}
 			className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
 		>
-			Logout
+			{waiting ? "Logging out..." : "Logout"}
 		</button>
 	);
 }

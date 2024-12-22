@@ -7,8 +7,9 @@ import { FaBold, FaItalic } from "react-icons/fa";
 import ListItem from "@tiptap/extension-list-item";
 import axios from "axios";
 
-function Editor({ fencer, coachName }) {
+function Editor({ fencer, coachName, currentVideo }) {
 	const [errorMessage, setErrorMessage] = useState("");
+	const [success, setSuccess] = useState("");
 
 	// Initialize editor with necessary extensions, including lists
 	const editor = useEditor({
@@ -30,23 +31,43 @@ function Editor({ fencer, coachName }) {
 
 		if (content === "" || content === "<p></p>") {
 			setErrorMessage("Feedback cannot be empty.");
+			setTimeout(() => {
+				setErrorMessage("");
+			}, 2000);
 			return;
 		}
 
 		editor.commands.setContent(""); // Clear content after submission
-		setErrorMessage("");
 
 		const queryData = {
+			fencerName: fencer.fencer_name,
 			data: content,
 			email: fencer.fencer_email,
 			coachName: coachName,
+			videoUrl: currentVideo
+				? `https://pub-8c962831e75547f6a9ca8e7d2bd89c9c.r2.dev/${fencer.fencer_id}/${currentVideo}/full_video.webm`
+				: null,
 		};
 
-		await axios.put("/api/send_feedback", queryData, {
-			headers: {
-				"Content-Type": "application/json",
-			},
-		});
+		try {
+			const res = await axios.put("/api/send_feedback", queryData, {
+				withCredentials: true,
+				headers: {
+					"Content-Type": "application/json",
+				},
+			});
+
+			setSuccess("Successfully sent feedback!");
+			setTimeout(() => {
+				setSuccess("");
+			}, 2000);
+		} catch (error) {
+			setErrorMessage("Failed to send feedback");
+			setTimeout(() => {
+				setErrorMessage("");
+			}, 2000);
+			console.error(error);
+		}
 	};
 
 	const handleBold = () => editor?.chain().focus().toggleBold().run();
@@ -79,6 +100,7 @@ function Editor({ fencer, coachName }) {
 			</div>
 			{/* Error Message */}
 			{errorMessage && <p className="text-red-500 mt-2">{errorMessage}</p>}
+			{success && <p className="text-green-500 mt-2">{success}</p>}
 			{/* Submit Button */}
 			<div className="text-center">
 				<button

@@ -1,14 +1,15 @@
 "use client";
 
-import "../globals.css";
-import TopBar from "../../components/coach_page/TopBar";
-import Videos from "../../components/coach_page/Videos";
-import Editor from "../../components/coach_page/Editor";
-import Analytics from "../../components/coach_page/Analytics";
+import "@/src/app/globals.css";
+import TopBar from "@/src/components/coach_page/TopBar";
+import Videos from "@/src/components/coach_page/Videos";
+import Editor from "@/src/components/coach_page/Editor";
+import Analytics from "@/src/components/coach_page/Analytics";
 import { useState, useEffect } from "react";
-import { jwtDecode } from "jwt-decode"; // Corrected import for jwtDecode
 import axios from "axios";
 import { useRouter } from "next/navigation";
+import CoachPageScaffold from "@/src/components/coach_page/CoachPageScaffold";
+import checkAuth from "@/src/app/hooks/jwt_verify";
 
 export default function CoachPage() {
 	const [id, setId] = useState(""); // coach id
@@ -19,83 +20,84 @@ export default function CoachPage() {
 	const [videos, setVideos] = useState([]);
 	const router = useRouter();
 	const [refreshKey, setRefreshKey] = useState(0);
+	const [loading, setLoading] = useState(true);
 
 	const handleRefresh = () => {
+		setLoading(true);
 		setRefreshKey((prevKey) => prevKey + 1);
 	};
 
 	// Fetch the coach ID and fencers
 	useEffect(() => {
-		try {
-			const token = document.cookie
-				.split("; ")
-				.find((row) => row.startsWith("token="))
-				?.split("=")[1];
+		const initPage = async () => {
+			try {
+				const decoded = await checkAuth(router, "signin", "coach");
 
-			if (token) {
-				const decoded = jwtDecode(token);
-				if (decoded.type !== "coach") {
-					router.push("coach_signin");
-				}
 				setId(decoded.id);
 				setCoachName(decoded.name);
 				getInfo("getCoach", decoded.id);
-			} else {
-				console.error("No cookies found");
-				router.push("coach_signin");
-			}
-		} catch (error) {
-			console.error(error);
-			router.push("coach_signin");
-		}
-	}, []);
 
-	// Update current fencer when fencers list changes
-	useEffect(() => {
-		if (fencers.length > 0) {
-			setCurrentFencer(fencers[0]);
-		} else {
-			setCurrentFencer({
-				coach_id: "",
-				fencer_name: "No fencers added",
-				fencer_id: "",
-			});
-		}
-	}, [fencers]); // Runs whenever fencers list is updated
+				const expirationTime = decoded?.exp * 1000 - Date.now();
+				const timer = setTimeout(() => {
+					alert("Your session has expired. Please log in again.");
+					router.push("/signin");
+				}, expirationTime);
+
+				return () => clearTimeout(timer);
+			} catch (error) {
+				console.error(error);
+				router.push("/signin?restricted=true");
+			}
+		};
+
+		initPage();
+	}, [refreshKey]);
 
 	async function getInfo(queryType, id) {
 		const workerUrl = `${process.env.NEXT_PUBLIC_GARDE_WORKER}/${queryType}/${id}`;
 
 		try {
-			const response = await axios.get(workerUrl);
+			const response = await axios.get(workerUrl, { withCredentials: true });
 			setFencers(response.data.data);
+			if (response.data.data.length > 0) {
+				setCurrentFencer(response.data.data[0]);
+			} else {
+				setCurrentFencer({});
+			}
 		} catch (error) {
+			setLoading(false);
 			console.error(error);
 		}
 	}
 
 	return (
-		<div key={refreshKey}>
-			<TopBar
-				id={id}
-				fencers={fencers}
-				currentFencer={currentFencer}
-				setCurrentFencer={setCurrentFencer}
-			/>
-			<Feedback
-				fencer={currentFencer}
-				coachName={coachName}
-				setCurrentVideo={setCurrentVideo}
-				videos={videos}
-				setVideos={setVideos}
-				handleRefresh={handleRefresh}
-			/>
-			<Analytics
-				fencer={currentFencer}
-				currentVideo={currentVideo}
-				videos={videos}
-			/>
-		</div>
+		<>
+			{loading && <CoachPageScaffold />}
+			<div key={refreshKey} className={`${loading && "hidden"}`}>
+				<TopBar
+					id={id}
+					fencers={fencers}
+					currentFencer={currentFencer}
+					setCurrentFencer={setCurrentFencer}
+					handleRefresh={handleRefresh}
+				/>
+				<Feedback
+					fencer={currentFencer}
+					coachName={coachName}
+					setCurrentVideo={setCurrentVideo}
+					currentVideo={currentVideo}
+					videos={videos}
+					setVideos={setVideos}
+					handleRefresh={handleRefresh}
+					setLoading={setLoading}
+				/>
+				<Analytics
+					fencer={currentFencer}
+					currentVideo={currentVideo}
+					videos={videos}
+				/>
+			</div>
+		</>
 	);
 }
 
@@ -103,9 +105,11 @@ function Feedback({
 	fencer,
 	coachName,
 	setCurrentVideo,
+	currentVideo,
 	videos,
 	setVideos,
 	handleRefresh,
+	setLoading,
 }) {
 	return (
 		<div className="flex flex-row mx-10 pt-10 text-white space-x-6">
@@ -114,15 +118,21 @@ function Feedback({
 				<Videos
 					fencer={fencer}
 					setCurrentVideo={setCurrentVideo}
+					currentVideo={currentVideo}
 					videos={videos}
 					setVideos={setVideos}
 					handleRefresh={handleRefresh}
+					setLoading={setLoading}
 				/>
 			</div>
 
 			{/* Editor Component */}
 			<div className="w-1/2">
-				<Editor fencer={fencer} coachName={coachName} />
+				<Editor
+					fencer={fencer}
+					coachName={coachName}
+					currentVideo={currentVideo}
+				/>
 			</div>
 		</div>
 	);

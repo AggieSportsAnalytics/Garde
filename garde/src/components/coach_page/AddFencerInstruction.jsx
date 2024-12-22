@@ -13,7 +13,9 @@ function AddFencerInstruction() {
 			const workerUrl = `${process.env.NEXT_PUBLIC_GARDE_WORKER}/putInstruction/${name}`; // Replace with your actual Worker URL
 			setVal("");
 
-			await axios.put(workerUrl).catch((e) => console.error(e));
+			await axios
+				.put(workerUrl, { withCredentials: true })
+				.catch((e) => console.error(e));
 
 			setStatus("Successfully added instruction!");
 		} catch (error) {

@@ -7,22 +7,18 @@ import Logout from "../auth/Logout";
 import DeleteAccountButton from "../auth/DeleteAccount";
 import { FaCog } from "react-icons/fa";
 import { FiX } from "react-icons/fi";
-import { AiOutlineCheck } from "react-icons/ai";
 import UuidReveal from "./UuidReveal";
-import AddFencerInstruction from "./AddFencerInstruction";
+import axios from "axios";
+// import AddFencerInstruction from "./AddFencerInstruction";
 
-function TopBar({ id, fencers, currentFencer, setCurrentFencer }) {
-	const [isVisible, setIsVisible] = useState(false);
+function TopBar({
+	id,
+	fencers,
+	currentFencer,
+	setCurrentFencer,
+	handleRefresh,
+}) {
 	const [isModalVisible, setIsModalVisible] = useState(false);
-
-	const handleClick = () => {
-		setIsVisible(!isVisible);
-	};
-
-	const handleNameClick = (selectedFencer) => {
-		setCurrentFencer(selectedFencer);
-		setIsVisible(false);
-	};
 
 	const showModal = () => {
 		setIsModalVisible(!isModalVisible);
@@ -30,6 +26,16 @@ function TopBar({ id, fencers, currentFencer, setCurrentFencer }) {
 
 	const handleCancel = () => {
 		setIsModalVisible(false);
+	};
+
+	const removeFencer = async () => {
+		try {
+			const workerUrl = `${process.env.NEXT_PUBLIC_GARDE_WORKER}/deleteCoachFencer?coachId=${id}&fencerId=${currentFencer.fencer_id}`;
+			await axios.delete(workerUrl, { withCredentials: true });
+			handleRefresh();
+		} catch (error) {
+			console.error(error);
+		}
 	};
 
 	return (
@@ -45,36 +51,47 @@ function TopBar({ id, fencers, currentFencer, setCurrentFencer }) {
 					</button>
 				</Link>
 
-				<span className="flex-grow text-center text-2xl font-semibold relative">
-					{currentFencer.fencer_name}
-					{fencers.length > 1 && (
-						<button
-							type="button"
-							onClick={handleClick}
-							className="cursor-pointer ml-2 text-gray-300 hover:text-white transition-colors duration-200"
-							title="Select Fencer"
-						>
-							&#9660;
-						</button>
-					)}
-					{isVisible && (
-						<div className="absolute left-1/2 transform -translate-x-1/2 mt-2 w-56 bg-white text-black border border-gray-300 rounded-lg shadow-md max-h-60 overflow-y-auto z-50 animate-fade-in">
-							{fencers.map((fencer) => (
-								<button
-									type="button"
-									key={fencer.fencer_id}
-									className="flex justify-between items-center w-full px-4 py-2 hover:bg-gray-100 border-b"
-									onClick={() => handleNameClick(fencer)}
-								>
-									{fencer.fencer_name}
-									{currentFencer.fencer_id === fencer.fencer_id && (
-										<AiOutlineCheck className="text-green-500" />
-									)}
-								</button>
-							))}
+				{fencers.length > 0 ? (
+					<>
+						<span className="flex-grow text-center text-2xl font-semibold relative">
+							<label htmlFor="fencer-select" className="sr-only">
+								Select Fencer
+							</label>
+							<select
+								id="fencer-select"
+								value={currentFencer.fencer_id}
+								onChange={(e) => {
+									const selectedFencer = fencers.find(
+										(f) => f.fencer_id === e.target.value,
+									);
+									setCurrentFencer(selectedFencer);
+								}}
+								className="ml-4 px-2 py-1 bg-gray-700 text-white border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 hover:bg-gray-600 transition duration-200"
+							>
+								{fencers.map((fencer) => (
+									<option
+										className="bg-gray-800 text-white"
+										key={fencer.fencer_id}
+										value={fencer.fencer_id}
+									>
+										{fencer.fencer_name}
+									</option>
+								))}
+							</select>
+						</span>
+						<div className="relative">
+							<button
+								onClick={removeFencer}
+								className="whitespace-nowrap absolute top-1/2 transform -translate-y-1/2 right-5 bg-red-600 px-3 py-2 hover:bg-red-500 text-white font-semibold rounded shadow-md cursor-pointer"
+								type="button"
+							>
+								Remove Fencer
+							</button>
 						</div>
-					)}
-				</span>
+					</>
+				) : (
+					<div className="font-bold text-2xl">No Fencers Added</div>
+				)}
 
 				<div className="mr-4">
 					<FaCog

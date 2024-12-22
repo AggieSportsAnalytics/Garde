@@ -38,13 +38,35 @@ export async function POST(req, { params }) {
 		// const metadata = await getVideoMetadata(tempInputPath);
 		await uploadMetadata({}, videoId, fencerId);
 
-		await uploadToR2(
-			arrayBuffer,
-			videoId,
-			`full_video.${fileExtension}`,
-			fencerId,
-			videoFile.type,
-		);
+		try {
+			const webmOutputPath = path.join("/tmp", `webm_output_${videoId}.webm`);
+
+			await transcodeToWebM(tempInputPath, webmOutputPath);
+			const transcodedBuffer = await fsPromises.readFile(webmOutputPath);
+
+			await uploadToR2(
+				transcodedBuffer,
+				videoId,
+				"full_video.webm",
+				fencerId,
+				"video/webm",
+			);
+
+			await fsPromises.rm(webmOutputPath);
+		} catch (error) {
+			try {
+				console.error(error);
+				await uploadToR2(
+					arrayBuffer,
+					videoId,
+					`full_video.${fileExtension}`,
+					fencerId,
+					videoFile.type,
+				);
+			} catch (error) {
+				console.error(error);
+			}
+		}
 
 		// If hls conversion fails, upload full video to bucket as failsafe so video is not lost
 		let files;
@@ -101,8 +123,8 @@ export async function POST(req, { params }) {
 
 		const thumbPath = path.join(outputDir, "thumbnail.jpeg");
 		try {
-			const len = (files.length - 1) * 10 - 5;
-			const timestamp = Math.floor(len / 2);
+			const len = (files.length - 1) * 10 + 1;
+			const timestamp = Math.max(Math.floor(len / 2), 1);
 
 			await generateThumbnail(tempInputPath, thumbPath, timestamp);
 			const buff = await fsPromises.readFile(thumbPath);
@@ -110,7 +132,7 @@ export async function POST(req, { params }) {
 			await fsPromises.unlink(thumbPath);
 		} catch (error) {
 			console.error(error);
-			await generateThumbnail(tempInputPath, thumbPath, 1);
+			await generateThumbnail(tempInputPath, thumbPath, 0);
 			const buff = await fsPromises.readFile(thumbPath);
 			await uploadThumbnail(buff, videoId, fencerId);
 			await fsPromises.unlink(thumbPath);
@@ -154,6 +176,20 @@ export async function POST(req, { params }) {
 			{ status: 500 },
 		);
 	}
+}
+
+async function transcodeToWebM(inputPath, outputPath) {
+	return new Promise((resolve, reject) => {
+		ffmpeg(inputPath)
+			.outputOptions(["-c:v libvpx", "-b:v 1M", "-c:a libvorbis"])
+			.on("end", () => {
+				resolve();
+			})
+			.on("error", (err) => {
+				reject(err);
+			})
+			.save(outputPath);
+	});
 }
 
 const uploadToR2 = async (

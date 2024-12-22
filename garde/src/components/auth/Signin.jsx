@@ -4,65 +4,48 @@ import { useState, useEffect } from "react";
 import { GoogleLogin } from "@react-oauth/google";
 import { useRouter, useSearchParams } from "next/navigation";
 import axios from "axios";
-import { jwtDecode } from "jwt-decode";
 import Link from "next/link";
 import Loader from "../ui/Loader";
+import CoachPageScaffold from "../coach_page/CoachPageScaffold";
+import checkAuth from "@/src/app/hooks/jwt_verify";
+import RestrictedAlert from "../ui/RestrictedAlert";
 
-export default function Signin({ isSignUpDefault, type }) {
+export default function Signin({ isSignUpDefault }) {
 	const [isSignUp, setIsSignUp] = useState(isSignUpDefault || false);
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
 	const [name, setName] = useState(""); // Only used for sign-up
-	const [error, setError] = useState(null);
-	const [showAlert, setShowAlert] = useState(false);
+	const [error, setError] = useState("");
 	const [success, setSuccess] = useState("");
 	const [loading, setLoading] = useState(false);
+	const [type, setType] = useState("");
 	const router = useRouter();
 	const searchParams = useSearchParams();
 
 	useEffect(() => {
-		const restricted = searchParams.get("restricted");
-		if (restricted === "true") {
-			setShowAlert(true);
-		}
-	}, [searchParams]);
+		const initPage = async () => {
+			try {
+				const decoded = await checkAuth(router, "signin", type, true);
 
-	useEffect(() => {
-		const checkToken = async () => {
-			// Get the token from cookies
-			const token = document.cookie
-				.split("; ")
-				.find((row) => row.startsWith("token="))
-				?.split("=")[1];
-
-			if (token) {
-				try {
-					// Decode the token to check its validity
-					const decoded = jwtDecode(token);
-
-					// Check if the token is still valid (i.e., not expired)
-					const currentTime = Date.now() / 1000;
-					if (decoded.exp > currentTime) {
-						if (decoded.type === type) {
-							router.push(`/${type}_page`);
-						} else {
-							router.push(`${type}_signin`);
-						}
-					}
-				} catch (error) {}
+				if (decoded?.type) {
+					router.push(`${decoded.type}_page`);
+				}
+			} catch (error) {
+				console.error(error);
+				router.push("signin?restricted=true");
 			}
 		};
 
-		checkToken();
+		initPage();
 	}, [router, type]);
-
-	const closeModal = () => {
-		setShowAlert(false);
-		router.push(`/${type}_signin`); // Add restricted flag
-	};
 
 	// Handle form submission for both sign-in and sign-up
 	const handleSubmit = async (e) => {
+		if (!type) {
+			window.alert("You must select a type");
+			return;
+		}
+
 		setLoading(true);
 		e.preventDefault();
 
@@ -73,17 +56,24 @@ export default function Signin({ isSignUpDefault, type }) {
 
 		try {
 			const res = await axios.post(endpoint, body, {
+				withCredentials: true,
 				headers: {
 					"Content-Type": "application/json",
 				},
 			});
 
-			if (res.status >= 200 && res.status < 300 && !isSignUp) {
+			if (!isSignUp) {
 				// setLoading(false);
 				setError("");
 				setSuccess("Please wait, logging in...");
-				router.push(`/${type}_page`); // Redirect to the appropriate page
-			} else if (res.status >= 200 && res.status < 300 && isSignUp) {
+
+				const redirect = searchParams.get("redirect");
+				if (redirect) {
+					router.push(redirect);
+				} else {
+					router.push(`/${type}_page`);
+				}
+			} else if (isSignUp) {
 				setLoading(false);
 				setError("");
 				setSuccess("Please verify your email address...");
@@ -92,6 +82,7 @@ export default function Signin({ isSignUpDefault, type }) {
 			setLoading(false);
 			setName("");
 			setEmail("");
+			setType("");
 			setPassword("");
 			setSuccess("");
 			setError(error.response.data.error || "Failed to login/sign up");
@@ -99,6 +90,7 @@ export default function Signin({ isSignUpDefault, type }) {
 			setEmail("");
 			setPassword("");
 			setName("");
+			setType("");
 			setTimeout(() => {
 				setSuccess("");
 				setError("");
@@ -108,8 +100,16 @@ export default function Signin({ isSignUpDefault, type }) {
 
 	// Handle Google Auth Success
 	const handleGoogleSuccess = async (response) => {
+		if (!type) {
+			window.alert("You must select a type");
+			return;
+		}
+
 		try {
-			setLoading(true);
+			const redirect = searchParams.get("redirect");
+			if (redirect) {
+				setLoading(true);
+			}
 			setError("");
 
 			const queryData = {
@@ -117,12 +117,15 @@ export default function Signin({ isSignUpDefault, type }) {
 				type: type,
 			};
 			const res = await axios.post("/api/google-auth", queryData, {
+				withCredentials: true,
 				headers: { "Content-Type": "application/json" },
 			});
 
-			if (res.status >= 200 && res.status < 300) {
-				// setLoading(false);
-				setSuccess("Please wait, logging in...");
+			setSuccess("Please wait, logging in...");
+
+			if (redirect) {
+				router.push(redirect);
+			} else {
 				router.push(`/${type}_page`);
 			}
 		} catch (error) {
@@ -145,120 +148,139 @@ export default function Signin({ isSignUpDefault, type }) {
 		setName("");
 		setEmail("");
 		setPassword("");
+		setType("");
 		setIsSignUp(!isSignUp);
 	};
 
 	return (
-		<div className="min-h-screen flex items-center justify-center bg-gray-900 text-white px-4">
-			<div className="absolute top-4 left-4">
-				<Link href="/" className="cursor-pointer">
-					<button
-						type="button"
-						className="bg-white text-black py-2 px-4 rounded text-lg font-semibold hover:bg-gray-300 duration-200 hover:scale-110 active:scale-100"
-						title="Go Back"
-					>
-						&#8592;
-					</button>
-				</Link>
-			</div>
+		<>
+			{loading && type === "coach" ? (
+				<CoachPageScaffold />
+			) : (
+				<div className="min-h-screen flex items-center justify-center bg-gray-900 text-white px-4">
+					{loading && <Loader loading={loading} />}
+					<div className="absolute top-4 left-4">
+						<Link href="/" className="cursor-pointer">
+							<button
+								type="button"
+								className="bg-white text-black py-2 px-4 rounded text-lg font-semibold hover:bg-gray-300 duration-200 hover:scale-110 active:scale-100"
+								title="Go Back"
+							>
+								&#8592;
+							</button>
+						</Link>
+					</div>
 
-			<Loader loading={loading} />
+					<RestrictedAlert redirect="signin" />
+					<div className="bg-gray-800 p-8 rounded-lg shadow-lg max-w-md w-full">
+						<h1 className="text-center text-2xl font-semibold mb-6">
+							{isSignUp ? "Sign Up" : "Sign In"}
+						</h1>
 
-			{showAlert && (
-				<div className="fixed inset-0 bg-opacity-50 flex justify-center items-center px-4">
-					<div className="p-6 bg-gray-900 rounded-lg shadow-lg max-w-sm w-full">
-						<h2 className="text-lg font-semibold mb-3">Restricted Access</h2>
-						<p className="mb-5">
-							You must sign in to access the requested page.
-						</p>
+						<form onSubmit={handleSubmit} className="space-y-6">
+							<div>
+								<label htmlFor="type" className="block text-sm font-medium">
+									Type
+								</label>
+								<select
+									id="type"
+									className="mt-1 block w-full p-2 bg-gray-700 border border-gray-600 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm"
+									value={type}
+									onChange={(e) => setType(e.target.value)}
+									required
+								>
+									<option value="" disabled>
+										Select a type
+									</option>
+									<option value="fencer">Fencer</option>
+									<option value="coach">Coach</option>
+								</select>
+							</div>
+
+							{isSignUp && (
+								<div>
+									<label htmlFor="name" className="block text-sm font-medium">
+										Name
+									</label>
+									<input
+										type="text"
+										id="name"
+										className="mt-1 block w-full p-2 bg-gray-700 border border-gray-600 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm"
+										value={name}
+										onChange={(e) => setName(e.target.value)}
+										required={isSignUp}
+									/>
+								</div>
+							)}
+
+							<div>
+								<label htmlFor="email" className="block text-sm font-medium">
+									Email
+								</label>
+								<input
+									type="email"
+									id="email"
+									className="mt-1 block w-full p-2 bg-gray-700 border border-gray-600 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm"
+									value={email}
+									onChange={(e) => setEmail(e.target.value)}
+									required
+								/>
+							</div>
+
+							<div>
+								<label htmlFor="password" className="block text-sm font-medium">
+									Password
+								</label>
+								<input
+									type="password"
+									id="password"
+									className="mt-1 block w-full p-2 bg-gray-700 border border-gray-600 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm"
+									value={password}
+									onChange={(e) => setPassword(e.target.value)}
+									required
+								/>
+							</div>
+
+							{error && <p className="text-red-500 text-sm">{error}</p>}
+							{success && <p className="text-green-500 text-sm">{success}</p>}
+
+							<button
+								type="submit"
+								className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg text-sm"
+							>
+								{isSignUp ? "Sign Up" : "Sign In"}
+							</button>
+						</form>
+
+						<div className="mt-4 flex justify-center">
+							{!type ? (
+								<div
+									className="w-[280px] text-sm p-2 bg-gray-700 text-center text-gray-400 rounded-sm opacity-50 cursor-not-allowed"
+									aria-disabled="true"
+								>
+									Select type to enable Google Login
+								</div>
+							) : (
+								<GoogleLogin
+									width="280"
+									onSuccess={handleGoogleSuccess}
+									onError={handleGoogleError}
+								/>
+							)}
+						</div>
+
 						<button
 							type="button"
-							onClick={closeModal}
-							className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg w-full"
+							onClick={toggleSignUp}
+							className="w-full text-blue-400 hover:text-blue-500 text-sm mt-4"
 						>
-							Dismiss
+							{isSignUp
+								? "Already have an account? Sign In"
+								: "New here? Sign Up"}
 						</button>
 					</div>
 				</div>
 			)}
-			<div className="bg-gray-800 p-8 rounded-lg shadow-lg max-w-md w-full">
-				<h1 className="text-center text-2xl font-semibold mb-6">
-					{isSignUp ? "Sign Up" : "Sign In"}
-				</h1>
-
-				<form onSubmit={handleSubmit} className="space-y-6">
-					{isSignUp && (
-						<div>
-							<label htmlFor="name" className="block text-sm font-medium">
-								Name
-							</label>
-							<input
-								type="text"
-								id="name"
-								className="mt-1 block w-full p-2 bg-gray-700 border border-gray-600 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm"
-								value={name}
-								onChange={(e) => setName(e.target.value)}
-								required={isSignUp}
-							/>
-						</div>
-					)}
-
-					<div>
-						<label htmlFor="email" className="block text-sm font-medium">
-							Email
-						</label>
-						<input
-							type="email"
-							id="email"
-							className="mt-1 block w-full p-2 bg-gray-700 border border-gray-600 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm"
-							value={email}
-							onChange={(e) => setEmail(e.target.value)}
-							required
-						/>
-					</div>
-
-					<div>
-						<label htmlFor="password" className="block text-sm font-medium">
-							Password
-						</label>
-						<input
-							type="password"
-							id="password"
-							className="mt-1 block w-full p-2 bg-gray-700 border border-gray-600 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm"
-							value={password}
-							onChange={(e) => setPassword(e.target.value)}
-							required
-						/>
-					</div>
-
-					{error && <p className="text-red-500 text-sm">{error}</p>}
-					{success && <p className="text-green-500 text-sm">{success}</p>}
-
-					<button
-						type="submit"
-						className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg text-sm"
-					>
-						{isSignUp ? "Sign Up" : "Sign In"}
-					</button>
-				</form>
-
-				{/* Google Auth Button */}
-				<div className="mt-4 flex justify-center">
-					<GoogleLogin
-						width="280"
-						onSuccess={handleGoogleSuccess}
-						onError={handleGoogleError}
-					/>
-				</div>
-
-				<button
-					type="button"
-					onClick={toggleSignUp}
-					className="w-full text-blue-400 hover:text-blue-500 text-sm mt-4"
-				>
-					{isSignUp ? "Already have an account? Sign In" : "New here? Sign Up"}
-				</button>
-			</div>
-		</div>
+		</>
 	);
 }

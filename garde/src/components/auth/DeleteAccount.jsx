@@ -4,8 +4,8 @@ import { useRouter } from "next/navigation";
 
 export default function DeleteAccountButton({ type, userId }) {
 	const [loading, setLoading] = useState(false);
-	const [error, setError] = useState(null);
-	const [success, setSuccess] = useState(null);
+	const [error, setError] = useState("");
+	const [success, setSuccess] = useState("");
 	const router = useRouter();
 
 	const handleDeleteAccount = async () => {
@@ -18,30 +18,21 @@ export default function DeleteAccountButton({ type, userId }) {
 		}
 
 		setLoading(true);
-		setError(null);
-		setSuccess(null);
+		setError("");
+		setSuccess("");
 
 		try {
 			const workerUrl = `${process.env.NEXT_PUBLIC_GARDE_WORKER}/deleteUser?id=${userId}&type=${type}`;
 
 			// Replace with your actual DELETE API endpoint
-			const response = await axios.delete(workerUrl);
+			const response = await axios.delete(workerUrl, { withCredentials: true });
 
-			if (response.status >= 200 && response.status < 300) {
-				const res = await axios.get("/api/logout");
+			const res = await axios.get("/api/logout", { withCredentials: true });
 
-				if (response.status >= 200 && response.status < 300) {
-					// Redirect to the login page after logout
-					router.push("/");
-				} else {
-					console.error("Failed to log out");
-				}
-				setSuccess("Your account has been successfully deleted.");
-				// Optionally, you can also log out the user or redirect them to another page
-			} else {
-				setError("Failed to delete the account. Please try again.");
-			}
+			router.push("/");
+			setSuccess("Your account has been successfully deleted.");
 		} catch (err) {
+			console.error(err);
 			setError("An error occurred while deleting your account.");
 		} finally {
 			setLoading(false);
@@ -59,8 +50,10 @@ export default function DeleteAccountButton({ type, userId }) {
 				{loading ? "Deleting..." : "Delete Account"}
 			</button>
 
-			{error && <p className="text-red-500 mt-4">{error}</p>}
-			{success && <p className="text-green-500 mt-4">{success}</p>}
+			{error && <p className="text-red-500 mt-4 flex items-center">{error}</p>}
+			{success && (
+				<p className="text-green-500 mt-4 flex items-center">{success}</p>
+			)}
 		</div>
 	);
 }

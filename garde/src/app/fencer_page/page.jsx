@@ -31,9 +31,9 @@ const Fencer_Stats = dynamic(
 	{ ssr: false },
 );
 import { useRouter } from "next/navigation";
-import { jwtDecode } from "jwt-decode";
 import axios from "axios";
 import Chatbot from "../../components/fencer_page/Chatbot";
+import checkAuth from "../hooks/jwt_verify";
 
 const MemoizedFencerStats = memo(Fencer_Stats);
 const MemoizedInstruction = memo(Instruction);
@@ -89,6 +89,8 @@ export default function Fencer_Page2() {
 	const [decoded, setDecoded] = useState({});
 	const [videoId, setVideoId] = useState("");
 	const [uploadAngles, setUploadAngles] = useState(false);
+	const [coaches, setCoaches] = useState([]);
+	const [currentCoach, setCurrentCoach] = useState({});
 	const router = useRouter();
 
 	const [sumAngles, setSumAngles] = useState({
@@ -154,13 +156,11 @@ export default function Fencer_Page2() {
 
 			try {
 				const response = await axios.put(putWorkerUrl, body, {
+					withCredentials: true,
 					headers: { "Content-Type": "application/json" },
 				});
 
-				if (response.status >= 200 && response.status < 300) {
-					return true;
-				}
-				return false;
+				return true;
 			} catch (error) {
 				console.error(error);
 				return false;
@@ -249,34 +249,36 @@ export default function Fencer_Page2() {
 	}, [videoId, uploadAngles]);
 
 	useEffect(() => {
-		if (typeof window !== "undefined") {
-			const userAgent = navigator.userAgent;
-			const mobileDevice = /iPhone|iPad|iPod|Android/i.test(userAgent);
-			setIsMobile(mobileDevice);
-		}
-
-		try {
-			const token = document.cookie
-				.split("; ")
-				.find((row) => row.startsWith("token="))
-				?.split("=")[1];
-
-			if (token) {
-				const decoded = jwtDecode(token);
-				if (decoded.type !== "fencer") {
-					router.push("fencer_signin");
-				} else {
-					setFencerId(decoded.id);
-					setDecoded(decoded);
-				}
-			} else {
-				console.error("No cookies found");
-				router.push("fencer_signin");
+		const fetchAuthData = async () => {
+			if (typeof window !== "undefined") {
+				const userAgent = navigator.userAgent;
+				const mobileDevice = /iPhone|iPad|iPod|Android/i.test(userAgent);
+				setIsMobile(mobileDevice);
 			}
-		} catch (error) {
-			console.error(error);
-			router.push("fencer_signin");
-		}
+
+			try {
+				const decoded = await checkAuth(router, "signin", "fencer");
+				setFencerId(decoded.id);
+				setDecoded(decoded);
+
+				const expirationTime = decoded?.exp * 1000 - Date.now();
+				const timer = setTimeout(() => {
+					alert("Your session has expired. Please log in again.");
+					router.push("/signin");
+				}, expirationTime);
+
+				const workerUrl = `${process.env.NEXT_PUBLIC_GARDE_WORKER}/getAllFC/${decoded.id}`;
+				const response = await axios.get(workerUrl, { withCredentials: true });
+				setCoaches(response.data.data);
+
+				return () => clearTimeout(timer);
+			} catch (error) {
+				console.error(error);
+				router.push("/signin?restricted=true");
+			}
+		};
+
+		fetchAuthData();
 	}, []);
 
 	useEffect(() => {
@@ -618,6 +620,26 @@ export default function Fencer_Page2() {
 		setIsFeedbackMuted((prevState) => !prevState);
 	};
 
+	const removeCoach = async () => {
+		if (!currentCoach?.coach_id) {
+			return;
+		}
+
+		try {
+			const workerUrl = `${process.env.NEXT_PUBLIC_GARDE_WORKER}/deleteCoachFencer?coachId=${currentCoach?.coach_id}&fencerId=${fencerId}`;
+			await axios.delete(workerUrl, { withCredentials: true });
+
+			setCoaches((prevCoaches) =>
+				prevCoaches.filter(
+					(coach) => coach.coach_id !== currentCoach?.coach_id,
+				),
+			);
+			setCurrentCoach(null);
+		} catch (error) {
+			console.error(error);
+		}
+	};
+
 	return (
 		<InstructionContext.Provider value={{ instructions, setInstructions }}>
 			{isMobile ? (
@@ -682,15 +704,16 @@ export default function Fencer_Page2() {
 							</button>
 						</div>
 
-						<div
+						<button
 							className={`mx-4 w-9 h-9 rounded-full ${darkMode ? "bg-white" : "bg-black"} 
     flex items-center justify-center cursor-pointer hover:bg-gray-300`}
 							onClick={showModal}
+							type="button"
 						>
 							<FaCog
 								className={`${darkMode ? "text-black" : "text-white"} text-2xl`}
 							/>
-						</div>
+						</button>
 
 						<Modal
 							isOpen={isModalVisible}
@@ -729,7 +752,6 @@ export default function Fencer_Page2() {
 									Settings
 								</h2>
 
-								{/* Modal Content */}
 								<div className="w-full flex flex-col items-center space-y-4">
 									<AddFencer decoded={decoded} />
 									<HeightInput handleHeightSave={handleHeightInput} />
@@ -738,6 +760,47 @@ export default function Fencer_Page2() {
 									) : (
 										<p className="text-gray-700">Current Height: Not Set</p>
 									)}
+								</div>
+
+								<div className="w-full flex flex-col items-center space-y-4">
+									<label htmlFor="coach-select" className="sr-only">
+										Select Coach
+									</label>
+									<select
+										id="coach-select"
+										value={currentCoach?.coach_id || ""}
+										onChange={(e) => {
+											const selectedCoach = coaches.find(
+												(coach) => coach.coach_id === e.target.value,
+											);
+											setCurrentCoach(selectedCoach);
+										}}
+										className="px-2 py-1 border border-gray-600 rounded-lg bg-gray-800 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200"
+									>
+										<option value="" disabled>
+											Select a Coach to Remove
+										</option>
+										{coaches.map((coach) => (
+											<option
+												className="bg-gray-800 text-white"
+												key={coach.coach_id}
+												value={coach.coach_id}
+											>
+												{coach.coach_name}
+											</option>
+										))}
+									</select>
+
+									<div className="relative">
+										<button
+											onClick={removeCoach}
+											className="bg-red-600 px-3 py-2 hover:bg-red-500 text-white font-semibold rounded shadow-md cursor-pointer"
+											type="button"
+											disabled={!currentCoach}
+										>
+											Remove Coach
+										</button>
+									</div>
 								</div>
 
 								{/* Bottom Actions */}

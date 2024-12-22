@@ -3,6 +3,7 @@ import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"] });
 import { GoogleOAuthProvider } from "@react-oauth/google";
+import Providers from "./providers";
 
 export const metadata = {
 	title: "Garde",
@@ -68,7 +69,9 @@ export default function RootLayout({ children }) {
 				<link rel="manifest" href="/site.webmanifest" />
 			</head>
 			<GoogleOAuthProvider clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID}>
-				<body className={inter.className}>{children}</body>
+				<body className={inter.className}>
+					<Providers>{children}</Providers>
+				</body>
 			</GoogleOAuthProvider>
 		</html>
 	);

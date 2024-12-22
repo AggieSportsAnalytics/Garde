@@ -327,13 +327,11 @@ const WebcamPose = ({
 
 		try {
 			const res = await axios.post(`/api/convert-video/${fencerId}`, formData, {
+				withCredentials: true,
 				headers: {
 					"Content-Type": "multipart/form-data",
 				},
 			});
-			if (res.status < 200 || res.status >= 300) {
-				console.error("Failed to upload file");
-			}
 		} catch (error) {
 			console.error("Error during file upload:", error);
 		}
@@ -634,13 +632,10 @@ const getIdealAngles = async () => {
 	const getWorkerUrl = `${process.env.NEXT_PUBLIC_GARDE_WORKER}/getIdealAngles`;
 
 	try {
-		const response = await axios.get(getWorkerUrl);
+		const response = await axios.get(getWorkerUrl, { withCredentials: true });
 		const idealAngles = response.data.angles;
 
-		if (response.status >= 200 && response.status < 300) {
-			return idealAngles;
-		}
-		return null;
+		return idealAngles;
 	} catch (error) {
 		console.error(error);
 		return null;

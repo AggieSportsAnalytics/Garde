@@ -1,32 +1,46 @@
 import { NextResponse } from "next/server";
 import jwt from "jsonwebtoken";
 
-// Ensure the secret is fetched from the environment
 const JWT_SECRET = process.env.JWT_SECRET;
 
-export async function POST(req) {
-	// Get the cookies from the request
-	const cookies = req.cookies.get("token")?.value;
-
-	// Check if the token exists
-	if (!cookies) {
-		return NextResponse.json({ message: "Token missing" }, { status: 401 });
-	}
-
+export async function GET(req) {
 	try {
-		// Verify the token with JWT_SECRET
-		const decoded = jwt.verify(cookies, JWT_SECRET);
+		const token = req.cookies.get("token")?.value;
 
-		// If valid, return the decoded token
+		if (!token) {
+			throw new Error("No token");
+		}
+
+		const decoded = verifyJwt(token);
+
+		if (!decoded) {
+			throw new Error("Decoding failed");
+		}
+
 		return NextResponse.json(
-			{ message: "Token is valid", decoded },
+			{ message: "Token is valid", decoded: decoded },
 			{ status: 200 },
 		);
 	} catch (error) {
-		// If verification fails, return an error
+		// console.error(error);
 		return NextResponse.json(
 			{ message: "Invalid token", error: error.message },
 			{ status: 401 },
 		);
+	}
+}
+
+function verifyJwt(token) {
+	try {
+		const decoded = jwt.verify(token, JWT_SECRET);
+
+		if (!decoded?.id || !decoded.type || !decoded.name || !decoded.email) {
+			return null;
+		}
+
+		return decoded;
+	} catch (error) {
+		// console.error(error);
+		return null;
 	}
 }

@@ -15,6 +15,8 @@ import { FaBookmark } from "react-icons/fa";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import axiosInstance from "@/src/components/axios";
+import { useDispatch } from "react-redux";
+import { selectVideoNumber } from "@/src/stores/features/videoNumberSlice";
 
 const ShareButton = ({ link }) => {
 	const [copied, setCopied] = useState(false);
@@ -181,6 +183,7 @@ export default function Videos({ params }) {
 	const [refreshKey, setRefreshKey] = useState(0);
 	const bucketUrl = process.env.NEXT_PUBLIC_BUCKET_URL;
 	const router = useRouter();
+	const dispatch = useDispatch();
 
 	useEffect(() => {
 		const fetchVideos = async () => {
@@ -240,9 +243,8 @@ export default function Videos({ params }) {
 	}, [tournament_id]);
 
 	const handleVideoClick = (i, videoId) => {
-		router.push(
-			`/tournaments/${tournament_id}/videos/${videoId}?videoNumber=${i + 1}`,
-		);
+		dispatch(selectVideoNumber(i + 1));
+		router.push(`/tournaments/${tournament_id}/videos/${videoId}`);
 	};
 
 	const handleDownload = async (videoUrl, filename) => {

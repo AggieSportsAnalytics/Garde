@@ -11,7 +11,8 @@ import {
 	FiBookmark,
 } from "react-icons/fi";
 import { FaBookmark } from "react-icons/fa";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
+import { useSelector } from "react-redux";
 
 const ShareButton = ({ link }) => {
 	const [copied, setCopied] = useState(false);
@@ -96,20 +97,15 @@ export default function VideoPage({ params }) {
 	const [isLooping, setIsLooping] = useState(false);
 	const [pinned, setPinned] = useState([]);
 	const { tournament_id, videoId } = params;
-	const [videoNumber, setVideoNumber] = useState(videoId);
-	const searchParams = useSearchParams();
+
+	const videoNumber = useSelector((state) => state.videoNumber.videoNumber);
 
 	useEffect(() => {
-		const videoNum = searchParams.get("videoNumber");
-		if (videoNum && !Number.isNaN(videoNum)) {
-			setVideoNumber(videoNum);
-		}
-
 		const pin = localStorage.getItem("pinned");
 		if (pin) {
 			setPinned(JSON.parse(pin));
 		}
-	}, [searchParams]);
+	}, []);
 
 	const bucketUrl = process.env.NEXT_PUBLIC_BUCKET_URL;
 	const videoUrl = `${bucketUrl}/${tournament_id}/${videoId}/playlist.m3u8`;

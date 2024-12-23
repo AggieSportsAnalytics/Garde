@@ -3,7 +3,6 @@
 import { useRouter } from "next/navigation";
 import { useSelector } from "react-redux";
 import { useEffect, useState } from "react";
-import axios from "axios";
 import {
 	FaMapMarkerAlt,
 	FaUserAlt,
@@ -18,6 +17,7 @@ import Link from "next/link";
 import { FaVideo, FaUserPlus } from "react-icons/fa";
 import checkAuth from "../../hooks/jwt_verify";
 import RestrictedAlert from "../../../components/ui/RestrictedAlert";
+import axiosInstance from "@/src/components/axios";
 
 export default function TournamentPage({ params }) {
 	const [tournament, setTournament] = useState(null);
@@ -34,7 +34,7 @@ export default function TournamentPage({ params }) {
 	const fetchParticipants = async () => {
 		try {
 			const workerUrl = `${process.env.NEXT_PUBLIC_GARDE_WORKER}/getParticipants/${tournament_id}`;
-			const response = await axios.get(workerUrl, { withCredentials: true });
+			const response = await axiosInstance.get(workerUrl);
 
 			setUsers(
 				response.data.tournament.filter(
@@ -51,7 +51,7 @@ export default function TournamentPage({ params }) {
 			try {
 				// Fetch the tournament from the backend
 				const workerUrl = `${process.env.NEXT_PUBLIC_GARDE_WORKER}/getTournament/${tournament_id}`;
-				const response = await axios.get(workerUrl, { withCredentials: true });
+				const response = await axiosInstance.get(workerUrl);
 
 				if (!response.data.tournament[0]) {
 					router.push("/tournaments");
@@ -124,8 +124,7 @@ export default function TournamentPage({ params }) {
 					tournament_id: tournament_id,
 				};
 
-				await axios.put(workerUrl, queryData, {
-					withCredentials: true,
+				await axiosInstance.put(workerUrl, queryData, {
 					headers: { "Content-Type": "application/json" },
 				});
 				setJoining(false);
@@ -152,7 +151,7 @@ export default function TournamentPage({ params }) {
 
 		try {
 			const workerUrl = `${process.env.NEXT_PUBLIC_GARDE_WORKER}/deleteTournament/${tournament_id}`;
-			await axios.delete(workerUrl, { withCredentials: true });
+			await axiosInstance.delete(workerUrl);
 			router.push("/tournaments");
 		} catch (error) {
 			console.error(error);
@@ -162,7 +161,7 @@ export default function TournamentPage({ params }) {
 	const handleDeleteParticipant = async (user_id) => {
 		try {
 			const workerUrl = `${process.env.NEXT_PUBLIC_GARDE_WORKER}/deleteParticipant/${tournament_id}/${user_id}`;
-			await axios.delete(workerUrl, { withCredentials: true });
+			await axiosInstance.delete(workerUrl);
 			fetchParticipants();
 		} catch (error) {
 			console.error(error);

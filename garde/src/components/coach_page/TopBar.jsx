@@ -8,7 +8,7 @@ import DeleteAccountButton from "../auth/DeleteAccount";
 import { FaCog } from "react-icons/fa";
 import { FiX } from "react-icons/fi";
 import UuidReveal from "./UuidReveal";
-import axios from "axios";
+import axiosInstance from "../axios";
 // import AddFencerInstruction from "./AddFencerInstruction";
 
 function TopBar({
@@ -31,7 +31,7 @@ function TopBar({
 	const removeFencer = async () => {
 		try {
 			const workerUrl = `${process.env.NEXT_PUBLIC_GARDE_WORKER}/deleteCoachFencer?coachId=${id}&fencerId=${currentFencer.fencer_id}`;
-			await axios.delete(workerUrl, { withCredentials: true });
+			await axiosInstance.delete(workerUrl);
 			handleRefresh();
 		} catch (error) {
 			console.error(error);

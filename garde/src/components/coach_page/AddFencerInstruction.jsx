@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { AiOutlinePlus } from "react-icons/ai";
-import axios from "axios";
+import axiosInstance from "../axios";
 
 function AddFencerInstruction() {
 	const [val, setVal] = useState("");
@@ -13,12 +13,11 @@ function AddFencerInstruction() {
 			const workerUrl = `${process.env.NEXT_PUBLIC_GARDE_WORKER}/putInstruction/${name}`; // Replace with your actual Worker URL
 			setVal("");
 
-			await axios
-				.put(workerUrl, { withCredentials: true })
-				.catch((e) => console.error(e));
+			await axiosInstance.put(workerUrl);
 
 			setStatus("Successfully added instruction!");
 		} catch (error) {
+			console.error(error);
 			setStatus("Failed to add instruction");
 		} finally {
 			setTimeout(() => setStatus(""), 2000);

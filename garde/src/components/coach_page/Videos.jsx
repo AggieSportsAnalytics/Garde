@@ -14,6 +14,7 @@ import {
 	FiBookmark,
 } from "react-icons/fi";
 import { FaBookmark } from "react-icons/fa";
+import axiosInstance from "../axios";
 
 const ShareButton = ({ link }) => {
 	const [copied, setCopied] = useState(false);
@@ -194,7 +195,7 @@ const Videos = ({
 				setLoading(true);
 				setVideoUrl(null);
 				const listUrl = `/api/get-videos/${fencer.fencer_id}`;
-				const response = await axios.get(listUrl, { withCredentials: true });
+				const response = await axiosInstance.get(listUrl);
 				const vidNames = response.data.videos;
 
 				if (vidNames) {

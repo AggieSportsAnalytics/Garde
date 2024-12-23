@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import axios from "axios";
 import { useRouter } from "next/navigation";
+import axiosInstance from "../axios";
 
 export default function DeleteAccountButton({ type, userId }) {
 	const [loading, setLoading] = useState(false);
@@ -25,7 +26,7 @@ export default function DeleteAccountButton({ type, userId }) {
 			const workerUrl = `${process.env.NEXT_PUBLIC_GARDE_WORKER}/deleteUser?id=${userId}&type=${type}`;
 
 			// Replace with your actual DELETE API endpoint
-			const response = await axios.delete(workerUrl, { withCredentials: true });
+			const response = await axiosInstance.delete(workerUrl);
 
 			const res = await axios.get("/api/logout", { withCredentials: true });
 

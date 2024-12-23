@@ -3,12 +3,12 @@
 import { useState, useEffect } from "react";
 import { GoogleLogin } from "@react-oauth/google";
 import { useRouter, useSearchParams } from "next/navigation";
-import axios from "axios";
 import Link from "next/link";
 import Loader from "../ui/Loader";
 import CoachPageScaffold from "../coach_page/CoachPageScaffold";
 import checkAuth from "@/src/app/hooks/jwt_verify";
 import RestrictedAlert from "../ui/RestrictedAlert";
+import axiosInstance from "../axios";
 
 export default function Signin({ isSignUpDefault }) {
 	const [isSignUp, setIsSignUp] = useState(isSignUpDefault || false);
@@ -55,8 +55,7 @@ export default function Signin({ isSignUpDefault }) {
 			: { email, password, type };
 
 		try {
-			const res = await axios.post(endpoint, body, {
-				withCredentials: true,
+			const res = await axiosInstance.post(endpoint, body, {
 				headers: {
 					"Content-Type": "application/json",
 				},
@@ -116,8 +115,7 @@ export default function Signin({ isSignUpDefault }) {
 				userData: response.credential,
 				type: type,
 			};
-			const res = await axios.post("/api/google-auth", queryData, {
-				withCredentials: true,
+			const res = await axiosInstance.post("/api/google-auth", queryData, {
 				headers: { "Content-Type": "application/json" },
 			});
 

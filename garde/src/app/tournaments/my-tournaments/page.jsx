@@ -2,10 +2,10 @@
 
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
-import axios from "axios";
 import Link from "next/link";
 import TournamentCard from "@/src/components/tournaments/TournamentCard";
 import checkAuth from "../../hooks/jwt_verify";
+import axiosInstance from "@/src/components/axios";
 
 export default function MyTournaments() {
 	const [pTournies, setPTournies] = useState([]);
@@ -16,7 +16,7 @@ export default function MyTournaments() {
 		const fetchTournaments = async (id) => {
 			try {
 				const workerUrl = `${process.env.NEXT_PUBLIC_GARDE_WORKER}/getMyTournaments/${id}`;
-				const response = await axios.get(workerUrl, { withCredentials: true });
+				const response = await axiosInstance.get(workerUrl);
 
 				const allTournaments = response.data.tournaments;
 				const participating = allTournaments?.filter(

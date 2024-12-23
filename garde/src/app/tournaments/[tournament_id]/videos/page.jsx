@@ -14,6 +14,7 @@ import {
 import { FaBookmark } from "react-icons/fa";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import axiosInstance from "@/src/components/axios";
 
 const ShareButton = ({ link }) => {
 	const [copied, setCopied] = useState(false);
@@ -185,7 +186,7 @@ export default function Videos({ params }) {
 		const fetchVideos = async () => {
 			try {
 				const listUrl = `/api/get-videos/${tournament_id}`;
-				const response = await axios.get(listUrl, { withCredentials: true });
+				const response = await axiosInstance.get(listUrl);
 				const vidNames = response.data.videos;
 
 				if (vidNames) {

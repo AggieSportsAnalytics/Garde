@@ -7,6 +7,7 @@ import {
 } from "react-icons/ai";
 import { useSearchParams, useRouter } from "next/navigation";
 import axios from "axios";
+import axiosInstance from "@/src/components/axios";
 
 function VerifyEmail() {
 	const [message, setMessage] = useState("Verifying...");
@@ -42,8 +43,7 @@ function VerifyEmail() {
 					type: decoded.type,
 				};
 
-				await axios.post(workerUrl, queryData, {
-					withCredentials: true,
+				await axiosInstance.post(workerUrl, queryData, {
 					headers: { "Content-Type": "application/json" },
 				});
 

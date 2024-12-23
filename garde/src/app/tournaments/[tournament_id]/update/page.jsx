@@ -6,6 +6,7 @@ import axios from "axios";
 import TournamentDetail from "@/src/components/tournaments/TournamentDetail";
 import { useSelector } from "react-redux";
 import checkAuth from "@/src/app/hooks/jwt_verify";
+import axiosInstance from "@/src/components/axios";
 
 export default function UpdateTournament({ params }) {
 	const router = useRouter();
@@ -37,7 +38,7 @@ export default function UpdateTournament({ params }) {
 		const fetchTournament = async () => {
 			try {
 				const workerUrl = `${process.env.NEXT_PUBLIC_GARDE_WORKER}/getTournament/${tournament_id}`;
-				const response = await axios.get(workerUrl, { withCredentials: true });
+				const response = await axiosInstance.get(workerUrl);
 				return response.data.tournament[0];
 			} catch (error) {
 				console.error("Error fetching tournament:", error);
@@ -108,8 +109,7 @@ export default function UpdateTournament({ params }) {
 						: formData.signup_deadline,
 			};
 
-			await axios.put(tournamentUrl, updatedFormData, {
-				withCredentials: true,
+			await axiosInstance.put(tournamentUrl, updatedFormData, {
 				headers: { "Content-Type": "application/json" },
 			});
 		} catch (error) {

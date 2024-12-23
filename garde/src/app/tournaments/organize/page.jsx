@@ -3,9 +3,9 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { v4 as uuidv4 } from "uuid";
-import axios from "axios";
 import TournamentDetail from "@/src/components/tournaments/TournamentDetail";
 import checkAuth from "../../hooks/jwt_verify";
+import axiosInstance from "@/src/components/axios";
 
 export default function OrganizeTournament() {
 	const router = useRouter();
@@ -74,8 +74,7 @@ export default function OrganizeTournament() {
 						: formData.signup_deadline,
 			};
 
-			await axios.put(tournamentUrl, updatedFormData, {
-				withCredentials: true,
+			await axiosInstance.put(tournamentUrl, updatedFormData, {
 				headers: { "Content-Type": "application/json" },
 			});
 
@@ -88,8 +87,7 @@ export default function OrganizeTournament() {
 				tournament_id: tournamentId,
 			};
 
-			await axios.put(workerUrl, queryData, {
-				withCredentials: true,
+			await axiosInstance.put(workerUrl, queryData, {
 				headers: { "Content-Type": "application/json" },
 			});
 		} catch (error) {

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import axios from "axios";
 import { Line } from "react-chartjs-2";
 import {
 	Chart as ChartJS,
@@ -15,6 +14,7 @@ import {
 	TimeScale,
 } from "chart.js";
 import "chartjs-adapter-date-fns"; // Import the date adapter
+import axiosInstance from "../axios";
 
 // Register necessary components
 ChartJS.register(
@@ -44,7 +44,7 @@ function Analytics({ fencer, currentVideo, videos }) {
 		const getFencerData = async () => {
 			try {
 				const workerUrl = `${process.env.NEXT_PUBLIC_GARDE_WORKER}/getFencerAngles/${fencer.fencer_id}`;
-				const response = await axios.get(workerUrl, { withCredentials: true });
+				const response = await axiosInstance.get(workerUrl);
 				setFencerSessions(
 					response.data.angles.results.filter(
 						(session) => session.pose === selectedPose,

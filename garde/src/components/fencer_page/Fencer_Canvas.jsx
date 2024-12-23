@@ -19,6 +19,7 @@ import FencerInstructionMenu from "./FencerInstructionMenu";
 import { MdBuild } from "react-icons/md";
 import axios from "axios";
 import { v4 as uuidv4 } from "uuid";
+import axiosInstance from "../axios";
 
 const WebcamPose = ({
 	onVideoChange,
@@ -632,7 +633,7 @@ const getIdealAngles = async () => {
 	const getWorkerUrl = `${process.env.NEXT_PUBLIC_GARDE_WORKER}/getIdealAngles`;
 
 	try {
-		const response = await axios.get(getWorkerUrl, { withCredentials: true });
+		const response = await axiosInstance.get(getWorkerUrl);
 		const idealAngles = response.data.angles;
 
 		return idealAngles;

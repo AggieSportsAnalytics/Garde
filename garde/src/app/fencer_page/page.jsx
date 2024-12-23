@@ -31,9 +31,9 @@ const Fencer_Stats = dynamic(
 	{ ssr: false },
 );
 import { useRouter } from "next/navigation";
-import axios from "axios";
 import Chatbot from "../../components/fencer_page/Chatbot";
 import checkAuth from "../hooks/jwt_verify";
+import axiosInstance from "@/src/components/axios";
 
 const MemoizedFencerStats = memo(Fencer_Stats);
 const MemoizedInstruction = memo(Instruction);
@@ -155,8 +155,7 @@ export default function Fencer_Page2() {
 			const putWorkerUrl = `${process.env.NEXT_PUBLIC_GARDE_WORKER}/putUserAngles/${id}/${videoId}/${pose}`;
 
 			try {
-				const response = await axios.put(putWorkerUrl, body, {
-					withCredentials: true,
+				const response = await axiosInstance.put(putWorkerUrl, body, {
 					headers: { "Content-Type": "application/json" },
 				});
 
@@ -268,7 +267,7 @@ export default function Fencer_Page2() {
 				}, expirationTime);
 
 				const workerUrl = `${process.env.NEXT_PUBLIC_GARDE_WORKER}/getAllFC/${decoded.id}`;
-				const response = await axios.get(workerUrl, { withCredentials: true });
+				const response = await axiosInstance.get(workerUrl);
 				setCoaches(response.data.data);
 
 				return () => clearTimeout(timer);
@@ -627,7 +626,7 @@ export default function Fencer_Page2() {
 
 		try {
 			const workerUrl = `${process.env.NEXT_PUBLIC_GARDE_WORKER}/deleteCoachFencer?coachId=${currentCoach?.coach_id}&fencerId=${fencerId}`;
-			await axios.delete(workerUrl, { withCredentials: true });
+			await axiosInstance.delete(workerUrl);
 
 			setCoaches((prevCoaches) =>
 				prevCoaches.filter(

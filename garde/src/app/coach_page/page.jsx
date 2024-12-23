@@ -6,10 +6,10 @@ import Videos from "@/src/components/coach_page/Videos";
 import Editor from "@/src/components/coach_page/Editor";
 import Analytics from "@/src/components/coach_page/Analytics";
 import { useState, useEffect } from "react";
-import axios from "axios";
 import { useRouter } from "next/navigation";
 import CoachPageScaffold from "@/src/components/coach_page/CoachPageScaffold";
 import checkAuth from "@/src/app/hooks/jwt_verify";
+import axiosInstance from "@/src/components/axios";
 
 export default function CoachPage() {
 	const [id, setId] = useState(""); // coach id
@@ -57,7 +57,7 @@ export default function CoachPage() {
 		const workerUrl = `${process.env.NEXT_PUBLIC_GARDE_WORKER}/${queryType}/${id}`;
 
 		try {
-			const response = await axios.get(workerUrl, { withCredentials: true });
+			const response = await axiosInstance.get(workerUrl);
 			setFencers(response.data.data);
 			if (response.data.data.length > 0) {
 				setCurrentFencer(response.data.data[0]);

@@ -8,7 +8,7 @@ import {
 	FaHandPaper,
 } from "react-icons/fa";
 import { FiX } from "react-icons/fi";
-import axios from "axios";
+import axiosInstance from "../axios";
 
 const predefinedRoutines = {
 	"Footwork Routine": [
@@ -27,9 +27,8 @@ const predefinedRoutines = {
 
 async function GetFencerInstructions() {
 	try {
-		const response = await axios.get(
+		const response = await axiosInstance.get(
 			`${process.env.NEXT_PUBLIC_GARDE_WORKER}/getFencerInstructions`,
-			{ withCredentials: true },
 		);
 		return response.data.instructions.map((item) => item.name);
 	} catch (error) {

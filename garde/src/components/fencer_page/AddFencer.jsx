@@ -1,5 +1,5 @@
 import { useState } from "react";
-import axios from "axios";
+import axiosInstance from "../axios";
 
 export default function AddFencer({ decoded }) {
 	const [coachToken, setCoachToken] = useState("");
@@ -15,8 +15,7 @@ export default function AddFencer({ decoded }) {
 				fencerEmail: decoded.email,
 			};
 
-			await axios.put(workerUrl, queryData, {
-				withCredentials: true,
+			await axiosInstance.put(workerUrl, queryData, {
 				headers: { "Content-Type": "application/json" },
 			});
 

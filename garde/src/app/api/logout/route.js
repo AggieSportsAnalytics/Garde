@@ -12,7 +12,7 @@ export async function GET() {
 		httpOnly: true,
 		expires: new Date(0),
 		path: "/",
-		sameSite: "Strict",
+		sameSite: "None",
 	});
 
 	response.cookies.delete("worker_called");
@@ -21,7 +21,7 @@ export async function GET() {
 		httpOnly: true,
 		expires: new Date(0),
 		path: "/",
-		sameSite: "Strict",
+		sameSite: "None",
 	});
 
 	return response;

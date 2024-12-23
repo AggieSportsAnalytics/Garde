@@ -14,10 +14,10 @@ export default {
 		JWT_SECRET = new TextEncoder().encode(JWT_SECRET);
 
 		try {
-			const { status } = await verifyAuth(request, JWT_SECRET);
-			if (status < 200 || status >= 300) {
-				throw new Error("Failed to verify token");
-			}
+			// const { status } = await verifyAuth(request, JWT_SECRET);
+			// if (status < 200 || status >= 300) {
+			// 	throw new Error("Failed to verify token");
+			// }
 
 			if (request.method === "OPTIONS") {
 				return handleOptionsRequest();
@@ -388,7 +388,6 @@ async function putTournament(unique_id, body) {
 		rules,
 		signup_deadline,
 	} = body;
-
 	const query =
 		"INSERT OR IGNORE INTO tournaments (tournament_id, user_id, event_name, description, category, prize_pool, organizer_name, organizer_email, organizer_phone, location, privacy, start_time, end_time, registration_fee, max_participants, eligibility, is_team_based, rules, signup_deadline) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
 	await DB.prepare(query)

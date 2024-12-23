@@ -78,7 +78,7 @@ async function unProtectedMiddleware(req) {
 				.sign(JWT_SECRET);
 
 			response.cookies.set("token", webToken, {
-				httpOnly: false,
+				httpOnly: true,
 				maxAge: 25 * 60 * 60,
 				sameSite: "None",
 				secure: process.env.NODE_ENV === "production",

@@ -12,7 +12,8 @@ export async function GET() {
 		httpOnly: true,
 		expires: new Date(0),
 		path: "/",
-		sameSite: "Strict",
+		sameSite: "None",
+		secure: process.env.NODE_ENV === "production",
 	});
 
 	return response;

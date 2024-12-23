@@ -12,16 +12,7 @@ export async function GET() {
 		httpOnly: true,
 		expires: new Date(0),
 		path: "/",
-		sameSite: "None",
-	});
-
-	response.cookies.delete("worker_called");
-
-	response.cookies.set("worker_called", "", {
-		httpOnly: true,
-		expires: new Date(0),
-		path: "/",
-		sameSite: "None",
+		sameSite: "Strict",
 	});
 
 	return response;

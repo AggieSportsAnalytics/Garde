@@ -3,51 +3,11 @@
 import React, { useState, useEffect, useRef } from "react";
 import Hls from "hls.js";
 import axios from "axios";
-import {
-	FiDownload,
-	FiShare2,
-	FiCheck,
-	FiRepeat,
-	FiBookmark,
-} from "react-icons/fi";
+import { FiDownload, FiRepeat, FiBookmark } from "react-icons/fi";
+import ShareButton from "@/src/components/tournaments/ShareButton";
 import { FaBookmark } from "react-icons/fa";
 import { useRouter } from "next/navigation";
 import { useSelector } from "react-redux";
-
-const ShareButton = ({ link }) => {
-	const [copied, setCopied] = useState(false);
-
-	const handleCopy = async (e) => {
-		try {
-			e.stopPropagation();
-			await navigator.clipboard.writeText(link);
-			setCopied(true);
-
-			// Reset "Copied" message after 2 seconds
-			setTimeout(() => setCopied(false), 2000);
-		} catch (err) {
-			console.error("Failed to copy text:", err);
-		}
-	};
-
-	return (
-		<button
-			type="button"
-			onClick={(e) => handleCopy(e)}
-			className="inline-flex items-center text-blue-500 hover:underline text-sm text-center gap-1"
-		>
-			{copied ? (
-				<>
-					<FiCheck size={16} /> Copied!
-				</>
-			) : (
-				<>
-					<FiShare2 size={16} /> Share
-				</>
-			)}
-		</button>
-	);
-};
 
 const HLSPlayer = ({ videoUrl, isLooping, thumbnail }) => {
 	const videoRef = useRef(null);

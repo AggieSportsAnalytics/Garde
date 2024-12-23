@@ -8,8 +8,6 @@ import {
 	FiGrid,
 	FiAlignJustify,
 	FiDownload,
-	FiShare2,
-	FiCheck,
 } from "react-icons/fi";
 import { FaBookmark } from "react-icons/fa";
 import Link from "next/link";
@@ -17,84 +15,7 @@ import { useRouter } from "next/navigation";
 import axiosInstance from "@/src/components/axios";
 import { useDispatch } from "react-redux";
 import { selectVideoNumber } from "@/src/stores/features/videoNumberSlice";
-
-const ShareButton = ({ link }) => {
-	const [copied, setCopied] = useState(false);
-
-	const handleCopy = async (e) => {
-		try {
-			e.stopPropagation();
-			await navigator.clipboard.writeText(link);
-			setCopied(true);
-
-			// Reset "Copied" message after 2 seconds
-			setTimeout(() => setCopied(false), 2000);
-		} catch (err) {
-			console.error("Failed to copy text:", err);
-		}
-	};
-
-	return (
-		<button
-			type="button"
-			onClick={(e) => handleCopy(e)}
-			className="inline-flex items-center text-blue-500 hover:underline text-sm text-center gap-1"
-		>
-			{copied ? (
-				<>
-					<FiCheck size={16} /> Copied!
-				</>
-			) : (
-				<>
-					<FiShare2 size={16} /> Share
-				</>
-			)}
-		</button>
-	);
-};
-
-const HLSPlayer = ({ videoUrl, isLooping }) => {
-	const videoRef = useRef(null);
-
-	useEffect(() => {
-		try {
-			if (Hls.isSupported()) {
-				const hls = new Hls();
-				hls.loadSource(videoUrl);
-				hls.attachMedia(videoRef.current);
-
-				hls.on(Hls.Events.MANIFEST_PARSED, () => {
-					videoRef.current.play();
-				});
-
-				return () => {
-					hls.destroy();
-				};
-			}
-			if (videoRef.current.canPlayType("application/vnd.apple.mpegurl")) {
-				// For Safari and other native HLS-supporting browsers
-				videoRef.current.src = videoUrl;
-				videoRef.current.addEventListener("loadedmetadata", () => {
-					videoRef.current.play();
-				});
-			}
-		} catch (error) {
-			console.error("HLS connection failed:", error);
-		}
-	}, [videoUrl]);
-
-	return (
-		<div className="max-w-[800px] mx-auto">
-			<video
-				ref={videoRef}
-				controls
-				loop={isLooping}
-				muted={false}
-				className="w-full max-w-full h-[445px] aspect-video rounded-lg"
-			/>
-		</div>
-	);
-};
+import ShareButton from "@/src/components/tournaments/ShareButton";
 
 const VideoSource = ({ videoUrl, thumbnail, isGridLayout }) => {
 	const videoRef = useRef(null);
@@ -147,6 +68,21 @@ const VideoSource = ({ videoUrl, thumbnail, isGridLayout }) => {
 		}
 	};
 
+	const handleTouchStart = () => {
+		const timer = setTimeout(() => {
+			handleMouseEnter();
+		}, 500);
+		setTouchTimer(timer);
+	};
+
+	const handleTouchEnd = () => {
+		if (touchTimer) {
+			clearTimeout(touchTimer);
+			setTouchTimer(null);
+		}
+		handleMouseLeave();
+	};
+
 	return (
 		<>
 			<div
@@ -157,6 +93,8 @@ const VideoSource = ({ videoUrl, thumbnail, isGridLayout }) => {
 				}`}
 				onMouseEnter={handleMouseEnter}
 				onMouseLeave={handleMouseLeave}
+				onTouchStart={handleTouchStart}
+				onTouchEnd={handleTouchEnd}
 			>
 				<video
 					className="w-full h-full object-cover"

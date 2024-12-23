@@ -14,10 +14,10 @@ export default {
 		JWT_SECRET = new TextEncoder().encode(JWT_SECRET);
 
 		try {
-			// const { status } = await verifyAuth(request, JWT_SECRET);
-			// if (status < 200 || status >= 300) {
-			// 	throw new Error("Failed to verify token");
-			// }
+			const { status } = await verifyAuth(request, JWT_SECRET);
+			if (status < 200 || status >= 300) {
+				throw new Error("Failed to verify token");
+			}
 
 			if (request.method === "OPTIONS") {
 				return handleOptionsRequest();

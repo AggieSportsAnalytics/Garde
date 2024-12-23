@@ -10,11 +10,10 @@ import {
 	FiDownload,
 	FiShare2,
 	FiCheck,
-	FiRepeat,
-	FiBookmark,
 } from "react-icons/fi";
 import { FaBookmark } from "react-icons/fa";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 const ShareButton = ({ link }) => {
 	const [copied, setCopied] = useState(false);
@@ -175,22 +174,16 @@ const VideoSource = ({ videoUrl, thumbnail, isGridLayout }) => {
 
 export default function Videos({ params }) {
 	const { tournament_id } = params;
-	const [videoUrl, setVideoUrl] = useState(null);
 	const [isGridLayout, setIsGridLayout] = useState(true);
-	const [isLooping, setIsLooping] = useState(false);
 	const [pinned, setPinned] = useState([]);
-	const [videoNumber, setVideoNumber] = useState(-1);
 	const [videos, setVideos] = useState([]);
 	const [refreshKey, setRefreshKey] = useState(0);
-	const [currentVideo, setCurrentVideo] = useState(null);
-	const [loading, setLoading] = useState(false);
 	const bucketUrl = process.env.NEXT_PUBLIC_BUCKET_URL;
+	const router = useRouter();
 
 	useEffect(() => {
 		const fetchVideos = async () => {
 			try {
-				setLoading(true);
-				setVideoUrl(null);
 				const listUrl = `/api/get-videos/${tournament_id}`;
 				const response = await axios.get(listUrl, { withCredentials: true });
 				const vidNames = response.data.videos;
@@ -239,8 +232,6 @@ export default function Videos({ params }) {
 				}
 			} catch (error) {
 				console.error(error);
-			} finally {
-				setLoading(false);
 			}
 		};
 
@@ -248,9 +239,9 @@ export default function Videos({ params }) {
 	}, [tournament_id]);
 
 	const handleVideoClick = (i, videoId) => {
-		setVideoNumber(i);
-		setCurrentVideo(videoId);
-		setVideoUrl(`${bucketUrl}/${tournament_id}/${videoId}/playlist.m3u8`);
+		router.push(
+			`/tournaments/${tournament_id}/videos/${videoId}?videoNumber=${i + 1}`,
+		);
 	};
 
 	const handleDownload = async (videoUrl, filename) => {
@@ -275,20 +266,6 @@ export default function Videos({ params }) {
 		} catch (error) {
 			console.error("Error downloading video:", error);
 		}
-	};
-
-	const togglePin = (videoId) => {
-		if (pinned.find((vid) => vid === videoId)) {
-			const newPinned = pinned.filter((vid) => vid !== currentVideo);
-			setPinned(newPinned);
-			localStorage.setItem("pinned", JSON.stringify(newPinned));
-
-			return;
-		}
-
-		const newPinned = [...pinned, currentVideo];
-		setPinned(newPinned);
-		localStorage.setItem("pinned", JSON.stringify(newPinned));
 	};
 
 	const handleRefresh = () => {
@@ -323,170 +300,84 @@ export default function Videos({ params }) {
 			<>
 				{videos.length > 0 ? (
 					<>
-						{videoUrl ? (
-							<>
-								<div className="video-player mt-6">
-									<HLSPlayer videoUrl={videoUrl} isLooping={isLooping} />
-								</div>
-								<div className="mt-2 space-x-4 flex text-blue-500 justify-center">
-									<button
-										type="button"
-										className="flex gap-2 cursor-pointer"
-										onClick={() => setIsLooping(!isLooping)}
-									>
-										{isLooping ? (
-											<button
-												type="button"
-												className="inline-flex items-center hover:underline text-sm text-center gap-1"
-											>
-												<FiRepeat className="text-yellow-400" size={16} /> Stop
-												Loop
-											</button>
-										) : (
-											<button
-												type="button"
-												className="inline-flex items-center hover:underline text-sm text-center gap-1"
-											>
-												<FiRepeat size={16} /> Loop
-											</button>
-										)}
-									</button>
-									<button
-										type="button"
-										className="inline-flex items-center hover:underline text-sm text-center gap-1"
-									>
-										{pinned.find((video) => video === currentVideo) ? (
-											<button
-												onClick={() => togglePin(currentVideo)}
-												type="button"
-												className="inline-flex items-center hover:underline text-sm text-center gap-1"
-											>
-												<FaBookmark size={12} className="text-yellow-400" />{" "}
-												Unsave
-											</button>
-										) : (
-											<button
-												type="button"
-												className="inline-flex items-center hover:underline text-sm text-center gap-1"
-												onClick={() => togglePin(currentVideo)}
-											>
-												<FiBookmark size={16} /> Save
-											</button>
-										)}
-									</button>
-									<button
-										type="button"
-										onClick={(e) => {
-											e.stopPropagation();
-											handleDownload(
-												`${bucketUrl}/${tournament_id}/${currentVideo}/full_video.webm`,
-												`Video_${videoNumber + 1}.webm`,
-											);
-										}}
-										className="inline-flex items-center hover:underline text-sm text-center gap-1"
-									>
-										<FiDownload size={16} /> Download
-									</button>
-									<ShareButton
-										link={`${bucketUrl}/${tournament_id}/${currentVideo}/full_video.webm`}
-									/>
-								</div>
-								<div className="flex justify-center mt-4">
-									<button
-										type="button"
-										onClick={() => {
-											setIsLooping(false);
-											setVideoUrl(null);
-											setCurrentVideo(null);
-										}}
-										className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-400"
-									>
-										Back to Gallery
-									</button>
-								</div>
-							</>
-						) : (
-							<>
-								<div className="flex justify-between items-center mb-4 mx-5">
-									<h2 className="text-lg font-bold">Fencer Videos</h2>
-									<div className="flex gap-2">
-										<button
-											type="button"
-											onClick={() => setIsGridLayout(!isGridLayout)}
-											className="px-4 py-2 text-white rounded-md hover:bg-blue-400 transition duration-200 flex items-center gap-2"
-										>
-											{isGridLayout ? (
-												<FiAlignJustify size={20} />
-											) : (
-												<FiGrid size={20} />
-											)}
-										</button>
-									</div>
-								</div>
-								<div
-									className={`video-gallery ${
-										isGridLayout
-											? "grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 ml-5"
-											: "flex flex-col gap-4 mx-5"
-									} overflow-y-auto`}
+						<div className="flex justify-between items-center mb-4 mx-5">
+							<h2 className="text-lg font-bold">Fencer Videos</h2>
+							<div className="flex gap-2">
+								<button
+									type="button"
+									onClick={() => setIsGridLayout(!isGridLayout)}
+									className="px-4 py-2 text-white rounded-md hover:bg-blue-400 transition duration-200 flex items-center gap-2"
 								>
-									{videos.map((video, i) => (
-										<div
-											key={video.key}
-											onClick={() => handleVideoClick(i, video.key)}
-											className="cursor-pointer focus:outline-none"
-										>
-											<div
-												className={`video-thumbnail border border-gray-300 p-2 rounded-lg shadow-lg bg-gray-800 hover:bg-gray-700 transition duration-200 ease-in-out ${
-													!isGridLayout ? "flex items-center gap-4" : ""
-												}`}
-											>
-												<VideoSource
-													videoUrl={`${bucketUrl}/${tournament_id}/${video.key}/playlist.m3u8`}
-													thumbnail={video.thumbnail}
-													isGridLayout={isGridLayout}
+									{isGridLayout ? (
+										<FiAlignJustify size={20} />
+									) : (
+										<FiGrid size={20} />
+									)}
+								</button>
+							</div>
+						</div>
+						<div
+							className={`video-gallery ${
+								isGridLayout
+									? "grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 ml-5"
+									: "flex flex-col gap-4 mx-5"
+							} overflow-y-auto`}
+						>
+							{videos.map((video, i) => (
+								<div
+									key={video.key}
+									onClick={() => handleVideoClick(i, video.key)}
+									className="cursor-pointer focus:outline-none"
+								>
+									<div
+										className={`video-thumbnail border border-gray-300 p-2 rounded-lg shadow-lg bg-gray-800 hover:bg-gray-700 transition duration-200 ease-in-out ${
+											!isGridLayout ? "flex items-center gap-4" : ""
+										}`}
+									>
+										<VideoSource
+											videoUrl={`${bucketUrl}/${tournament_id}/${video.key}/playlist.m3u8`}
+											thumbnail={video.thumbnail}
+											isGridLayout={isGridLayout}
+										/>
+										<div className={!isGridLayout ? "flex flex-col" : ""}>
+											{pinned.find((vid) => vid === video.key) ? (
+												<p className="mt-2 text-sm font-medium text-white text-center">
+													Video {i + 1}{" "}
+													<FaBookmark className="inline-block text-yellow-400" />
+												</p>
+											) : (
+												<p className="mt-2 text-sm font-medium text-white text-center">
+													Video {i + 1}
+												</p>
+											)}
+
+											<p className="text-xs text-gray-400 text-center">
+												{new Date(video.timestamp).toLocaleString()}{" "}
+											</p>
+
+											<div className="flex flex-col items-center mt-2 gap-1">
+												<button
+													type="button"
+													onClick={(e) => {
+														e.stopPropagation();
+														handleDownload(
+															`${bucketUrl}/${tournament_id}/${video.key}/full_video.webm`,
+															`Video_${i + 1}.webm`,
+														);
+													}}
+													className="inline-flex items-center text-blue-500 hover:underline text-sm"
+												>
+													<FiDownload size={16} /> Download
+												</button>
+												<ShareButton
+													link={`${bucketUrl}/${tournament_id}/${video.key}/full_video.webm`}
 												/>
-												<div className={!isGridLayout ? "flex flex-col" : ""}>
-													{pinned.find((vid) => vid === video.key) ? (
-														<p className="mt-2 text-sm font-medium text-white text-center">
-															Video {i + 1}{" "}
-															<FaBookmark className="inline-block text-yellow-400" />
-														</p>
-													) : (
-														<p className="mt-2 text-sm font-medium text-white text-center">
-															Video {i + 1}
-														</p>
-													)}
-
-													<p className="text-xs text-gray-400 text-center">
-														{new Date(video.timestamp).toLocaleString()}{" "}
-													</p>
-
-													<div className="flex flex-col items-center mt-2 gap-1">
-														<button
-															type="button"
-															onClick={(e) => {
-																e.stopPropagation();
-																handleDownload(
-																	`${bucketUrl}/${tournament_id}/${video.key}/full_video.webm`,
-																	`Video_${i + 1}.webm`,
-																);
-															}}
-															className="inline-flex items-center text-blue-500 hover:underline text-sm"
-														>
-															<FiDownload size={16} /> Download
-														</button>
-														<ShareButton
-															link={`${bucketUrl}/${tournament_id}/${video.key}/full_video.webm`}
-														/>
-													</div>
-												</div>
 											</div>
 										</div>
-									))}
+									</div>
 								</div>
-							</>
-						)}
+							))}
+						</div>
 					</>
 				) : (
 					<div className="flex flex-col items-center justify-center text-center mt-12">

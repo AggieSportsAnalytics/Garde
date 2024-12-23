@@ -10,6 +10,7 @@ import checkAuth from "../hooks/jwt_verify";
 import RestrictedAlert from "@/src/components/ui/RestrictedAlert";
 
 function Navbar({ setLoggedIn, loggedIn }) {
+	const [menuOpen, setMenuOpen] = useState(false);
 	const router = useRouter();
 
 	const handleAuth = async () => {
@@ -30,23 +31,27 @@ function Navbar({ setLoggedIn, loggedIn }) {
 	};
 
 	return (
-		<>
-			<nav className="relative flex items-center bg-gray-900 text-white p-4 shadow-md">
-				<Link href="/" className="cursor-pointer">
-					<button
-						type="button"
-						className="bg-white text-black py-2 px-4 rounded text-lg font-semibold hover:bg-gray-300 transition-transform duration-200 hover:scale-110 active:scale-100"
-						title="Go Back"
-					>
-						&#8592;
-					</button>
-				</Link>
+		<nav className="relative flex items-center justify-between bg-gray-900 text-white p-4 shadow-md">
+			{/* Back Button */}
+			<Link href="/" className="cursor-pointer">
+				<button
+					type="button"
+					className="bg-white text-black py-2 px-3 rounded text-base font-semibold hover:bg-gray-300 transition-transform duration-200 hover:scale-110 active:scale-100"
+					title="Go Back"
+				>
+					&#8592;
+				</button>
+			</Link>
 
-				<h1 className="text-3xl absolute left-1/2 transform -translate-x-1/2 font-bold">
-					Tournaments
-				</h1>
+			{/* Title */}
+			<h1 className="text-2xl sm:text-xl md:text-3xl absolute left-1/2 transform -translate-x-1/2 font-bold">
+				Tournaments
+			</h1>
 
-				<div className="ml-auto flex gap-4">
+			{/* Menu Section */}
+			<div className="ml-auto flex items-center gap-4">
+				{/* Desktop Menu */}
+				<div className="hidden md:flex gap-4">
 					<button
 						type="button"
 						className="hover:text-blue-500"
@@ -62,8 +67,43 @@ function Navbar({ setLoggedIn, loggedIn }) {
 						{loggedIn ? "Logout" : "Signin"}
 					</button>
 				</div>
-			</nav>
-		</>
+
+				{/* Mobile Hamburger Menu */}
+				<div className="md:hidden">
+					<button
+						type="button"
+						className="p-2 rounded focus:outline-none hover:bg-gray-700"
+						onClick={() => setMenuOpen((prev) => !prev)}
+					>
+						{/* Hamburger Icon */}
+						<div className="space-y-1">
+							<div className="w-6 h-1 bg-white" />
+							<div className="w-6 h-1 bg-white" />
+							<div className="w-6 h-1 bg-white" />
+						</div>
+					</button>
+				</div>
+			</div>
+
+			{menuOpen && (
+				<div className="absolute top-full right-0 w-full bg-gray-800 p-4 md:hidden z-50">
+					<button
+						type="button"
+						className="block w-full text-left text-white hover:text-blue-500 mb-2"
+						onClick={handleMyTournamentClick}
+					>
+						My Tournaments
+					</button>
+					<button
+						type="button"
+						className="block w-full text-left text-white hover:text-blue-500"
+						onClick={handleAuth}
+					>
+						{loggedIn ? "Logout" : "Signin"}
+					</button>
+				</div>
+			)}
+		</nav>
 	);
 }
 

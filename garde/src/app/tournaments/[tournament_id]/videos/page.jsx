@@ -21,6 +21,7 @@ const VideoSource = ({ videoUrl, thumbnail, isGridLayout }) => {
 	const videoRef = useRef(null);
 	const hlsRef = useRef(null);
 	const [isBuffering, setIsBuffering] = useState(false);
+	const [touchTimer, setTouchTimer] = useState(0);
 
 	useEffect(() => {
 		return () => {
@@ -69,18 +70,16 @@ const VideoSource = ({ videoUrl, thumbnail, isGridLayout }) => {
 	};
 
 	const handleTouchStart = () => {
-		const timer = setTimeout(() => {
-			handleMouseEnter();
-		}, 500);
-		setTouchTimer(timer);
-	};
+		handleMouseEnter();
+		setIsBuffering(false);
 
-	const handleTouchEnd = () => {
-		if (touchTimer) {
-			clearTimeout(touchTimer);
-			setTouchTimer(null);
-		}
-		handleMouseLeave();
+		const timeout = setTimeout(() => {
+			if (videoRef.current) {
+				videoRef.current.pause();
+			}
+		}, 5000);
+
+		setTouchTimer(timeout);
 	};
 
 	return (
@@ -94,7 +93,6 @@ const VideoSource = ({ videoUrl, thumbnail, isGridLayout }) => {
 				onMouseEnter={handleMouseEnter}
 				onMouseLeave={handleMouseLeave}
 				onTouchStart={handleTouchStart}
-				onTouchEnd={handleTouchEnd}
 			>
 				<video
 					className="w-full h-full object-cover"
@@ -216,7 +214,7 @@ export default function Videos({ params }) {
 	return (
 		<div
 			key={refreshKey}
-			className="min-h-screen w-full bg-gray-900 text-white flex flex-col"
+			className="min-h-screen w-full bg-gray-900 text-white flex flex-col select-none"
 		>
 			<div className="flex items-center justify-between px-6 py-4 border-b border-gray-700">
 				<Link href={`/tournaments/${tournament_id}`} className="cursor-pointer">

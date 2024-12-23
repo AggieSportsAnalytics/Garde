@@ -10,6 +10,8 @@ export default async function verifyAuth(req, JWT_SECRET) {
 				?.split("=")[1] ||
 			req.headers?.get("Authorization")?.split("Bearer ")[1];
 
+		console.log([...req.headers.entries()]);
+
 		if (!token) {
 			return { message: "Token missing", status: 401 };
 		}

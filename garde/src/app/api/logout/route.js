@@ -12,7 +12,7 @@ export async function GET() {
 		httpOnly: true,
 		expires: new Date(0),
 		path: "/",
-		sameSite: "None",
+		sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
 		secure: process.env.NODE_ENV === "production",
 	});
 

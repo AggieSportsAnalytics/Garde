@@ -62,6 +62,7 @@ const Videos = ({
 	setLoading,
 }) => {
 	const [videoUrl, setVideoUrl] = useState(null);
+	const [thumbUrl, setThumbUrl] = useState(null);
 	const [isGridLayout, setIsGridLayout] = useState(true); // New state for layout toggle
 	const [isLooping, setIsLooping] = useState(false);
 	const [pinned, setPinned] = useState([]);
@@ -134,6 +135,7 @@ const Videos = ({
 		setVideoNumber(i);
 		setCurrentVideo(videoId);
 		setVideoUrl(`${bucketUrl}/${fencer.fencer_id}/${videoId}/playlist.m3u8`);
+		setThumbUrl(`${bucketUrl}/${fencer.fencer_id}/${videoId}/thumbnail.jpeg`);
 	};
 
 	const handleDownload = async (videoUrl, filename) => {
@@ -178,10 +180,14 @@ const Videos = ({
 		<>
 			{videos.length > 0 ? (
 				<>
-					{videoUrl ? (
+					{videoUrl && thumbUrl ? (
 						<>
 							<div className="video-player mt-6">
-								<HLSPlayer videoUrl={videoUrl} isLooping={isLooping} />
+								<HLSPlayer
+									videoUrl={videoUrl}
+									isLooping={isLooping}
+									thumbnail={thumbUrl}
+								/>
 							</div>
 							<div className="mt-2 flex flex-col md:flex-row md:space-x-4 space-y-2 md:space-y-0 text-blue-500 justify-center">
 								<button

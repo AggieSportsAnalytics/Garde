@@ -18,11 +18,13 @@ import { FaVideo, FaUserPlus } from "react-icons/fa";
 import checkAuth from "../../hooks/jwt_verify";
 import RestrictedAlert from "../../../components/ui/RestrictedAlert";
 import axiosInstance from "@/src/components/axios";
+import Loader from "@/src/components/ui/Loader";
 
 export default function TournamentPage({ params }) {
 	const [tournament, setTournament] = useState(null);
 	const [users, setUsers] = useState([]);
 	const [joining, setJoining] = useState(false);
+	const [loading, setLoading] = useState(false);
 	const { tournament_id } = params;
 	const [token, setToken] = useState("");
 	const router = useRouter();
@@ -49,6 +51,7 @@ export default function TournamentPage({ params }) {
 	useEffect(() => {
 		const fetchTournament = async () => {
 			try {
+				setLoading(true);
 				// Fetch the tournament from the backend
 				const workerUrl = `${process.env.NEXT_PUBLIC_GARDE_WORKER}/getTournament/${tournament_id}`;
 				const response = await axiosInstance.get(workerUrl);
@@ -60,6 +63,8 @@ export default function TournamentPage({ params }) {
 				setTournament(response.data.tournament[0]);
 			} catch (error) {
 				console.error("Error fetching tournament:", error);
+			} finally {
+				setLoading(false);
 			}
 		};
 
@@ -170,6 +175,7 @@ export default function TournamentPage({ params }) {
 
 	return (
 		<>
+			<Loader loading={loading} />
 			<RestrictedAlert redirect={`/tournaments/${tournament_id}`} />
 			<div className="p-6 w-full bg-gray-900 text-white min-h-screen shadow-lg">
 				<div className="border-b border-gray-700 pb-6 mb-6">

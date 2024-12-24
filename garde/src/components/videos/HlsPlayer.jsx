@@ -1,7 +1,7 @@
 import { useRef, useEffect } from "react";
 import Hls from "hls.js";
 
-const HLSPlayer = ({ videoUrl, isLooping }) => {
+const HLSPlayer = ({ videoUrl, isLooping, thumbnail }) => {
 	const videoRef = useRef(null);
 
 	useEffect(() => {
@@ -38,6 +38,7 @@ const HLSPlayer = ({ videoUrl, isLooping }) => {
 				controls
 				loop={isLooping}
 				muted={false}
+				poster={thumbnail}
 				className="w-full h-auto aspect-video rounded-lg"
 			/>
 		</div>

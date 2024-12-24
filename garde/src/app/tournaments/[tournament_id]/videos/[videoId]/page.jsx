@@ -71,7 +71,11 @@ export default function VideoPage({ params }) {
 				Video {videoNumber}
 			</div>
 			<div className="video-player mt-6">
-				<HLSPlayer videoUrl={videoUrl} isLooping={isLooping} />
+				<HLSPlayer
+					videoUrl={videoUrl}
+					isLooping={isLooping}
+					thumbnail={`${bucketUrl}/${tournament_id}/${videoId}/thumbnail.jpeg`}
+				/>
 			</div>
 			<div className="mt-2 space-x-4 flex text-blue-500 justify-center">
 				<button

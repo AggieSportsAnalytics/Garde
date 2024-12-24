@@ -1,7 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
-import Hls from "hls.js";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 import {
 	FiRefreshCw,
@@ -15,6 +14,8 @@ import {
 } from "react-icons/fi";
 import { FaBookmark } from "react-icons/fa";
 import axiosInstance from "../axios";
+import VideoSource from "@/src/components/videos/VideoSource";
+import HLSPlayer from "@/src/components/videos/HlsPlayer";
 
 const ShareButton = ({ link }) => {
 	const [copied, setCopied] = useState(false);
@@ -51,140 +52,6 @@ const ShareButton = ({ link }) => {
 	);
 };
 
-const HLSPlayer = ({ videoUrl, isLooping }) => {
-	const videoRef = useRef(null);
-
-	useEffect(() => {
-		try {
-			if (Hls.isSupported()) {
-				const hls = new Hls();
-				hls.loadSource(videoUrl);
-				hls.attachMedia(videoRef.current);
-
-				hls.on(Hls.Events.MANIFEST_PARSED, () => {
-					videoRef.current.play();
-				});
-
-				return () => {
-					hls.destroy();
-				};
-			}
-			if (videoRef.current.canPlayType("application/vnd.apple.mpegurl")) {
-				// For Safari and other native HLS-supporting browsers
-				videoRef.current.src = videoUrl;
-				videoRef.current.addEventListener("loadedmetadata", () => {
-					videoRef.current.play();
-				});
-			}
-		} catch (error) {
-			console.error("HLS connection failed:", error);
-		}
-	}, [videoUrl]);
-
-	return (
-		<div className="max-w-[800px] mx-auto">
-			<video
-				ref={videoRef}
-				controls
-				loop={isLooping}
-				muted={false}
-				className="w-full max-w-full h-min md:h-[445px] aspect-video rounded-lg"
-			/>
-		</div>
-	);
-};
-
-const VideoSource = ({ videoUrl, thumbnail, isGridLayout }) => {
-	const videoRef = useRef(null);
-	const hlsRef = useRef(null);
-	const [isBuffering, setIsBuffering] = useState(false);
-
-	useEffect(() => {
-		return () => {
-			if (hlsRef.current) {
-				hlsRef.current.destroy();
-				hlsRef.current = null;
-			}
-		};
-	}, []);
-
-	const handleMouseEnter = () => {
-		setIsBuffering(true);
-		try {
-			if (Hls.isSupported()) {
-				const hls = new Hls();
-				hlsRef.current = hls;
-				hls.loadSource(videoUrl);
-				hls.attachMedia(videoRef.current);
-
-				hls.on(Hls.Events.MANIFEST_PARSED, () => {
-					setIsBuffering(false);
-					videoRef.current.play();
-				});
-			} else if (
-				videoRef.current.canPlayType("application/vnd.apple.mpegurl")
-			) {
-				videoRef.current.src = videoUrl;
-				videoRef.current.play();
-			}
-		} catch (error) {
-			setIsBuffering(false);
-			console.error(error);
-		}
-	};
-
-	const handleMouseLeave = () => {
-		setIsBuffering(false);
-		if (videoRef.current) {
-			videoRef.current.pause();
-			videoRef.current.currentTime = 0;
-		}
-		if (hlsRef.current) {
-			hlsRef.current.destroy();
-			hlsRef.current = null;
-		}
-	};
-
-	const handleTouchStart = () => {
-		handleMouseEnter();
-		setIsBuffering(false);
-
-		const timeout = setTimeout(() => {
-			if (videoRef.current) {
-				videoRef.current.pause();
-			}
-		}, 5000);
-
-		setTouchTimer(timeout);
-	};
-
-	return (
-		<div
-			className={`relative overflow-hidden rounded-lg ${
-				isGridLayout
-					? "w-full aspect-video"
-					: "w-full md:max-w-md lg:max-w-lg aspect-video"
-			}`}
-			onMouseEnter={handleMouseEnter}
-			onMouseLeave={handleMouseLeave}
-			onTouchStart={handleTouchStart}
-		>
-			<video
-				className="w-full h-full object-cover"
-				ref={videoRef}
-				muted
-				playsInline
-				poster={thumbnail}
-			/>
-			{isBuffering && (
-				<div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50">
-					<div className="w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
-				</div>
-			)}
-		</div>
-	);
-};
-
 const Videos = ({
 	fencer,
 	setCurrentVideo,
@@ -199,26 +66,8 @@ const Videos = ({
 	const [isLooping, setIsLooping] = useState(false);
 	const [pinned, setPinned] = useState([]);
 	const [videoNumber, setVideoNumber] = useState(-1);
-	const [isMobile, setIsMobile] = useState(false);
 
 	const bucketUrl = process.env.NEXT_PUBLIC_BUCKET_URL;
-
-	useEffect(() => {
-		const handleResize = () => {
-			setIsMobile(window.innerWidth < 768);
-		};
-
-		handleResize();
-		window.addEventListener("resize", handleResize);
-
-		return () => window.removeEventListener("resize", handleResize);
-	}, []);
-
-	useEffect(() => {
-		if (isMobile) {
-			setIsGridLayout(false);
-		}
-	}, [isMobile]);
 
 	useEffect(() => {
 		const fetchVideos = async () => {
@@ -431,47 +280,47 @@ const Videos = ({
 							<div
 								className={`video-gallery ${
 									isGridLayout
-										? "grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4"
-										: "flex flex-col gap-4"
-								} max-h-96 overflow-y-auto`}
+										? "md:grid md:grid-cols-2 lg:grid-cols-4"
+										: "flex flex-col"
+								} gap-4 max-h-96 overflow-y-auto`}
 							>
 								{videos.map((video, i) => (
 									<div
 										key={video.key}
 										onClick={() => handleVideoClick(i, video.key)}
-										className="cursor-pointer focus:outline-none"
+										className="cursor-pointer focus:outline-none pb-4"
 									>
 										<div
 											className={`video-thumbnail border border-gray-300 p-2 rounded-lg shadow-lg bg-gray-800 hover:bg-gray-700 transition duration-200 ease-in-out ${
 												!isGridLayout ? "flex items-center gap-4" : ""
 											}`}
 										>
-											<div className="sm:flex-col">
-												<VideoSource
-													videoUrl={`${bucketUrl}/${fencer.fencer_id}/${video.key}/playlist.m3u8`}
-													thumbnail={video.thumbnail}
-													isGridLayout={isGridLayout}
-												/>
-												<div className="md:hidden">
-													{pinned.find((vid) => vid === video.key) ? (
-														<p className="mt-2 text-sm font-medium text-white text-center">
-															Video {i + 1}{" "}
-															<FaBookmark className="inline-block text-yellow-400" />
-														</p>
-													) : (
-														<p className="mt-2 text-sm font-medium text-white text-center">
-															Video {i + 1}
-														</p>
-													)}
-
-													<p className="text-xs text-gray-400 text-center">
-														{new Date(video.timestamp).toLocaleString()}{" "}
+											<VideoSource
+												videoUrl={`${bucketUrl}/${fencer.fencer_id}/${video.key}/playlist.m3u8`}
+												thumbnail={video.thumbnail}
+												isGridLayout={isGridLayout}
+											/>
+											<div className="md:hidden">
+												{pinned.find((vid) => vid === video.key) ? (
+													<p className="mt-2 text-sm font-medium text-white text-center">
+														Video {i + 1}{" "}
+														<FaBookmark className="inline-block text-yellow-400" />
 													</p>
-												</div>
+												) : (
+													<p className="mt-2 text-sm font-medium text-white text-center">
+														Video {i + 1}
+													</p>
+												)}
+
+												<p className="text-xs text-gray-400 text-center">
+													{new Date(video.timestamp).toLocaleString()}{" "}
+												</p>
 											</div>
 											<div
 												className={
-													!isGridLayout ? "hidden md:flex flex-col" : ""
+													!isGridLayout
+														? "hidden md:flex flex-col"
+														: "hidden md:block"
 												}
 											>
 												{pinned.find((vid) => vid === video.key) ? (

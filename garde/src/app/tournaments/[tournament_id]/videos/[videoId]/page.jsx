@@ -1,57 +1,13 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
-import Hls from "hls.js";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { FiDownload, FiRepeat, FiBookmark } from "react-icons/fi";
 import ShareButton from "@/src/components/tournaments/ShareButton";
 import { FaBookmark } from "react-icons/fa";
 import { useRouter } from "next/navigation";
 import { useSelector } from "react-redux";
-
-const HLSPlayer = ({ videoUrl, isLooping, thumbnail }) => {
-	const videoRef = useRef(null);
-
-	useEffect(() => {
-		try {
-			if (Hls.isSupported()) {
-				const hls = new Hls();
-				hls.loadSource(videoUrl);
-				hls.attachMedia(videoRef.current);
-
-				hls.on(Hls.Events.MANIFEST_PARSED, () => {
-					videoRef.current.play();
-				});
-
-				return () => {
-					hls.destroy();
-				};
-			}
-			if (videoRef.current.canPlayType("application/vnd.apple.mpegurl")) {
-				// For Safari and other native HLS-supporting browsers
-				videoRef.current.src = videoUrl;
-				videoRef.current.addEventListener("loadedmetadata", () => {
-					videoRef.current.play();
-				});
-			}
-		} catch (error) {
-			console.error("HLS connection failed:", error);
-		}
-	}, [videoUrl]);
-
-	return (
-		<div className="w-full max-w-4xl mx-auto bg-black rounded-lg">
-			<video
-				ref={videoRef}
-				controls
-				loop={isLooping}
-				muted={false}
-				poster={thumbnail}
-				className="w-full h-auto aspect-video rounded-lg"
-			/>
-		</div>
-	);
-};
+import HLSPlayer from "@/src/components/videos/HlsPlayer";
 
 export default function VideoPage({ params }) {
 	const [isLooping, setIsLooping] = useState(false);
@@ -115,11 +71,7 @@ export default function VideoPage({ params }) {
 				Video {videoNumber}
 			</div>
 			<div className="video-player mt-6">
-				<HLSPlayer
-					videoUrl={videoUrl}
-					isLooping={isLooping}
-					thumbnail={`${bucketUrl}/${tournament_id}/${videoId}/thumbnail.jpeg`}
-				/>
+				<HLSPlayer videoUrl={videoUrl} isLooping={isLooping} />
 			</div>
 			<div className="mt-2 space-x-4 flex text-blue-500 justify-center">
 				<button

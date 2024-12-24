@@ -214,7 +214,7 @@ export default function TournamentPage({ params }) {
 					</div>
 				</div>
 
-				<div className="flex justify-between items-center mb-8 px-6">
+				<div className="flex justify-between items-center mb-8 px-6 space-x-5">
 					{(users?.length < tournament?.max_participants ||
 						tournament?.max_participants === "") &&
 					new Date() < new Date(tournament?.signup_deadline) &&

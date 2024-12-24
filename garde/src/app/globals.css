@@ -12,7 +12,7 @@ html {
 }
 
 .editor-content .ProseMirror {
-  min-height: 380px;
+  /* min-height: 380px; */
   background-color: white;
   padding: 10px;
   border-radius: 0.75rem;

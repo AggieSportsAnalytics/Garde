@@ -88,7 +88,7 @@ const HLSPlayer = ({ videoUrl, isLooping }) => {
 				controls
 				loop={isLooping}
 				muted={false}
-				className="w-full max-w-full h-[445px] aspect-video rounded-lg"
+				className="w-full max-w-full h-min md:h-[445px] aspect-video rounded-lg"
 			/>
 		</div>
 	);
@@ -145,31 +145,43 @@ const VideoSource = ({ videoUrl, thumbnail, isGridLayout }) => {
 		}
 	};
 
+	const handleTouchStart = () => {
+		handleMouseEnter();
+		setIsBuffering(false);
+
+		const timeout = setTimeout(() => {
+			if (videoRef.current) {
+				videoRef.current.pause();
+			}
+		}, 5000);
+
+		setTouchTimer(timeout);
+	};
+
 	return (
-		<>
-			<div
-				className={`relative overflow-hidden rounded-lg ${
-					isGridLayout
-						? "w-full aspect-video"
-						: "w-full max-w-sm md:max-w-md lg:max-w-lg aspect-video"
-				}`}
-				onMouseEnter={handleMouseEnter}
-				onMouseLeave={handleMouseLeave}
-			>
-				<video
-					className="w-full h-full object-cover"
-					ref={videoRef}
-					muted
-					playsInline
-					poster={thumbnail}
-				/>
-				{isBuffering && (
-					<div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50">
-						<div className="w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
-					</div>
-				)}
-			</div>
-		</>
+		<div
+			className={`relative overflow-hidden rounded-lg ${
+				isGridLayout
+					? "w-full aspect-video"
+					: "w-full md:max-w-md lg:max-w-lg aspect-video"
+			}`}
+			onMouseEnter={handleMouseEnter}
+			onMouseLeave={handleMouseLeave}
+			onTouchStart={handleTouchStart}
+		>
+			<video
+				className="w-full h-full object-cover"
+				ref={videoRef}
+				muted
+				playsInline
+				poster={thumbnail}
+			/>
+			{isBuffering && (
+				<div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50">
+					<div className="w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
+				</div>
+			)}
+		</div>
 	);
 };
 
@@ -187,7 +199,26 @@ const Videos = ({
 	const [isLooping, setIsLooping] = useState(false);
 	const [pinned, setPinned] = useState([]);
 	const [videoNumber, setVideoNumber] = useState(-1);
+	const [isMobile, setIsMobile] = useState(false);
+
 	const bucketUrl = process.env.NEXT_PUBLIC_BUCKET_URL;
+
+	useEffect(() => {
+		const handleResize = () => {
+			setIsMobile(window.innerWidth < 768);
+		};
+
+		handleResize();
+		window.addEventListener("resize", handleResize);
+
+		return () => window.removeEventListener("resize", handleResize);
+	}, []);
+
+	useEffect(() => {
+		if (isMobile) {
+			setIsGridLayout(false);
+		}
+	}, [isMobile]);
 
 	useEffect(() => {
 		const fetchVideos = async () => {
@@ -303,52 +334,41 @@ const Videos = ({
 							<div className="video-player mt-6">
 								<HLSPlayer videoUrl={videoUrl} isLooping={isLooping} />
 							</div>
-							<div className="mt-2 space-x-4 flex text-blue-500 justify-center">
+							<div className="mt-2 flex flex-col md:flex-row md:space-x-4 space-y-2 md:space-y-0 text-blue-500 justify-center">
 								<button
 									type="button"
-									className="flex gap-2 cursor-pointer"
+									className="flex items-center gap-2 cursor-pointer hover:underline text-sm text-center"
 									onClick={() => setIsLooping(!isLooping)}
 								>
 									{isLooping ? (
-										<button
-											type="button"
-											className="inline-flex items-center hover:underline text-sm text-center gap-1"
-										>
+										<>
 											<FiRepeat className="text-yellow-400" size={16} /> Stop
 											Loop
-										</button>
+										</>
 									) : (
-										<button
-											type="button"
-											className="inline-flex items-center hover:underline text-sm text-center gap-1"
-										>
+										<>
 											<FiRepeat size={16} /> Loop
-										</button>
+										</>
 									)}
 								</button>
+
 								<button
 									type="button"
-									className="inline-flex items-center hover:underline text-sm text-center gap-1"
+									className="flex items-center gap-2 cursor-pointer hover:underline text-sm text-center"
+									onClick={() => togglePin(currentVideo)}
 								>
 									{pinned.find((video) => video === currentVideo) ? (
-										<button
-											onClick={() => togglePin(currentVideo)}
-											type="button"
-											className="inline-flex items-center hover:underline text-sm text-center gap-1"
-										>
+										<>
 											<FaBookmark size={12} className="text-yellow-400" />{" "}
 											Unsave
-										</button>
+										</>
 									) : (
-										<button
-											type="button"
-											className="inline-flex items-center hover:underline text-sm text-center gap-1"
-											onClick={() => togglePin(currentVideo)}
-										>
+										<>
 											<FiBookmark size={16} /> Save
-										</button>
+										</>
 									)}
 								</button>
+
 								<button
 									type="button"
 									onClick={(e) => {
@@ -358,14 +378,17 @@ const Videos = ({
 											`Video_${videoNumber + 1}.webm`,
 										);
 									}}
-									className="inline-flex items-center hover:underline text-sm text-center gap-1"
+									className="flex items-center gap-2 cursor-pointer hover:underline text-sm text-center"
 								>
 									<FiDownload size={16} /> Download
 								</button>
+
 								<ShareButton
 									link={`${bucketUrl}/${fencer.fencer_id}/${currentVideo}/full_video.webm`}
+									className="flex items-center gap-2 cursor-pointer hover:underline text-sm text-center"
 								/>
 							</div>
+
 							<div className="flex justify-center mt-4">
 								<button
 									type="button"
@@ -395,7 +418,7 @@ const Videos = ({
 									<button
 										type="button"
 										onClick={() => setIsGridLayout(!isGridLayout)}
-										className="px-4 py-2 text-white rounded-md hover:bg-blue-400 transition duration-200 flex items-center gap-2"
+										className="hidden px-4 py-2 text-white rounded-md hover:bg-blue-400 transition duration-200 md:flex items-center gap-2"
 									>
 										{isGridLayout ? (
 											<FiAlignJustify size={20} />
@@ -423,12 +446,34 @@ const Videos = ({
 												!isGridLayout ? "flex items-center gap-4" : ""
 											}`}
 										>
-											<VideoSource
-												videoUrl={`${bucketUrl}/${fencer.fencer_id}/${video.key}/playlist.m3u8`}
-												thumbnail={video.thumbnail}
-												isGridLayout={isGridLayout}
-											/>
-											<div className={!isGridLayout ? "flex flex-col" : ""}>
+											<div className="sm:flex-col">
+												<VideoSource
+													videoUrl={`${bucketUrl}/${fencer.fencer_id}/${video.key}/playlist.m3u8`}
+													thumbnail={video.thumbnail}
+													isGridLayout={isGridLayout}
+												/>
+												<div className="md:hidden">
+													{pinned.find((vid) => vid === video.key) ? (
+														<p className="mt-2 text-sm font-medium text-white text-center">
+															Video {i + 1}{" "}
+															<FaBookmark className="inline-block text-yellow-400" />
+														</p>
+													) : (
+														<p className="mt-2 text-sm font-medium text-white text-center">
+															Video {i + 1}
+														</p>
+													)}
+
+													<p className="text-xs text-gray-400 text-center">
+														{new Date(video.timestamp).toLocaleString()}{" "}
+													</p>
+												</div>
+											</div>
+											<div
+												className={
+													!isGridLayout ? "hidden md:flex flex-col" : ""
+												}
+											>
 												{pinned.find((vid) => vid === video.key) ? (
 													<p className="mt-2 text-sm font-medium text-white text-center">
 														Video {i + 1}{" "}
@@ -444,7 +489,7 @@ const Videos = ({
 													{new Date(video.timestamp).toLocaleString()}{" "}
 												</p>
 
-												<div className="flex flex-col items-center mt-2 gap-1">
+												<div className="md:flex flex-col items-center mt-2 gap-1 hidden">
 													<button
 														type="button"
 														onClick={(e) => {

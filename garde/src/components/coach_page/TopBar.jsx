@@ -30,9 +30,15 @@ function TopBar({
 
 	const removeFencer = async () => {
 		try {
-			const workerUrl = `${process.env.NEXT_PUBLIC_GARDE_WORKER}/deleteCoachFencer?coachId=${id}&fencerId=${currentFencer.fencer_id}`;
-			await axiosInstance.delete(workerUrl);
-			handleRefresh();
+			const confirmed = window.confirm(
+				`Are you sure you want to remove fencer ${currentFencer.fencer_name}? This action is irreversible.`,
+			);
+
+			if (confirmed) {
+				const workerUrl = `${process.env.NEXT_PUBLIC_GARDE_WORKER}/deleteCoachFencer?coachId=${id}&fencerId=${currentFencer.fencer_id}`;
+				await axiosInstance.delete(workerUrl);
+				handleRefresh();
+			}
 		} catch (error) {
 			console.error(error);
 		}
@@ -79,7 +85,7 @@ function TopBar({
 								))}
 							</select>
 						</span>
-						<div className="relative">
+						<div className="relative hidden md:block">
 							<button
 								onClick={removeFencer}
 								className="whitespace-nowrap absolute top-1/2 transform -translate-y-1/2 right-5 bg-red-600 px-3 py-2 hover:bg-red-500 text-white font-semibold rounded shadow-md cursor-pointer"
@@ -93,7 +99,7 @@ function TopBar({
 					<div className="font-bold text-2xl">No Fencers Added</div>
 				)}
 
-				<div className="mr-4">
+				<div className="mx-4">
 					<FaCog
 						className="text-white text-2xl cursor-pointer hover:text-gray-400 transition-colors duration-200"
 						onClick={showModal}
@@ -143,6 +149,17 @@ function TopBar({
 					<div className="w-full flex flex-col items-center space-y-4 flex-grow">
 						<UuidReveal uuid={id} />
 						{/* <AddFencerInstruction /> */}
+					</div>
+
+					<div className="pt-24 md:hidden text-center">
+						<button
+							onClick={removeFencer}
+							className="top-1/2 transform -translate-y-1/2 right-5 bg-red-600 px-3 py-2 hover:bg-red-500 text-white font-semibold rounded shadow-md cursor-pointer"
+							type="button"
+						>
+							Remove Fencer
+							<br /> {currentFencer.fencer_name}
+						</button>
 					</div>
 
 					<div className="mt-auto w-full">

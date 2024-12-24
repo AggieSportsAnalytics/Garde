@@ -75,9 +75,6 @@ function Editor({ fencer, coachName, currentVideo }) {
 
 	return (
 		<div className="w-full text-black">
-			{" "}
-			{/* Full width */}
-			{/* Toolbar */}
 			<div className="flex mb-4 space-x-4 border-b pb-2">
 				<button
 					type="button"
@@ -95,7 +92,7 @@ function Editor({ fencer, coachName, currentVideo }) {
 				</button>
 			</div>
 			{/* Editor */}
-			<div className="editor-content border border-gray-300 p-4 rounded bg-white">
+			<div className="editor-content min-h-[250px] md:min-h-[380px] border border-gray-300 p-4 rounded bg-white">
 				<EditorContent editor={editor} />
 			</div>
 			{/* Error Message */}

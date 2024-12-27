@@ -14,8 +14,7 @@ export async function GET(req) {
 			return NextResponse.json({ message: "Token missing" }, { status: 401 });
 		}
 
-		jwt.verify(cookies, JWT_SECRET);
-		const decoded = jwt.verify(token, JWT_SECRET);
+		const decoded = verifyJwt(token);
 
 		if (!decoded) {
 			throw new Error("Decoding failed");

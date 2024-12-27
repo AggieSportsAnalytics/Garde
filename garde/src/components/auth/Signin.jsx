@@ -28,11 +28,11 @@ export default function Signin({ isSignUpDefault }) {
 				const decoded = await checkAuth(router, "signin", type, true);
 
 				if (decoded?.type) {
-					router.push(`${decoded.type}_page`);
+					router.push(`/${decoded.type}_page`);
 				}
 			} catch (error) {
 				console.error(error);
-				router.push("signin?restricted=true");
+				router.push("/signin?restricted=true");
 			}
 		};
 

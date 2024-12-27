@@ -7,6 +7,7 @@ import {
 	FiGrid,
 	FiAlignJustify,
 	FiDownload,
+	FiShare2,
 } from "react-icons/fi";
 import { FaBookmark } from "react-icons/fa";
 import Link from "next/link";
@@ -14,9 +15,9 @@ import { useRouter } from "next/navigation";
 import axiosInstance from "@/src/components/axios";
 import { useDispatch } from "react-redux";
 import { selectVideoNumber } from "@/src/stores/features/videoNumberSlice";
-import ShareButton from "@/src/components/tournaments/ShareButton";
 import VideoSource from "@/src/components/videos/VideoSource";
 import Loader from "@/src/components/ui/Loader";
+import CopyButton from "@/src/components/ui/CopyButton";
 
 export default function Videos({ params }) {
 	const { tournament_id } = params;
@@ -59,8 +60,6 @@ export default function Videos({ params }) {
 									`Error fetching metadata for ${name}:`,
 									error.message,
 								);
-							} finally {
-								setLoading(false);
 							}
 
 							return {
@@ -71,7 +70,7 @@ export default function Videos({ params }) {
 						}),
 					);
 
-					const pin = localStorage.getItem("pinned");
+					const pin = localStorage.getItem("pinnedVideo");
 					if (pin) {
 						setPinned(JSON.parse(pin));
 					}
@@ -83,6 +82,8 @@ export default function Videos({ params }) {
 				}
 			} catch (error) {
 				console.error(error);
+			} finally {
+				setLoading(false);
 			}
 		};
 
@@ -221,8 +222,13 @@ export default function Videos({ params }) {
 													>
 														<FiDownload size={16} /> Download
 													</button>
-													<ShareButton
-														link={`${bucketUrl}/${tournament_id}/${video.key}/full_video.webm`}
+													<CopyButton
+														text={`${bucketUrl}/${tournament_id}/${video.key}/full_video.webm`}
+														style="inline-flex items-center text-blue-500 hover:underline text-sm text-center gap-1"
+														before="Share"
+														after="Copied!"
+														size={16}
+														BeforeIcon={FiShare2}
 													/>
 												</div>
 											</div>

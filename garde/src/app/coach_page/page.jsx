@@ -10,6 +10,7 @@ import { useRouter } from "next/navigation";
 import CoachPageScaffold from "@/src/components/coach_page/CoachPageScaffold";
 import checkAuth from "@/src/app/hooks/jwt_verify";
 import axiosInstance from "@/src/components/axios";
+import renewSession from "../hooks/renew_session";
 
 export default function CoachPage() {
 	const [id, setId] = useState(""); // coach id
@@ -37,13 +38,12 @@ export default function CoachPage() {
 				setCoachName(decoded.name);
 				getInfo("getCoach", decoded.id);
 
-				const expirationTime = decoded?.exp * 1000 - Date.now();
-				const timer = setTimeout(() => {
-					alert("Your session has expired. Please log in again.");
-					router.push("/signin");
-				}, expirationTime);
-
-				return () => clearTimeout(timer);
+				renewSession(decoded).then((val) => {
+					if (!val) {
+						alert("Your session has expired. Please log in again.");
+						router.push("/signin");
+					}
+				});
 			} catch (error) {
 				console.error(error);
 				router.push("/signin?restricted=true");

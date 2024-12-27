@@ -8,49 +8,14 @@ import {
 	FiAlignJustify,
 	FiDownload,
 	FiShare2,
-	FiCheck,
 	FiRepeat,
-	FiBookmark,
 } from "react-icons/fi";
 import { FaBookmark } from "react-icons/fa";
 import axiosInstance from "../axios";
 import VideoSource from "@/src/components/videos/VideoSource";
 import HLSPlayer from "@/src/components/videos/HlsPlayer";
-
-const ShareButton = ({ link }) => {
-	const [copied, setCopied] = useState(false);
-
-	const handleCopy = async (e) => {
-		try {
-			e.stopPropagation();
-			await navigator.clipboard.writeText(link);
-			setCopied(true);
-
-			// Reset "Copied" message after 2 seconds
-			setTimeout(() => setCopied(false), 2000);
-		} catch (err) {
-			console.error("Failed to copy text:", err);
-		}
-	};
-
-	return (
-		<button
-			type="button"
-			onClick={(e) => handleCopy(e)}
-			className="inline-flex items-center text-blue-500 hover:underline text-sm text-center gap-1"
-		>
-			{copied ? (
-				<>
-					<FiCheck size={16} /> Copied!
-				</>
-			) : (
-				<>
-					<FiShare2 size={16} /> Share
-				</>
-			)}
-		</button>
-	);
-};
+import CopyButton from "../ui/CopyButton";
+import Pinned from "../videos/Pinned";
 
 const Videos = ({
 	fencer,
@@ -111,7 +76,7 @@ const Videos = ({
 						}),
 					);
 
-					const pin = localStorage.getItem("pinned");
+					const pin = localStorage.getItem("pinnedVideo");
 					if (pin) {
 						setPinned(JSON.parse(pin));
 					}
@@ -206,24 +171,12 @@ const Videos = ({
 										</>
 									)}
 								</button>
-
-								<button
-									type="button"
-									className="flex items-center gap-2 cursor-pointer hover:underline text-sm text-center"
-									onClick={() => togglePin(currentVideo)}
-								>
-									{pinned.find((video) => video === currentVideo) ? (
-										<>
-											<FaBookmark size={12} className="text-yellow-400" />{" "}
-											Unsave
-										</>
-									) : (
-										<>
-											<FiBookmark size={16} /> Save
-										</>
-									)}
-								</button>
-
+								<Pinned
+									pinned={pinned}
+									setPinned={setPinned}
+									id={currentVideo}
+									stored="pinnedVideo"
+								/>
 								<button
 									type="button"
 									onClick={(e) => {
@@ -238,8 +191,13 @@ const Videos = ({
 									<FiDownload size={16} /> Download
 								</button>
 
-								<ShareButton
-									link={`${bucketUrl}/${fencer.fencer_id}/${currentVideo}/full_video.webm`}
+								<CopyButton
+									text={`${bucketUrl}/${fencer.fencer_id}/${currentVideo}/full_video.webm`}
+									before="Share"
+									after="Copied!"
+									BeforeIcon={FiShare2}
+									size={16}
+									style="inline-flex items-center text-blue-500 hover:underline text-sm text-center gap-1"
 									className="flex items-center gap-2 cursor-pointer hover:underline text-sm text-center"
 								/>
 							</div>
@@ -358,8 +316,13 @@ const Videos = ({
 													>
 														<FiDownload size={16} /> Download
 													</button>
-													<ShareButton
-														link={`${bucketUrl}/${fencer.fencer_id}/${video.key}/full_video.webm`}
+													<CopyButton
+														text={`${bucketUrl}/${fencer.fencer_id}/${currentVideo}/full_video.webm`}
+														before="Share"
+														after="Copied!"
+														BeforeIcon={FiShare2}
+														size={16}
+														style="inline-flex items-center text-blue-500 hover:underline text-sm text-center gap-1"
 													/>
 												</div>
 											</div>

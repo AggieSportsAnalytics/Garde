@@ -19,6 +19,9 @@ import checkAuth from "../../hooks/jwt_verify";
 import RestrictedAlert from "../../../components/ui/RestrictedAlert";
 import axiosInstance from "@/src/components/axios";
 import Loader from "@/src/components/ui/Loader";
+import CopyButton from "@/src/components/ui/CopyButton";
+import { FiShare2 } from "react-icons/fi";
+import Pinned from "@/src/components/videos/Pinned";
 
 export default function TournamentPage({ params }) {
 	const [tournament, setTournament] = useState(null);
@@ -27,7 +30,15 @@ export default function TournamentPage({ params }) {
 	const [loading, setLoading] = useState(false);
 	const { tournament_id } = params;
 	const [token, setToken] = useState("");
+	const [pinned, setPinned] = useState([]);
 	const router = useRouter();
+
+	useEffect(() => {
+		const pin = localStorage.getItem("pinnedTournament");
+		if (pin) {
+			setPinned(JSON.parse(pin));
+		}
+	}, []);
 
 	const selectedTournament = useSelector(
 		(state) => state.tournament.selectedTournament,
@@ -259,14 +270,33 @@ export default function TournamentPage({ params }) {
 						</>
 					)}
 
-					<Link href={`/tournaments/${tournament_id}/videos`} passHref>
-						<button
-							type="button"
-							className="flex items-center gap-2 px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded shadow-md transition-transform duration-200 hover:scale-105"
-						>
-							<FaVideo className="text-lg" /> View Videos
-						</button>
-					</Link>
+					<div className="relative flex flex-col items-center space-y-4">
+						<Link href={`/tournaments/${tournament_id}/videos`} passHref>
+							<button
+								type="button"
+								className="flex items-center gap-2 px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded shadow-md transition-transform duration-200 hover:scale-105"
+							>
+								<FaVideo className="text-lg" /> View Videos
+							</button>
+						</Link>
+
+						<div className="absolute top-full mt-4 w-full text-center space-x-2">
+							<CopyButton
+								text={`${process.env.NEXT_PUBLIC_BASE_URL}/tournaments/${tournament_id}`}
+								style="inline-flex items-center text-blue-500 hover:underline text-sm gap-1"
+								before="Share"
+								size={16}
+								after="Copied!"
+								BeforeIcon={FiShare2}
+							/>
+							<Pinned
+								pinned={pinned}
+								setPinned={setPinned}
+								id={tournament_id}
+								stored="pinnedTournament"
+							/>
+						</div>
+					</div>
 				</div>
 
 				{/* Main Content */}

@@ -9,6 +9,7 @@ import TournamentCard from "@/src/components/tournaments/TournamentCard";
 import checkAuth from "../hooks/jwt_verify";
 import RestrictedAlert from "@/src/components/ui/RestrictedAlert";
 import Loader from "@/src/components/ui/Loader";
+import renewSession from "@/src/app/hooks/renew_session";
 
 function Navbar({ setLoggedIn, loggedIn }) {
 	const [menuOpen, setMenuOpen] = useState(false);
@@ -120,9 +121,17 @@ function Tournaments() {
 	const [tournaments, setTournaments] = useState([]);
 	const [loggedIn, setLoggedIn] = useState(false);
 	const [loading, setLoading] = useState(false);
+	const [pinned, setPinned] = useState([]);
 	const router = useRouter();
 
 	useEffect(() => {
+		const getPinned = () => {
+			const pin = localStorage.getItem("pinnedTournament");
+			if (pin) {
+				setPinned(JSON.parse(pin));
+			}
+		};
+
 		const fetchTournaments = async () => {
 			try {
 				setLoading(true);
@@ -146,23 +155,24 @@ function Tournaments() {
 				}
 
 				const expirationTime = decoded?.exp * 1000 - Date.now();
-				if (!Number.isNaN(expirationTime)) {
-					const timer = setTimeout(() => {
-						alert("Your session has expired. Please log in again.");
-						setLoggedIn(false);
-					}, expirationTime);
-
-					return () => clearTimeout(timer);
+				if (!Number.isNaN(expirationTime) && expirationTime > 0) {
+					renewSession(decoded).then((val) => {
+						if (!val) {
+							alert("Your session has expired. Please log in again.");
+							setLoggedIn(false);
+						}
+					});
 				}
 			} catch (error) {
 				console.error(error);
-				router.push("tournaments?restricted=true");
+				router.push("/tournaments?restricted=true");
 				setLoggedIn(false);
 			}
 		};
 
 		checkToken();
 		fetchTournaments();
+		getPinned();
 	}, [router]);
 
 	const handleOrganize = () => {
@@ -180,8 +190,11 @@ function Tournaments() {
 						<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
 							{tournaments?.map((tournament) => (
 								<TournamentCard
-									key={`${tournament.id}_popular`}
+									key={`${tournament.tournament_id}_popular`}
 									tournament={tournament}
+									pinned={pinned.find(
+										(tour) => tour === tournament.tournament_id,
+									)}
 								/>
 							))}
 						</div>

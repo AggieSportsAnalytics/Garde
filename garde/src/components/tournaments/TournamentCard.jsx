@@ -1,8 +1,9 @@
 import { useRouter } from "next/navigation";
 import { useDispatch } from "react-redux";
 import { selectTournament } from "@/src/stores/features/tournamentSlice";
+import { FaBookmark } from "react-icons/fa";
 
-function TournamentCard({ tournament }) {
+function TournamentCard({ tournament, pinned }) {
 	const router = useRouter();
 	const dispatch = useDispatch();
 
@@ -11,13 +12,19 @@ function TournamentCard({ tournament }) {
 		router.push(`/tournaments/${tournament.tournament_id}`);
 	};
 
+	console.log(pinned);
+
 	return (
 		<button
 			type="button"
 			className="p-4 border border-gray-700 rounded-lg shadow-lg bg-gray-900 text-white hover:bg-gray-800 transition-transform duration-200 transform hover:scale-105 cursor-pointer"
 			onClick={onClick}
 		>
-			<h3 className="text-xl font-bold mb-2">{tournament.event_name}</h3>
+			<span className="flex items-center justify-center space-x-2">
+				<h3 className="text-xl font-bold">{tournament.event_name}</h3>
+				{pinned && <FaBookmark className="text-yellow-400" />}
+			</span>
+
 			<div className="text-gray-400 space-y-1">
 				<p>
 					<span className="font-semibold text-white">Organizer:</span>{" "}

@@ -23,6 +23,8 @@ export async function middleware(req) {
 	} else if (/^\/tournaments\/[0-9a-fA-F-]+\/update$/.test(requestedPage)) {
 		const tId = requestedPage.split("/")[2];
 		redirect = `/tournaments/${tId}`;
+	} else if (requestedPage.includes("/api/renew_session")) {
+		return NextResponse.next();
 	} else if (
 		requestedPage.includes("/tournaments") ||
 		requestedPage.includes("/api/") ||

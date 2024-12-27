@@ -2,12 +2,13 @@
 
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { FiDownload, FiRepeat, FiBookmark } from "react-icons/fi";
-import ShareButton from "@/src/components/tournaments/ShareButton";
-import { FaBookmark } from "react-icons/fa";
+import { FiDownload, FiRepeat } from "react-icons/fi";
 import { useRouter } from "next/navigation";
 import { useSelector } from "react-redux";
 import HLSPlayer from "@/src/components/videos/HlsPlayer";
+import CopyButton from "@/src/components/ui/CopyButton";
+import { FiShare2 } from "react-icons/fi";
+import Pinned from "@/src/components/videos/Pinned";
 
 export default function VideoPage({ params }) {
 	const [isLooping, setIsLooping] = useState(false);
@@ -17,7 +18,7 @@ export default function VideoPage({ params }) {
 	const videoNumber = useSelector((state) => state.videoNumber.videoNumber);
 
 	useEffect(() => {
-		const pin = localStorage.getItem("pinned");
+		const pin = localStorage.getItem("pinnedVideo");
 		if (pin) {
 			setPinned(JSON.parse(pin));
 		}
@@ -26,20 +27,6 @@ export default function VideoPage({ params }) {
 	const bucketUrl = process.env.NEXT_PUBLIC_BUCKET_URL;
 	const videoUrl = `${bucketUrl}/${tournament_id}/${videoId}/playlist.m3u8`;
 	const router = useRouter();
-
-	const togglePin = (videoId) => {
-		if (pinned.find((vid) => vid === videoId)) {
-			const newPinned = pinned.filter((vid) => vid !== videoId);
-			setPinned(newPinned);
-			localStorage.setItem("pinned", JSON.stringify(newPinned));
-
-			return;
-		}
-
-		const newPinned = [...pinned, videoId];
-		setPinned(newPinned);
-		localStorage.setItem("pinned", JSON.stringify(newPinned));
-	};
 
 	const handleDownload = async (videoUrl, filename) => {
 		try {
@@ -93,26 +80,12 @@ export default function VideoPage({ params }) {
 						</div>
 					)}
 				</button>
-				<button
-					type="button"
-					className="inline-flex items-center hover:underline text-sm text-center gap-1"
-				>
-					{pinned.find((video) => video === videoId) ? (
-						<div
-							onClick={() => togglePin(videoId)}
-							className="inline-flex items-center hover:underline text-sm text-center gap-1"
-						>
-							<FaBookmark size={12} className="text-yellow-400" /> Unsave
-						</div>
-					) : (
-						<div
-							className="inline-flex items-center hover:underline text-sm text-center gap-1"
-							onClick={() => togglePin(videoId)}
-						>
-							<FiBookmark size={16} /> Save
-						</div>
-					)}
-				</button>
+				<Pinned
+					pinned={pinned}
+					setPinned={setPinned}
+					id={videoId}
+					stored="pinnedVideo"
+				/>
 				<button
 					type="button"
 					onClick={(e) => {
@@ -126,8 +99,13 @@ export default function VideoPage({ params }) {
 				>
 					<FiDownload size={16} /> Download
 				</button>
-				<ShareButton
-					link={`${bucketUrl}/${tournament_id}/${videoId}/full_video.webm`}
+				<CopyButton
+					text={`${bucketUrl}/${tournament_id}/${videoId}/full_video.webm`}
+					style="inline-flex items-center text-blue-500 hover:underline text-sm text-center gap-1"
+					before="Share"
+					after="Copied!"
+					size={16}
+					BeforeIcon={FiShare2}
 				/>
 			</div>
 			<div className="flex justify-center mt-4">

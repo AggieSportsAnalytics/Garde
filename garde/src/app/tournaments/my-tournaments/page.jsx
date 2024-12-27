@@ -7,14 +7,23 @@ import TournamentCard from "@/src/components/tournaments/TournamentCard";
 import checkAuth from "../../hooks/jwt_verify";
 import axiosInstance from "@/src/components/axios";
 import Loader from "@/src/components/ui/Loader";
+import renewSession from "../../hooks/renew_session";
 
 export default function MyTournaments() {
 	const [pTournies, setPTournies] = useState([]);
 	const [oTournies, setOTournies] = useState([]);
 	const [loading, setLoading] = useState(false);
+	const [pinned, setPinned] = useState([]);
 	const router = useRouter();
 
 	useEffect(() => {
+		const getPinned = () => {
+			const pin = localStorage.getItem("pinnedTournament");
+			if (pin) {
+				setPinned(JSON.parse(pin));
+			}
+		};
+
 		const fetchTournaments = async (id) => {
 			try {
 				setLoading(true);
@@ -48,16 +57,18 @@ export default function MyTournaments() {
 			}
 		};
 
+		getPinned();
 		(async () => {
 			const decoded = await checkToken();
 			if (decoded?.id) {
 				await fetchTournaments(decoded.id);
 
-				const expirationTime = decoded?.exp * 1000 - Date.now();
-				const timer = setTimeout(() => {
-					alert("Your session has expired. Please log in again.");
-					router.push("/tournaments");
-				}, expirationTime);
+				renewSession(decoded).then((val) => {
+					if (!val) {
+						alert("Your session has expired. Please log in again.");
+						router.push("/tournaments");
+					}
+				});
 
 				return () => clearTimeout(timer);
 			}
@@ -90,6 +101,9 @@ export default function MyTournaments() {
 								<TournamentCard
 									key={`${tournament.id}_organizing`}
 									tournament={tournament}
+									pinned={pinned.find(
+										(tour) => tour === tournament.tournament_id,
+									)}
 								/>
 							))}
 						</div>
@@ -111,6 +125,9 @@ export default function MyTournaments() {
 								<TournamentCard
 									key={`${tournament.id}_participating`}
 									tournament={tournament}
+									pinned={pinned.find(
+										(tour) => tour === tournament.tournament_id,
+									)}
 								/>
 							))}
 						</div>

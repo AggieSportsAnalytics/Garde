@@ -81,11 +81,12 @@ export default function UpdateTournament({ params }) {
 					rules: tournamentData?.rules || "",
 				});
 
-				const expirationTime = decoded?.exp * 1000 - Date.now();
-				const timer = setTimeout(() => {
-					alert("Your session has expired. Please log in again.");
-					router.push("/tournaments");
-				}, expirationTime);
+				renewSession(decoded).then((val) => {
+					if (!val) {
+						alert("Your session has expired. Please log in again.");
+						router.push("/tournaments");
+					}
+				});
 
 				return () => clearTimeout(timer);
 			} catch (error) {

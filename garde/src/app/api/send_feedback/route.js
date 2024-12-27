@@ -102,7 +102,7 @@ async function sendFeedback(data, email, coachName, fencerName, videoUrl) {
 				The Garde Team
 		
 				---
-				You are receiving this email because you are enrolled in Garde. If this message was sent in error, please contact support at support@gardeai.com.
+				You are receiving this email because you are enrolled in Garde. If this message was sent in error, please contact support at gardefencing@gmail.com.
 			`,
 	};
 

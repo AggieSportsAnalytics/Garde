@@ -2,20 +2,13 @@
 
 import React, { useState } from "react";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
-import { FiCopy, FiCheck } from "react-icons/fi";
+import CopyButton from "../ui/CopyButton";
 
 function UuidReveal({ uuid }) {
 	const [isRevealed, setIsRevealed] = useState(false);
-	const [copied, setCopied] = useState(false);
 
 	const handleToggle = () => {
 		setIsRevealed(!isRevealed);
-	};
-
-	const handleCopy = () => {
-		navigator.clipboard.writeText(uuid);
-		setCopied(true);
-		setTimeout(() => setCopied(false), 2000);
 	};
 
 	return (
@@ -42,18 +35,7 @@ function UuidReveal({ uuid }) {
 				<span className={`truncate ${isRevealed ? "" : "select-none"}`}>
 					{isRevealed ? uuid : "••••••••••••••••••••••••••••••••••"}
 				</span>
-				<button
-					type="button"
-					onClick={handleCopy}
-					className="ml-3 text-gray-500 hover:text-gray-800 transition duration-200"
-					title="Copy to clipboard"
-				>
-					{copied ? (
-						<FiCheck size={20} className="text-green-500" />
-					) : (
-						<FiCopy size={20} />
-					)}
-				</button>
+				<CopyButton text={uuid} />
 			</span>
 		</div>
 	);

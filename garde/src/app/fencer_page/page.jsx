@@ -34,6 +34,7 @@ import { useRouter } from "next/navigation";
 import Chatbot from "../../components/fencer_page/Chatbot";
 import checkAuth from "../hooks/jwt_verify";
 import axiosInstance from "@/src/components/axios";
+import renewSession from "../hooks/renew_session";
 
 const MemoizedFencerStats = memo(Fencer_Stats);
 const MemoizedInstruction = memo(Instruction);
@@ -260,17 +261,16 @@ export default function Fencer_Page2() {
 				setFencerId(decoded.id);
 				setDecoded(decoded);
 
-				const expirationTime = decoded?.exp * 1000 - Date.now();
-				const timer = setTimeout(() => {
-					alert("Your session has expired. Please log in again.");
-					router.push("/signin");
-				}, expirationTime);
+				renewSession(decoded).then((val) => {
+					if (!val) {
+						alert("Your session has expired. Please log in again.");
+						router.push("/signin");
+					}
+				});
 
 				const workerUrl = `${process.env.NEXT_PUBLIC_GARDE_WORKER}/getAllFC/${decoded.id}`;
 				const response = await axiosInstance.get(workerUrl);
 				setCoaches(response.data.data);
-
-				return () => clearTimeout(timer);
 			} catch (error) {
 				console.error(error);
 				router.push("/signin?restricted=true");

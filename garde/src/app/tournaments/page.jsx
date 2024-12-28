@@ -12,6 +12,7 @@ import Loader from "@/src/components/ui/Loader";
 import renewSession from "@/src/app/hooks/renew_session";
 import { Trophy, LogIn, LogOut } from "lucide-react";
 import { TextGenerateEffect } from "@/src/components/ui/TextGenerateEffect";
+import { BackgroundStars } from "@/src/components/ui/background-stars";
 
 const words = "Fencing Tournaments Powered by Garde";
 
@@ -211,33 +212,40 @@ function Tournaments() {
 	return (
 		<>
 			<Loader loading={loading} />
-			<div className="bg-black text-white min-h-screen">
+			<div className="bg-black text-white min-h-screen flex flex-col justify-start">
 				<Navbar setLoggedIn={setLoggedIn} loggedIn={loggedIn} />
-				<div className="p-6 max-w-7xl mx-auto">
-					<section className="mb-12">
-						<h2 className="text-2xl font-semibold mb-4">Popular Tournaments</h2>
-						<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-							{tournaments?.map((tournament) => (
-								<TournamentCard
-									key={`${tournament.tournament_id}_popular`}
-									tournament={tournament}
-									pinned={pinned.find(
-										(tour) => tour === tournament.tournament_id,
-									)}
-								/>
-							))}
-						</div>
-					</section>
+				<div className="flex-1 relative">
+					<BackgroundStars className="absolute inset-0">
+						<div className="relative z-10 p-6 max-w-7xl mx-auto">
+							{/* Header Section with Buttons */}
+							<div className="flex flex-col sm:flex-row justify-start items-center gap-6 mb-12 mt-4">
+								<button 
+									className="shadow-[inset_0_0_0_2px_#616467] text-white px-8 py-3 rounded-full tracking-widest uppercase font-bold bg-transparent hover:bg-[#616467] hover:text-white transition duration-200" 
+									onClick={handleOrganize}
+								>
+									Organize a Tournament
+								</button>
+								<h2 className="text-2xl font-semibold px-8 py-3 border-2 border-white/20 rounded-full bg-black/20 backdrop-blur-sm">
+									Popular Tournaments
+								</h2>
+							</div>
 
-					<div className="flex justify-center gap-6">
-						<button
-							type="button"
-							className="px-6 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded"
-							onClick={handleOrganize}
-						>
-							Organize a Tournament
-						</button>
-					</div>
+							{/* Tournament Cards Grid */}
+							<div className="w-full">
+								<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+									{tournaments?.map((tournament) => (
+										<TournamentCard
+											key={`${tournament.tournament_id}_popular`}
+											tournament={tournament}
+											pinned={pinned.find(
+												(tour) => tour === tournament.tournament_id,
+											)}
+										/>
+									))}
+								</div>
+							</div>
+						</div>
+					</BackgroundStars>
 				</div>
 				<RestrictedAlert redirect={"/tournaments"} />
 			</div>

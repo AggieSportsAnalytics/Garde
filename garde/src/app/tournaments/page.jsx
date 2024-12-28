@@ -13,6 +13,7 @@ import renewSession from "@/src/app/hooks/renew_session";
 import { Trophy, LogIn, LogOut } from "lucide-react";
 import { TextGenerateEffect } from "@/src/components/ui/TextGenerateEffect";
 import { BackgroundStars } from "@/src/components/ui/background-stars";
+import { motion } from "framer-motion";
 
 const words = "Fencing Tournaments Powered by Garde";
 
@@ -38,19 +39,30 @@ function Navbar({ setLoggedIn, loggedIn }) {
 	};
 
 	return (
-		<nav className="relative flex items-center justify-between backdrop-blur-sm bg-black/10 text-white p-4 border-b border-white/10">
+		<motion.nav 
+			initial={{ y: -100 }}
+			animate={{ y: 0 }}
+			transition={{ type: "spring", stiffness: 100 }}
+			className="relative flex items-center justify-between backdrop-blur-sm bg-black/10 text-white p-4 border-b border-white/10"
+		>
 			{/* Back Button */}
-			<Link href="/" className="cursor-pointer">
-				<button
-					type="button"
+			<motion.div
+				initial={{ x: -20, opacity: 0 }}
+				animate={{ x: 0, opacity: 1 }}
+				transition={{ delay: 0.2 }}
+			>
+				<Link href="/" className="cursor-pointer">
+					<button
+						type="button"
 						className="bg-red-600 text-black py-2 px-3 rounded text-base font-extrabold hover:bg-red-500 transition-transform duration-200"
 						title="Go Back"
-				>
-					X
-				</button>
-			</Link>
+					>
+						X
+					</button>
+				</Link>
+			</motion.div>
 
-			{/* Replace static title with TextGenerateEffect */}
+			{/* Title */}
 			<TextGenerateEffect 
 				duration={2} 
 				filter={false} 
@@ -59,7 +71,12 @@ function Navbar({ setLoggedIn, loggedIn }) {
 			/>
 
 			{/* Menu Section */}
-			<div className="ml-auto flex items-center gap-4">
+			<motion.div 
+				initial={{ x: 20, opacity: 0 }}
+				animate={{ x: 0, opacity: 1 }}
+				transition={{ delay: 0.2 }}
+				className="ml-auto flex items-center gap-4"
+			>
 				{/* Desktop Menu */}
 				<div className="hidden md:flex items-center gap-6">
 					<button
@@ -103,11 +120,16 @@ function Navbar({ setLoggedIn, loggedIn }) {
 						</div>
 					</button>
 				</div>
-			</div>
+			</motion.div>
 
 			{/* Mobile Menu Dropdown */}
 			{menuOpen && (
-				<div className="absolute top-full right-0 w-48 bg-gray-800/95 backdrop-blur-sm p-4 rounded-lg shadow-lg md:hidden z-50 mt-2">
+				<motion.div
+					initial={{ opacity: 0, y: -10 }}
+					animate={{ opacity: 1, y: 0 }}
+					exit={{ opacity: 0, y: -10 }}
+					className="absolute top-full right-0 w-48 bg-gray-800/95 backdrop-blur-sm p-4 rounded-lg shadow-lg md:hidden z-50 mt-2"
+				>
 					<button
 						type="button"
 						className="flex items-center gap-2 w-full text-left text-white hover:text-blue-500 mb-4 transition-colors duration-200"
@@ -133,9 +155,9 @@ function Navbar({ setLoggedIn, loggedIn }) {
 							</>
 						)}
 					</button>
-				</div>
+				</motion.div>
 			)}
-		</nav>
+		</motion.nav>
 	);
 }
 
@@ -209,6 +231,22 @@ function Tournaments() {
 		router.push("/tournaments/organize");
 	};
 
+	const containerVariants = {
+		hidden: { opacity: 0 },
+		show: {
+			opacity: 1,
+			transition: {
+				staggerChildren: 0.1,
+				delayChildren: 0.3
+			}
+		}
+	};
+
+	const itemVariants = {
+		hidden: { opacity: 0, y: 20 },
+		show: { opacity: 1, y: 0 }
+	};
+
 	return (
 		<>
 			<Loader loading={loading} />
@@ -218,32 +256,54 @@ function Tournaments() {
 					<BackgroundStars className="absolute inset-0">
 						<div className="relative z-10 p-6 max-w-7xl mx-auto">
 							{/* Header Section with Buttons */}
-							<div className="flex flex-col sm:flex-row justify-start items-center gap-6 mb-12 mt-4">
-								<button 
+							<motion.div 
+								variants={containerVariants}
+								initial="hidden"
+								animate="show"
+								className="flex flex-col sm:flex-row justify-start items-center gap-6 mb-12 mt-4"
+							>
+								<motion.button 
+									variants={itemVariants}
+									whileHover={{ scale: 1.05 }}
+									whileTap={{ scale: 0.95 }}
 									className="shadow-[inset_0_0_0_2px_#616467] text-white px-8 py-3 rounded-full tracking-widest uppercase font-bold bg-transparent hover:bg-[#616467] hover:text-white transition duration-200" 
 									onClick={handleOrganize}
 								>
 									Organize a Tournament
-								</button>
-								<h2 className="text-2xl font-semibold px-8 py-3 border-2 border-white/20 rounded-full bg-black/20 backdrop-blur-sm">
+								</motion.button>
+								<motion.h2 
+									variants={itemVariants}
+									className="text-2xl font-semibold px-8 py-3 border-2 border-white/20 rounded-full bg-black/20 backdrop-blur-sm"
+								>
 									Popular Tournaments
-								</h2>
-							</div>
+								</motion.h2>
+							</motion.div>
 
 							{/* Tournament Cards Grid */}
-							<div className="w-full">
+							<motion.div 
+								variants={containerVariants}
+								initial="hidden"
+								animate="show"
+								className="w-full"
+							>
 								<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-									{tournaments?.map((tournament) => (
-										<TournamentCard
+									{tournaments?.map((tournament, index) => (
+										<motion.div
 											key={`${tournament.tournament_id}_popular`}
-											tournament={tournament}
-											pinned={pinned.find(
-												(tour) => tour === tournament.tournament_id,
-											)}
-										/>
+											variants={itemVariants}
+											whileHover={{ scale: 1.02 }}
+											transition={{ type: "spring", stiffness: 300 }}
+										>
+											<TournamentCard
+												tournament={tournament}
+												pinned={pinned.find(
+													(tour) => tour === tournament.tournament_id,
+												)}
+											/>
+										</motion.div>
 									))}
 								</div>
-							</div>
+							</motion.div>
 						</div>
 					</BackgroundStars>
 				</div>

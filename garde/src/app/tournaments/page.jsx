@@ -10,6 +10,10 @@ import checkAuth from "../hooks/jwt_verify";
 import RestrictedAlert from "@/src/components/ui/RestrictedAlert";
 import Loader from "@/src/components/ui/Loader";
 import renewSession from "@/src/app/hooks/renew_session";
+import { Trophy, LogIn, LogOut } from "lucide-react";
+import { TextGenerateEffect } from "@/src/components/ui/TextGenerateEffect";
+
+const words = "Fencing Tournaments Powered by Garde";
 
 function Navbar({ setLoggedIn, loggedIn }) {
 	const [menuOpen, setMenuOpen] = useState(false);
@@ -33,51 +37,64 @@ function Navbar({ setLoggedIn, loggedIn }) {
 	};
 
 	return (
-		<nav className="relative flex items-center justify-between bg-gray-900 text-white p-4 shadow-md">
+		<nav className="relative flex items-center justify-between backdrop-blur-sm bg-black/10 text-white p-4 border-b border-white/10">
 			{/* Back Button */}
 			<Link href="/" className="cursor-pointer">
 				<button
 					type="button"
-					className="bg-white text-black py-2 px-3 rounded text-base font-semibold hover:bg-gray-300 transition-transform duration-200 hover:scale-110 active:scale-100"
-					title="Go Back"
+						className="bg-red-600 text-black py-2 px-3 rounded text-base font-extrabold hover:bg-red-500 transition-transform duration-200"
+						title="Go Back"
 				>
-					&#8592;
+					X
 				</button>
 			</Link>
 
-			{/* Title */}
-			<h1 className="text-2xl sm:text-xl md:text-3xl absolute left-1/2 transform -translate-x-1/2 font-bold">
-				Tournaments
-			</h1>
+			{/* Replace static title with TextGenerateEffect */}
+			<TextGenerateEffect 
+				duration={2} 
+				filter={false} 
+				words={words} 
+				className="text-2xl sm:text-base md:text-3xl absolute left-1/2 transform -translate-x-1/2 font-bold mb-4"
+			/>
 
 			{/* Menu Section */}
 			<div className="ml-auto flex items-center gap-4">
 				{/* Desktop Menu */}
-				<div className="hidden md:flex gap-4">
+				<div className="hidden md:flex items-center gap-6">
 					<button
 						type="button"
-						className="hover:text-blue-500"
+						className="flex items-center gap-2 hover:text-blue-500 transition-colors duration-200"
 						onClick={handleMyTournamentClick}
 					>
-						My Tournaments
+						<Trophy className="w-5 h-5" />
+						<span>My Tournaments</span>
 					</button>
 					<button
 						type="button"
-						className="hover:text-blue-500"
+						className="flex items-center gap-2 hover:text-blue-500 transition-colors duration-200"
 						onClick={handleAuth}
 					>
-						{loggedIn ? "Logout" : "Signin"}
+						{loggedIn ? (
+							<>
+								<LogOut className="w-5 h-5" />
+								<span>Logout</span>
+							</>
+						) : (
+							<>
+								<LogIn className="w-5 h-5" />
+								<span>Sign-In/Sign-Up</span>
+							</>
+						)}
 					</button>
 				</div>
 
-				{/* Mobile Hamburger Menu */}
+				{/* Mobile Menu Button */}
 				<div className="md:hidden">
 					<button
 						type="button"
-						className="p-2 rounded focus:outline-none hover:bg-gray-700"
+						className="p-2 rounded-full hover:bg-white/10 transition-colors duration-200"
 						onClick={() => setMenuOpen((prev) => !prev)}
 					>
-						{/* Hamburger Icon */}
 						<div className="space-y-1">
 							<div className="w-6 h-1 bg-white" />
 							<div className="w-6 h-1 bg-white" />
@@ -87,21 +104,33 @@ function Navbar({ setLoggedIn, loggedIn }) {
 				</div>
 			</div>
 
+			{/* Mobile Menu Dropdown */}
 			{menuOpen && (
-				<div className="absolute top-full right-0 w-full bg-gray-800 p-4 md:hidden z-50">
+				<div className="absolute top-full right-0 w-48 bg-gray-800/95 backdrop-blur-sm p-4 rounded-lg shadow-lg md:hidden z-50 mt-2">
 					<button
 						type="button"
-						className="block w-full text-left text-white hover:text-blue-500 mb-2"
+						className="flex items-center gap-2 w-full text-left text-white hover:text-blue-500 mb-4 transition-colors duration-200"
 						onClick={handleMyTournamentClick}
 					>
-						My Tournaments
+						<Trophy className="w-5 h-5" />
+						<span>My Tournaments</span>
 					</button>
 					<button
 						type="button"
-						className="block w-full text-left text-white hover:text-blue-500"
+						className="flex items-center gap-2 w-full text-left text-white hover:text-blue-500 transition-colors duration-200"
 						onClick={handleAuth}
 					>
-						{loggedIn ? "Logout" : "Signin"}
+						{loggedIn ? (
+							<>
+								<LogOut className="w-5 h-5" />
+								<span>Logout</span>
+							</>
+						) : (
+							<>
+								<LogIn className="w-5 h-5" />
+								<span>Sign-In/Sign-Up</span>
+							</>
+						)}
 					</button>
 				</div>
 			)}

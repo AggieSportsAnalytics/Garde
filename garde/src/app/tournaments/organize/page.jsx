@@ -16,6 +16,7 @@ export default function OrganizeTournament() {
 		name: "",
 		description: "",
 		category: "",
+		tournament_ranking: "",
 		prize_pool: "",
 		organizer_name: "",
 		organizer_email: "",
@@ -30,6 +31,7 @@ export default function OrganizeTournament() {
 		is_team_based: false,
 		rules: "",
 		signup_deadline: "",
+
 	});
 
 	useEffect(() => {

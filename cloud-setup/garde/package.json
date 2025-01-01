@@ -1,5 +1,8 @@
 {
   "dependencies": {
     "jose": "^5.9.6"
+  },
+  "devDependencies": {
+    "wrangler": "^3.87"
   }
 }

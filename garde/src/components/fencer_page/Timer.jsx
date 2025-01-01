@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
+import { playTextToSpeech } from '../../utils/tts';
 
 const Timer = ({
 	onTimerStart,
@@ -16,37 +17,14 @@ const Timer = ({
 	const [time, setTime] = useState(initialTime ? initialTime * 1000 : 0);
 	const [countdown, setCountdown] = useState(3);
 	const [isCountingDown, setIsCountingDown] = useState(false);
-	const [speechSynthesis, setSpeechSynthesis] = useState(null);
 
-	useEffect(() => {
-		if (typeof window !== "undefined" && window.speechSynthesis) {
-			setSpeechSynthesis(window.speechSynthesis);
+	const speak = useCallback(async (text) => {
+		try {
+			await playTextToSpeech(text);
+		} catch (error) {
+			console.error("Error speaking:", error);
 		}
 	}, []);
-
-	const speak = useCallback(
-		(text) => {
-			if (!speechSynthesis) {
-				console.error("Speech synthesis not available");
-				return;
-			}
-
-			// Cancel any ongoing speech
-			speechSynthesis.cancel();
-
-			const utterance = new SpeechSynthesisUtterance(text);
-			utterance.onstart = () => {};
-			utterance.onend = () => {};
-			utterance.onerror = (event) => console.error("Speech error:", event);
-
-			try {
-				speechSynthesis.speak(utterance);
-			} catch (error) {
-				console.error("Error speaking:", error);
-			}
-		},
-		[speechSynthesis],
-	);
 
 	useEffect(() => {
 		let interval = null;
@@ -61,7 +39,7 @@ const Timer = ({
 						if (instructionIndex < instructions.length - 1) {
 							setInstructionIndex(instructionIndex + 1);
 							speak(
-								`${instructions[instructionIndex + 1].name} for ${instructions[instructionIndex + 1].time} seconds`,
+								`${instructions[instructionIndex + 1].name} for ${instructions[instructionIndex + 1].time} seconds. 3, 2, 1`,
 							);
 							return instructions[instructionIndex + 1].time * 1000;
 						} else {
@@ -75,18 +53,14 @@ const Timer = ({
 		} else if (isCountingDown) {
 			interval = setInterval(() => {
 				setCountdown((prevCount) => {
-					if (prevCount > 1) {
-						speak(prevCount.toString());
-						return prevCount - 1;
-					} else if (prevCount === 1) {
-						speak("1");
-						setTimeout(() => {
-							setIsCountingDown(false);
-							speak("Go");
-							setIsRunning(true);
-							setTime(instructions[instructionIndex].time * 1000);
-						}, 1000);
+					if (prevCount === 1) {
+						setIsCountingDown(false);
+						speak("Go");
+						setIsRunning(true);
+						setTime(instructions[instructionIndex].time * 1000);
 						return 0;
+					} else if (prevCount > 0) {
+						return prevCount - 1;
 					} else {
 						return 3;
 					}
@@ -113,12 +87,12 @@ const Timer = ({
 		if (!isRunning && !isStartDisabled && instructions.length > 0) {
 			setInstructionIndex(0);
 			const firstInstruction = instructions[0];
-			speak(`${firstInstruction.name} for ${firstInstruction.time} seconds`);
+			speak(`${firstInstruction.name} for ${firstInstruction.time} seconds. 3, 2, 1`);
 
+			// Start the visual countdown after the instruction is spoken
 			setTimeout(() => {
 				setIsCountingDown(true);
-				speak("Starting in 3, 2, 1");
-			}, 2000); // Wait for 2 seconds after speaking the instruction before starting the countdown
+			}, 2000);
 
 			onTimerStart();
 		}

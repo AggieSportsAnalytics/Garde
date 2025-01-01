@@ -7,7 +7,6 @@ import Link from "next/link";
 import Timer from "../../components/fencer_page/Timer";
 import dynamic from "next/dynamic";
 import Instruction from "../../components/fencer_page/Instruction";
-import { useSpeechSynthesis } from "react-speech-kit";
 import { FaSun, FaMoon, FaVolumeMute, FaVolumeUp, FaCog } from "react-icons/fa";
 import { FiX } from "react-icons/fi";
 import HeightInputModal from "../../components/fencer_page/HeightInputModal";
@@ -22,6 +21,7 @@ import AddFencer from "../../components/fencer_page/AddFencer";
 import Logout from "../../components/auth/Logout.jsx";
 import Modal from "react-modal";
 import HeightInput from "../../components/fencer_page/HeightChange";
+import { playTextToSpeech } from '../../utils/tts';
 const Fencer_Canvas = dynamic(
 	() => import("../../components/fencer_page/Fencer_Canvas"),
 	{ ssr: false },
@@ -46,7 +46,6 @@ export default function Fencer_Page2() {
 	const [pose, setPose] = useState(null);
 	const [instructionIndex, setInstructionIndex] = useState(-1);
 	const [isStartDisabled, setIsStartDisabled] = useState(false);
-	const [hasSpoken, setHasSpoken] = useState(false);
 	const [poseResult, setPoseResult] = useState("");
 	const [countdown, setCountdown] = useState(3);
 	const [hasStarted, setHasStarted] = useState(false);
@@ -55,11 +54,8 @@ export default function Fencer_Page2() {
 	const [preInstructionCountdown, setPreInstructionCountdown] = useState(3);
 	const [showPreInstructionCountdown, setShowPreInstructionCountdown] =
 		useState(false);
-	const [isInstructionBeingSaid, setIsInstructionBeingSaid] = useState(false);
 	const [height, setHeight] = useState(null);
 	const [isHeightModalOpen, setIsHeightModalOpen] = useState(false);
-	const { speak, voices } = useSpeechSynthesis();
-	const [voice, setVoice] = useState(null);
 	const [instructions, setInstructions] = useState([]);
 	const [isRunning, setIsRunning] = useState(false);
 	const [videoInput, setVideoInput] = useState(false);
@@ -280,12 +276,6 @@ export default function Fencer_Page2() {
 		fetchAuthData();
 	}, []);
 
-	useEffect(() => {
-		if (voices.length > 0 && !voice) {
-			setVoice(voices[18]);
-		}
-	}, [voices, voice]);
-
 	const handleHeightSave = useCallback((heightInMeters) => {
 		setHeight(heightInMeters);
 		setIsHeightModalOpen(false);
@@ -305,8 +295,7 @@ export default function Fencer_Page2() {
 					return prevCountdown - 1;
 				} else {
 					clearInterval(interval);
-					setCountdownFinished(true);
-					setFeedbackEnabled(true); // Enable feedback after countdown
+					setCountdownFinished(true); // Enable feedback after countdown
 					return 0;
 				}
 			});
@@ -332,7 +321,6 @@ export default function Fencer_Page2() {
 	const handleReset = useCallback(() => {
 		setInstructionIndex(-1);
 		setIsStartDisabled(false);
-		setHasSpoken(false);
 		setPoseResult("");
 		setResetTimer(true);
 		setPreInstructionCountdown(3);
@@ -362,37 +350,13 @@ export default function Fencer_Page2() {
 	useEffect(() => {
 		if (
 			instructionIndex >= 0 &&
-			instructionIndex < instructions.length &&
-			!hasSpoken &&
-			!isInstructionBeingSaid
+			instructionIndex < instructions.length
 		) {
-			setHasSpoken(true);
-			setIsInstructionBeingSaid(true);
-			speak({
-				text: `${instructions[instructionIndex].name} Starting in 3, 2, 1`,
-				voice: voice,
-				rate: 1,
-				pitch: 1,
-				lang: "en-US",
-				onend: () => {
-					setShowPreInstructionCountdown(false);
-					setHasSpoken(false);
-					setIsInstructionBeingSaid(false);
-					startPreInstructionCountdown();
-				},
-			});
 			setShowPreInstructionCountdown(true);
 			setResetTimer(true);
+			startPreInstructionCountdown();
 		}
-	}, [
-		instructionIndex,
-		voice,
-		speak,
-		hasSpoken,
-		instructions,
-		isInstructionBeingSaid,
-		startPreInstructionCountdown,
-	]);
+	}, [instructionIndex, instructions, startPreInstructionCountdown]);
 
 	useEffect(() => {
 		if (!isTimerRunning) {
@@ -406,8 +370,8 @@ export default function Fencer_Page2() {
 	};
 
 	const handlePoseSequenceDetected = useCallback(
-		(poseDataArray) => {
-			if (!isRoutineStarted) return; // Add this line to check if routine has started
+		async (poseDataArray) => {
+			if (!isRoutineStarted) return;
 
 			const feedbackMessages = {
 				advance: [],
@@ -598,21 +562,14 @@ export default function Fencer_Page2() {
 				if (feedbackMessage && !isFeedbackMuted) {
 					const now = Date.now();
 					if (now - lastSpokenFeedbackTime >= 10000) {
-						// Ensure at least 10 seconds between feedback
 						setFeedback([feedbackMessage]);
-						speak({
-							text: feedbackMessage,
-							voice: voice,
-							rate: 1.2,
-							pitch: 1.1,
-							lang: "en-US",
-						});
+						await playTextToSpeech(feedbackMessage);
 						setLastSpokenFeedbackTime(now);
 					}
 				}
 			}
 		},
-		[speak, voice, lastSpokenFeedbackTime, isFeedbackMuted, isRoutineStarted], // Add isRoutineStarted to dependency array
+		[lastSpokenFeedbackTime, isFeedbackMuted, isRoutineStarted]
 	);
 
 	const toggleFeedbackMute = () => {

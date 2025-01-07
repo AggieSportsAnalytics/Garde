@@ -10,7 +10,8 @@ import checkAuth from "../hooks/jwt_verify";
 import RestrictedAlert from "@/src/components/ui/RestrictedAlert";
 import Loader from "@/src/components/ui/Loader";
 import renewSession from "@/src/app/hooks/renew_session";
-import { Trophy, LogIn, LogOut } from "lucide-react";
+import { FaTrophy } from "react-icons/fa";
+import { BiLogIn, BiLogOut } from "react-icons/bi";
 import { TextGenerateEffect } from "@/src/components/ui/TextGenerateEffect";
 import { BackgroundStars } from "@/src/components/ui/background-stars";
 import { motion } from "framer-motion";
@@ -40,7 +41,7 @@ function Navbar({ setLoggedIn, loggedIn }) {
 	};
 
 	return (
-		<motion.nav 
+		<motion.nav
 			initial={{ y: -100 }}
 			animate={{ y: 0 }}
 			transition={{ type: "spring", stiffness: 100 }}
@@ -65,59 +66,59 @@ function Navbar({ setLoggedIn, loggedIn }) {
 			</motion.div>
 
 			{/* Title - Updated for better mobile display */}
-			<TextGenerateEffect 
-				duration={2} 
-				filter={false} 
-				words={words} 
+			<TextGenerateEffect
+				duration={2}
+				filter={false}
+				words={words}
 				className="text-lg sm:text-xl md:text-2xl lg:text-3xl absolute left-[25%] transform translate-x-1/5 font-bold mb-4 whitespace-nowrap hidden sm:block"
 			/>
 			{/* Mobile Title */}
-			<TextGenerateEffect 
-				duration={2} 
-				filter={false} 
-				words="Garde Tournaments" 
+			<TextGenerateEffect
+				duration={2}
+				filter={false}
+				words="Garde Tournaments"
 				className="text-lg font-bold mb-4 whitespace-nowrap sm:hidden absolute left-1/2 -translate-x-1/2"
 			/>
 
 			{/* Menu Section */}
-			<motion.div 
+			<motion.div
 				initial={{ x: 20, opacity: 0 }}
 				animate={{ x: 0, opacity: 1 }}
 				transition={{ delay: 0.2 }}
 				className="ml-auto flex items-center gap-4"
 			>
-
 				{/* Desktop Menu */}
 				<div className="hidden md:flex items-center gap-6">
-					<button className="bg-slate-800 no-underline group cursor-pointer relative shadow-2xl shadow-zinc-900 rounded-full p-px text-xs font-semibold leading-6  text-white inline-block" onClick={handleMyTournamentClick}>
+					<button
+						className="bg-slate-800 no-underline group cursor-pointer relative shadow-2xl shadow-zinc-900 rounded-full p-px text-xs font-semibold leading-6  text-white inline-block"
+						onClick={handleMyTournamentClick}
+					>
 						<span className="absolute inset-0 overflow-hidden rounded-full">
-    						<span className="absolute inset-0 rounded-full bg-[image:radial-gradient(75%_100%_at_50%_0%,rgba(56,189,248,0.6)_0%,rgba(56,189,248,0)_75%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
-  						</span>
-  						<div className="relative flex space-x-2 items-center z-10 rounded-full bg-zinc-950 py-0.5 px-4 ring-1 ring-white/10 ">
-						  	<Trophy className="w-5 h-5" />
-							<span>
-      							My Tournaments
-    						</span>
-    						<svg
-      							fill="none"
-      							height="16"
-      							viewBox="0 0 24 24"
-      							width="16"
-      							xmlns="http://www.w3.org/2000/svg"
-    						>
-      							<path
-        							d="M10.75 8.75L14.25 12L10.75 15.25"
-        							stroke="currentColor"
-        							strokeLinecap="round"
-        							strokeLinejoin="round"
-        							strokeWidth="1.5"
-      							/>
-    						</svg>
-  						</div>
-  					 <span className="absolute -bottom-0 left-[1.125rem] h-px w-[calc(100%-2.25rem)] bg-gradient-to-r from-emerald-400/0 via-emerald-400/90 to-emerald-400/0 transition-opacity duration-500 group-hover:opacity-40" />
+							<span className="absolute inset-0 rounded-full bg-[image:radial-gradient(75%_100%_at_50%_0%,rgba(56,189,248,0.6)_0%,rgba(56,189,248,0)_75%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+						</span>
+						<div className="relative flex space-x-2 items-center z-10 rounded-full bg-zinc-950 py-0.5 px-4 ring-1 ring-white/10 ">
+							<FaTrophy size={20} />
+							<span>My Tournaments</span>
+							<svg
+								fill="none"
+								height="16"
+								viewBox="0 0 24 24"
+								width="16"
+								xmlns="http://www.w3.org/2000/svg"
+							>
+								<path
+									d="M10.75 8.75L14.25 12L10.75 15.25"
+									stroke="currentColor"
+									strokeLinecap="round"
+									strokeLinejoin="round"
+									strokeWidth="1.5"
+								/>
+							</svg>
+						</div>
+						<span className="absolute -bottom-0 left-[1.125rem] h-px w-[calc(100%-2.25rem)] bg-gradient-to-r from-emerald-400/0 via-emerald-400/90 to-emerald-400/0 transition-opacity duration-500 group-hover:opacity-40" />
 					</button>
-					<button 
-						className="bg-slate-800 no-underline group cursor-pointer relative shadow-2xl shadow-zinc-900 rounded-full p-px text-xs font-semibold leading-6 text-white inline-block" 
+					<button
+						className="bg-slate-800 no-underline group cursor-pointer relative shadow-2xl shadow-zinc-900 rounded-full p-px text-xs font-semibold leading-6 text-white inline-block"
 						onClick={handleAuth}
 					>
 						<span className="absolute inset-0 overflow-hidden rounded-full">
@@ -126,12 +127,12 @@ function Navbar({ setLoggedIn, loggedIn }) {
 						<div className="relative flex space-x-2 items-center z-10 rounded-full bg-zinc-950 py-0.5 px-4 ring-1 ring-white/10">
 							{loggedIn ? (
 								<>
-									<LogOut className="w-5 h-5" />
+									<BiLogOut size={20} />
 									<span>Logout</span>
 								</>
 							) : (
 								<>
-									<LogIn className="w-5 h-5" />
+									<BiLogIn size={20} />
 									<span>Sign-In/Sign-Up</span>
 								</>
 							)}
@@ -187,7 +188,7 @@ function Navbar({ setLoggedIn, loggedIn }) {
 							<span className="absolute inset-0 rounded-full bg-[image:radial-gradient(75%_100%_at_50%_0%,rgba(56,189,248,0.6)_0%,rgba(56,189,248,0)_75%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
 						</span>
 						<div className="relative flex space-x-2 items-center z-10 rounded-full bg-zinc-950 py-0.5 px-4 ring-1 ring-white/10">
-							<Trophy className="w-5 h-5" />
+							<FaTrophy size={20} />
 							<span>My Tournaments</span>
 							<svg
 								fill="none"
@@ -217,12 +218,12 @@ function Navbar({ setLoggedIn, loggedIn }) {
 						<div className="relative flex space-x-2 items-center z-10 rounded-full bg-zinc-950 py-0.5 px-4 ring-1 ring-white/10">
 							{loggedIn ? (
 								<>
-									<LogOut className="w-5 h-5" />
+									<BiLogOut size={20} />
 									<span>Logout</span>
 								</>
 							) : (
 								<>
-									<LogIn className="w-5 h-5" />
+									<BiLogIn size={20} />
 									<span>Sign-In/Sign-Up</span>
 								</>
 							)}
@@ -326,14 +327,14 @@ function Tournaments() {
 			opacity: 1,
 			transition: {
 				staggerChildren: 0.1,
-				delayChildren: 0.3
-			}
-		}
+				delayChildren: 0.3,
+			},
+		},
 	};
 
 	const itemVariants = {
 		hidden: { opacity: 0, y: 20 },
-		show: { opacity: 1, y: 0 }
+		show: { opacity: 1, y: 0 },
 	};
 
 	return (
@@ -341,9 +342,9 @@ function Tournaments() {
 			<Loader loading={loading} />
 			<div className="bg-black text-white min-h-screen flex flex-col justify-start">
 				<Navbar setLoggedIn={setLoggedIn} loggedIn={loggedIn} />
-				
+
 				{/* Sparkles Section - Adjusted height for mobile */}
-				<motion.div 
+				<motion.div
 					initial={{ opacity: 0 }}
 					animate={{ opacity: 1 }}
 					transition={{ duration: 0.8 }}
@@ -351,29 +352,29 @@ function Tournaments() {
 				>
 					<div className="w-full h-24 sm:h-40 relative">
 						{/* Gradients - Centered with animations */}
-						<motion.div 
+						<motion.div
 							initial={{ opacity: 0, width: "0%" }}
 							animate={{ opacity: 1, width: "80%" }}
 							transition={{ duration: 1, delay: 0.2, ease: "easeOut" }}
-							className="absolute left-1/2 -translate-x-1/2 top-0 bg-gradient-to-r from-transparent via-indigo-500 to-transparent h-[2px] blur-sm" 
+							className="absolute left-1/2 -translate-x-1/2 top-0 bg-gradient-to-r from-transparent via-indigo-500 to-transparent h-[2px] blur-sm"
 						/>
-						<motion.div 
+						<motion.div
 							initial={{ opacity: 0, width: "0%" }}
 							animate={{ opacity: 1, width: "80%" }}
 							transition={{ duration: 1, delay: 0.3, ease: "easeOut" }}
-							className="absolute left-1/2 -translate-x-1/2 top-0 bg-gradient-to-r from-transparent via-indigo-500 to-transparent h-px" 
+							className="absolute left-1/2 -translate-x-1/2 top-0 bg-gradient-to-r from-transparent via-indigo-500 to-transparent h-px"
 						/>
-						<motion.div 
+						<motion.div
 							initial={{ opacity: 0, width: "0%" }}
 							animate={{ opacity: 1, width: "60%" }}
 							transition={{ duration: 1, delay: 0.4, ease: "easeOut" }}
-							className="absolute left-1/2 -translate-x-1/2 top-0 bg-gradient-to-r from-transparent via-sky-500 to-transparent h-[5px] blur-sm" 
+							className="absolute left-1/2 -translate-x-1/2 top-0 bg-gradient-to-r from-transparent via-sky-500 to-transparent h-[5px] blur-sm"
 						/>
-						<motion.div 
+						<motion.div
 							initial={{ opacity: 0, width: "0%" }}
 							animate={{ opacity: 1, width: "60%" }}
 							transition={{ duration: 1, delay: 0.5, ease: "easeOut" }}
-							className="absolute left-1/2 -translate-x-1/2 top-0 bg-gradient-to-r from-transparent via-sky-500 to-transparent h-px" 
+							className="absolute left-1/2 -translate-x-1/2 top-0 bg-gradient-to-r from-transparent via-sky-500 to-transparent h-px"
 						/>
 
 						{/* Core component with animation */}
@@ -393,7 +394,7 @@ function Tournaments() {
 						</motion.div>
 
 						{/* Radial Gradient - Centered mask with animation */}
-						<motion.div 
+						<motion.div
 							initial={{ opacity: 0 }}
 							animate={{ opacity: 1 }}
 							transition={{ duration: 1, delay: 0.7 }}
@@ -406,22 +407,22 @@ function Tournaments() {
 					<BackgroundStars className="absolute inset-0">
 						<div className="relative z-10 p-3 sm:p-6 max-w-7xl mx-auto">
 							{/* Header Section with Buttons - Improved mobile layout */}
-							<motion.div 
+							<motion.div
 								variants={containerVariants}
 								initial="hidden"
 								animate="show"
 								className="flex flex-col sm:flex-row justify-start items-center gap-4 sm:gap-6 mb-8 sm:mb-12 mt-2 sm:mt-4"
 							>
-								<motion.button 
+								<motion.button
 									variants={itemVariants}
 									whileHover={{ scale: 1.05 }}
 									whileTap={{ scale: 0.95 }}
-									className="w-full sm:w-auto shadow-[inset_0_0_0_2px_#616467] text-white px-4 sm:px-8 py-2 sm:py-3 rounded-full tracking-widest uppercase text-sm sm:text-base font-bold bg-transparent hover:bg-[#616467] hover:text-white transition duration-200" 
+									className="w-full sm:w-auto shadow-[inset_0_0_0_2px_#616467] text-white px-4 sm:px-8 py-2 sm:py-3 rounded-full tracking-widest uppercase text-sm sm:text-base font-bold bg-transparent hover:bg-[#616467] hover:text-white transition duration-200"
 									onClick={handleOrganize}
 								>
 									Organize a Tournament
 								</motion.button>
-								<motion.h2 
+								<motion.h2
 									variants={itemVariants}
 									className="text-xl sm:text-2xl font-semibold px-4 sm:px-8 py-2 sm:py-3 border-2 border-white/20 rounded-full bg-black/20 backdrop-blur-sm"
 								>
@@ -430,7 +431,7 @@ function Tournaments() {
 							</motion.div>
 
 							{/* Tournament Cards Grid - Improved responsive grid */}
-							<motion.div 
+							<motion.div
 								variants={containerVariants}
 								initial="hidden"
 								animate="show"

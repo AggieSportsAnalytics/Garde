@@ -81,7 +81,9 @@ const Videos = ({
 						setPinned(JSON.parse(pin));
 					}
 					setVideos(
-						vids.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp)),
+						vids
+							.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp))
+							.map((video, index) => ({ ...video, index })),
 					);
 				} else {
 					setVideos([]);
@@ -248,87 +250,94 @@ const Videos = ({
 										: "flex flex-col"
 								} gap-4 max-h-96 overflow-y-auto`}
 							>
-								{videos.map((video, i) => (
-									<div
-										key={video.key}
-										onClick={() => handleVideoClick(i, video.key)}
-										className="cursor-pointer focus:outline-none pb-4"
-									>
+								{videos
+									?.slice()
+									.sort((a, b) => {
+										const isPinnedA = pinned.includes(a.key) ? 1 : 0;
+										const isPinnedB = pinned.includes(b.key) ? 1 : 0;
+										return isPinnedB - isPinnedA;
+									})
+									.map((video) => (
 										<div
-											className={`video-thumbnail border border-gray-300 p-2 rounded-lg shadow-lg bg-gray-800 hover:bg-gray-700 transition duration-200 ease-in-out ${
-												!isGridLayout ? "flex items-center gap-4" : ""
-											}`}
+											key={video.key}
+											onClick={() => handleVideoClick(video.index, video.key)}
+											className="cursor-pointer focus:outline-none pb-4"
 										>
-											<VideoSource
-												videoUrl={`${bucketUrl}/${fencer.fencer_id}/${video.key}/playlist.m3u8`}
-												thumbnail={video.thumbnail}
-												isGridLayout={isGridLayout}
-											/>
-											<div className="md:hidden">
-												{pinned.find((vid) => vid === video.key) ? (
-													<p className="mt-2 text-sm font-medium text-white text-center">
-														Video {i + 1}{" "}
-														<FaBookmark className="inline-block text-yellow-400" />
-													</p>
-												) : (
-													<p className="mt-2 text-sm font-medium text-white text-center">
-														Video {i + 1}
-													</p>
-												)}
-
-												<p className="text-xs text-gray-400 text-center">
-													{new Date(video.timestamp).toLocaleString()}{" "}
-												</p>
-											</div>
 											<div
-												className={
-													!isGridLayout
-														? "hidden md:flex flex-col"
-														: "hidden md:block"
-												}
+												className={`video-thumbnail border border-gray-300 p-2 rounded-lg shadow-lg bg-gray-800 hover:bg-gray-700 transition duration-200 ease-in-out ${
+													!isGridLayout ? "flex items-center gap-4" : ""
+												}`}
 											>
-												{pinned.find((vid) => vid === video.key) ? (
-													<p className="mt-2 text-sm font-medium text-white text-center">
-														Video {i + 1}{" "}
-														<FaBookmark className="inline-block text-yellow-400" />
-													</p>
-												) : (
-													<p className="mt-2 text-sm font-medium text-white text-center">
-														Video {i + 1}
-													</p>
-												)}
+												<VideoSource
+													videoUrl={`${bucketUrl}/${fencer.fencer_id}/${video.key}/playlist.m3u8`}
+													thumbnail={video.thumbnail}
+													isGridLayout={isGridLayout}
+												/>
+												<div className="md:hidden">
+													{pinned.find((vid) => vid === video.key) ? (
+														<p className="mt-2 text-sm font-medium text-white text-center">
+															Video {video.index + 1}{" "}
+															<FaBookmark className="inline-block text-yellow-400" />
+														</p>
+													) : (
+														<p className="mt-2 text-sm font-medium text-white text-center">
+															Video {video.index + 1}
+														</p>
+													)}
 
-												<p className="text-xs text-gray-400 text-center">
-													{new Date(video.timestamp).toLocaleString()}{" "}
-												</p>
+													<p className="text-xs text-gray-400 text-center">
+														{new Date(video.timestamp).toLocaleString()}{" "}
+													</p>
+												</div>
+												<div
+													className={
+														!isGridLayout
+															? "hidden md:flex flex-col"
+															: "hidden md:block"
+													}
+												>
+													{pinned.find((vid) => vid === video.key) ? (
+														<p className="mt-2 text-sm font-medium text-white text-center">
+															Video {video.index + 1}{" "}
+															<FaBookmark className="inline-block text-yellow-400" />
+														</p>
+													) : (
+														<p className="mt-2 text-sm font-medium text-white text-center">
+															Video {video.index + 1}
+														</p>
+													)}
 
-												<div className="md:flex flex-col items-center mt-2 gap-1 hidden">
-													<button
-														type="button"
-														onClick={(e) => {
-															e.stopPropagation();
-															handleDownload(
-																`${bucketUrl}/${fencer.fencer_id}/${video.key}/full_video.webm`,
-																`Video_${i + 1}.webm`,
-															);
-														}}
-														className="inline-flex items-center text-blue-500 hover:underline text-sm"
-													>
-														<FiDownload size={16} /> Download
-													</button>
-													<CopyButton
-														text={`${bucketUrl}/${fencer.fencer_id}/${currentVideo}/full_video.webm`}
-														before="Share"
-														after="Copied!"
-														BeforeIcon={FiShare2}
-														size={16}
-														style="inline-flex items-center text-blue-500 hover:underline text-sm text-center gap-1"
-													/>
+													<p className="text-xs text-gray-400 text-center">
+														{new Date(video.timestamp).toLocaleString()}{" "}
+													</p>
+
+													<div className="md:flex flex-col items-center mt-2 gap-1 hidden">
+														<button
+															type="button"
+															onClick={(e) => {
+																e.stopPropagation();
+																handleDownload(
+																	`${bucketUrl}/${fencer.fencer_id}/${video.key}/full_video.webm`,
+																	`Video_${video.index + 1}.webm`,
+																);
+															}}
+															className="inline-flex items-center text-blue-500 hover:underline text-sm"
+														>
+															<FiDownload size={16} /> Download
+														</button>
+														<CopyButton
+															text={`${bucketUrl}/${fencer.fencer_id}/${currentVideo}/full_video.webm`}
+															before="Share"
+															after="Copied!"
+															BeforeIcon={FiShare2}
+															size={16}
+															style="inline-flex items-center text-blue-500 hover:underline text-sm text-center gap-1"
+														/>
+													</div>
 												</div>
 											</div>
 										</div>
-									</div>
-								))}
+									))}
 							</div>
 						</>
 					)}

@@ -17,8 +17,6 @@ import { BackgroundStars } from "@/src/components/ui/background-stars";
 import { motion } from "framer-motion";
 import { SparklesCore } from "@/src/components/ui/sparkles";
 
-const words = "Fencing Tournaments Powered by Garde";
-
 function Navbar({ setLoggedIn, loggedIn }) {
 	const [menuOpen, setMenuOpen] = useState(false);
 	const router = useRouter();
@@ -65,20 +63,15 @@ function Navbar({ setLoggedIn, loggedIn }) {
 				</Link>
 			</motion.div>
 
-			{/* Title - Updated for better mobile display */}
 			<TextGenerateEffect
 				duration={2}
 				filter={false}
-				words={words}
-				className="text-lg sm:text-xl md:text-2xl lg:text-3xl absolute left-[25%] transform translate-x-1/5 font-bold mb-4 whitespace-nowrap hidden sm:block"
+				words="Tournaments"
+				className="hidden md:block text-lg md:text-2xl lg:text-3xl absolute left-1/2 -translate-x-1/2 font-bold mb-4 whitespace-nowrap"
 			/>
-			{/* Mobile Title */}
-			<TextGenerateEffect
-				duration={2}
-				filter={false}
-				words="Garde Tournaments"
-				className="text-lg font-bold mb-4 whitespace-nowrap sm:hidden absolute left-1/2 -translate-x-1/2"
-			/>
+			<div className="text-white md:hidden text-2xl absolute left-1/2 -translate-x-1/2 font-bold mb-4 whitespace-nowrap">
+				Tournaments
+			</div>
 
 			{/* Menu Section */}
 			<motion.div
@@ -171,7 +164,6 @@ function Navbar({ setLoggedIn, loggedIn }) {
 					</button>
 				</div>
 			</motion.div>
-
 			{/* Mobile Menu Dropdown */}
 			{menuOpen && (
 				<motion.div
@@ -405,7 +397,7 @@ function Tournaments() {
 
 				<div className="flex-1 relative">
 					<BackgroundStars className="absolute inset-0">
-						<div className="relative z-10 p-3 sm:p-6 max-w-7xl mx-auto">
+						<div className="relative z-0 p-3 sm:p-6 max-w-7xl mx-auto">
 							{/* Header Section with Buttons - Improved mobile layout */}
 							<motion.div
 								variants={containerVariants}
@@ -438,22 +430,33 @@ function Tournaments() {
 								className="w-full"
 							>
 								<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6">
-									{tournaments?.map((tournament, index) => (
-										<motion.div
-											key={`${tournament.tournament_id}_popular`}
-											variants={itemVariants}
-											whileHover={{ scale: 1.02 }}
-											transition={{ type: "spring", stiffness: 300 }}
-											className="w-full"
-										>
-											<TournamentCard
-												tournament={tournament}
-												pinned={pinned.find(
-													(tour) => tour === tournament.tournament_id,
-												)}
-											/>
-										</motion.div>
-									))}
+									{tournaments
+										?.slice()
+										.sort((a, b) => {
+											const isPinnedA = pinned.includes(a.tournament_id)
+												? 1
+												: 0;
+											const isPinnedB = pinned.includes(b.tournament_id)
+												? 1
+												: 0;
+											return isPinnedB - isPinnedA;
+										})
+										.map((tournament) => (
+											<motion.div
+												key={`${tournament.tournament_id}_popular`}
+												variants={itemVariants}
+												whileHover={{ scale: 1.02 }}
+												transition={{ type: "spring", stiffness: 300 }}
+												className="w-full"
+											>
+												<TournamentCard
+													tournament={tournament}
+													pinned={pinned.find(
+														(tour) => tour === tournament.tournament_id,
+													)}
+												/>
+											</motion.div>
+										))}
 								</div>
 							</motion.div>
 						</div>

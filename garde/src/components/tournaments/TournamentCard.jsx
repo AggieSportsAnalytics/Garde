@@ -12,8 +12,6 @@ function TournamentCard({ tournament, pinned }) {
 		router.push(`/tournaments/${tournament.tournament_id}`);
 	};
 
-	console.log(pinned);
-
 	return (
 		<button
 			type="button"

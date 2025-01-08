@@ -280,7 +280,7 @@ export default function TournamentPage({ params }) {
 							</button>
 						</Link>
 
-						<div className="absolute top-full mt-4 w-full text-center space-x-2">
+						<div className="absolute top-full mt-4 w-full text-center space-x-2 flex flex-nowrap">
 							<CopyButton
 								text={`${process.env.NEXT_PUBLIC_BASE_URL}/tournaments/${tournament_id}`}
 								style="inline-flex items-center text-blue-500 hover:underline text-sm gap-1"
@@ -300,7 +300,7 @@ export default function TournamentPage({ params }) {
 				</div>
 
 				{/* Main Content */}
-				<div className="grid grid-cols-1 md:grid-cols-2 gap-12 px-6">
+				<div className="grid grid-cols-1 md:grid-cols-2 gap-12 px-6 pt-3">
 					{/* Left Column */}
 					<div className="space-y-6">
 						<div className="flex items-center gap-3">

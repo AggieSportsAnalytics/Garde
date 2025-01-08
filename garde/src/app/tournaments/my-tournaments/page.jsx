@@ -97,15 +97,22 @@ export default function MyTournaments() {
 					</h2>
 					{oTournies?.length > 0 ? (
 						<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-							{oTournies?.map((tournament) => (
-								<TournamentCard
-									key={`${tournament.id}_organizing`}
-									tournament={tournament}
-									pinned={pinned.find(
-										(tour) => tour === tournament.tournament_id,
-									)}
-								/>
-							))}
+							{oTournies
+								?.slice()
+								.sort((a, b) => {
+									const isPinnedA = pinned.includes(a.tournament_id) ? 1 : 0;
+									const isPinnedB = pinned.includes(b.tournament_id) ? 1 : 0;
+									return isPinnedB - isPinnedA;
+								})
+								.map((tournament) => (
+									<TournamentCard
+										key={`${tournament.id}_organizing`}
+										tournament={tournament}
+										pinned={pinned.find(
+											(tour) => tour === tournament.tournament_id,
+										)}
+									/>
+								))}
 						</div>
 					) : (
 						<p className="text-gray-400">
@@ -121,15 +128,22 @@ export default function MyTournaments() {
 					</h2>
 					{pTournies?.length > 0 ? (
 						<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-							{pTournies?.map((tournament) => (
-								<TournamentCard
-									key={`${tournament.id}_participating`}
-									tournament={tournament}
-									pinned={pinned.find(
-										(tour) => tour === tournament.tournament_id,
-									)}
-								/>
-							))}
+							{pTournies
+								?.slice()
+								.sort((a, b) => {
+									const isPinnedA = pinned.includes(a.tournament_id) ? 1 : 0;
+									const isPinnedB = pinned.includes(b.tournament_id) ? 1 : 0;
+									return isPinnedB - isPinnedA;
+								})
+								.map((tournament) => (
+									<TournamentCard
+										key={`${tournament.id}_participating`}
+										tournament={tournament}
+										pinned={pinned.find(
+											(tour) => tour === tournament.tournament_id,
+										)}
+									/>
+								))}
 						</div>
 					) : (
 						<p className="text-gray-400">

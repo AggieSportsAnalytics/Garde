@@ -32,7 +32,7 @@ axiosInstance.interceptors.request.use(
 		}
 
 		config.headers.ApiKey = `Bearer ${process.env.NEXT_PUBLIC_API_KEY}`;
-		config.headers.Authorization = `Bearer ${cachedToken} ${process.env.NEXT_PUBLIC_API_KEY}`;
+		config.headers.Authorization = `Bearer ${cachedToken}`;
 
 		return config;
 	},

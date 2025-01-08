@@ -20,7 +20,11 @@ axiosInstance.interceptors.request.use(
 				}
 				const res = await response.json();
 
-				cachedToken = await res?.token;
+				cachedToken = res?.token;
+
+				if (!cachedToken) {
+					throw new Error("No token");
+				}
 			} catch (error) {
 				console.error("Error fetching token:", error);
 				return Promise.reject(error);

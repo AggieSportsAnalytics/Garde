@@ -24,7 +24,6 @@ export async function PUT(req) {
 		);
 
 		const res = await captchaRes.json();
-		console.log(res);
 
 		if (!res?.success) {
 			return NextResponse.json(
@@ -37,6 +36,14 @@ export async function PUT(req) {
 			{ message: "Verified captcha successfully" },
 			{ status: 200 },
 		);
+
+		response.cookies.set("captchaVerified", true, {
+			httpOnly: true,
+			maxAge: 25 * 60 * 60,
+			sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
+			secure: process.env.NODE_ENV === "production",
+			path: "/",
+		});
 
 		return response;
 	} catch (error) {

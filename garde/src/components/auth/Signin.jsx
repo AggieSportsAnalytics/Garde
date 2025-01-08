@@ -24,6 +24,23 @@ export default function Signin({ isSignUpDefault }) {
 	const searchParams = useSearchParams();
 
 	useEffect(() => {
+		const getVerification = async () => {
+			try {
+				const res = await axios.get("/api/get-token", {
+					headers: {
+						Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_KEY}`,
+					},
+					withCredentials: true,
+				});
+				const { captchaVerified } = res.data;
+				if (captchaVerified) {
+					setPassed(true);
+				}
+			} catch (error) {
+				console.error(error);
+			}
+		};
+
 		window.callback = async (token) => {
 			try {
 				await axios.put(
@@ -42,6 +59,8 @@ export default function Signin({ isSignUpDefault }) {
 				setPassed(false);
 			}
 		};
+
+		getVerification();
 	}, []);
 
 	useEffect(() => {

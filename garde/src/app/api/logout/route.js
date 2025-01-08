@@ -7,6 +7,7 @@ export async function GET() {
 		{ status: 200 },
 	);
 	response.cookies.delete("token");
+	// response.cookies.delete("captchaVerified");
 
 	response.cookies.set("token", "", {
 		httpOnly: true,
@@ -15,6 +16,14 @@ export async function GET() {
 		sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
 		secure: process.env.NODE_ENV === "production",
 	});
+
+	// response.cookies.set("captchaVerified", "", {
+	// 	httpOnly: true,
+	// 	expires: new Date(0),
+	// 	sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
+	// 	secure: process.env.NODE_ENV === "production",
+	// 	path: "/",
+	// });
 
 	return response;
 }

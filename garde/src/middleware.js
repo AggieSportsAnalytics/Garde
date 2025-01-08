@@ -10,9 +10,9 @@ export async function middleware(req) {
 	const requestedPage = req.nextUrl.pathname;
 
 	if (
+		requestedPage.includes("/api/verify_email") &&
 		req.headers?.get("ApiKey")?.split("Bearer ")[1] !==
-			process.env.NEXT_PUBLIC_API_KEY &&
-		requestedPage.includes("/api/verify_email")
+			process.env.NEXT_PUBLIC_API_KEY
 	) {
 		throw new Error("No api key/incorrect api key");
 	}
@@ -20,7 +20,6 @@ export async function middleware(req) {
 		apiKey !== process.env.NEXT_PUBLIC_API_KEY &&
 		requestedPage.includes("/api/")
 	) {
-		console.log(requestedPage);
 		throw new Error("No api key/incorrect api key");
 	}
 

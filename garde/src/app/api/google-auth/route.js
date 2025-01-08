@@ -79,6 +79,7 @@ async function uploadToD1(req, id, email, name, type) {
 		const response = await axios.post(workerUrl, queryData, {
 			headers: {
 				"Content-Type": "application/json",
+				ApiKey: `Bearer ${process.env.NEXT_PUBLIC_API_KEY}`,
 				Authorization: `Bearer ${req.cookies?.get("token")?.value}`,
 			},
 		});

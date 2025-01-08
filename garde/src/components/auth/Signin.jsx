@@ -8,7 +8,7 @@ import Loader from "../ui/Loader";
 import CoachPageScaffold from "../coach_page/CoachPageScaffold";
 import checkAuth from "@/src/app/hooks/jwt_verify";
 import RestrictedAlert from "../ui/RestrictedAlert";
-import axiosInstance from "../axios";
+import axios from "axios";
 
 export default function Signin({ isSignUpDefault }) {
 	const [isSignUp, setIsSignUp] = useState(isSignUpDefault || false);
@@ -18,9 +18,31 @@ export default function Signin({ isSignUpDefault }) {
 	const [error, setError] = useState("");
 	const [success, setSuccess] = useState("");
 	const [loading, setLoading] = useState(false);
+	const [passed, setPassed] = useState(false);
 	const [type, setType] = useState("");
 	const router = useRouter();
 	const searchParams = useSearchParams();
+
+	useEffect(() => {
+		window.callback = async (token) => {
+			try {
+				await axios.put(
+					"/api/siteverify",
+					{ token: token },
+					{
+						headers: {
+							Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_KEY}`,
+						},
+					},
+				);
+
+				setPassed(true);
+			} catch (error) {
+				console.error(error);
+				setPassed(false);
+			}
+		};
+	}, []);
 
 	useEffect(() => {
 		const initPage = async () => {
@@ -55,8 +77,9 @@ export default function Signin({ isSignUpDefault }) {
 			: { email, password, type };
 
 		try {
-			const res = await axiosInstance.post(endpoint, body, {
+			const res = await axios.post(endpoint, body, {
 				headers: {
+					Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_KEY}`,
 					"Content-Type": "application/json",
 				},
 			});
@@ -115,8 +138,11 @@ export default function Signin({ isSignUpDefault }) {
 				userData: response.credential,
 				type: type,
 			};
-			const res = await axiosInstance.post("/api/google-auth", queryData, {
-				headers: { "Content-Type": "application/json" },
+			const res = await axios.post("/api/google-auth", queryData, {
+				headers: {
+					Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_KEY}`,
+					"Content-Type": "application/json",
+				},
 			});
 
 			setSuccess("Please wait, logging in...");
@@ -245,13 +271,14 @@ export default function Signin({ isSignUpDefault }) {
 							<button
 								type="submit"
 								className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg text-sm"
+								disabled={!passed}
 							>
 								{isSignUp ? "Sign Up" : "Sign In"}
 							</button>
 						</form>
 
 						<div className="mt-4 flex justify-center">
-							{!type ? (
+							{!type || !passed ? (
 								<div
 									className="w-[280px] text-sm p-2 bg-gray-700 text-center text-gray-400 rounded-sm opacity-50 cursor-not-allowed"
 									aria-disabled="true"
@@ -266,6 +293,12 @@ export default function Signin({ isSignUpDefault }) {
 								/>
 							)}
 						</div>
+
+						<div
+							className="cf-turnstile flex justify-center pt-4"
+							data-sitekey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY}
+							data-callback="callback"
+						/>
 
 						<button
 							type="button"

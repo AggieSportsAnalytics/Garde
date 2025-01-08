@@ -4,6 +4,9 @@ const checkAuth = async (router, redirect, type, noRedirect = false) => {
 	try {
 		// maybe if confident enough just replace with jwtDecode
 		const response = await axios.get("/api/verify_jwt", {
+			headers: {
+				Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_KEY}`,
+			},
 			withCredentials: true,
 		});
 

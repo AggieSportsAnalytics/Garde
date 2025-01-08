@@ -24,7 +24,12 @@ function Navbar({ setLoggedIn, loggedIn }) {
 	const handleAuth = async () => {
 		if (loggedIn) {
 			try {
-				await axios.get("/api/logout", { withCredentials: true });
+				await axios.get("/api/logout", {
+					headers: {
+						Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_KEY}`,
+					},
+					withCredentials: true,
+				});
 				setLoggedIn(false);
 			} catch (error) {
 				console.error(error);
@@ -55,10 +60,10 @@ function Navbar({ setLoggedIn, loggedIn }) {
 				<Link href="/" className="cursor-pointer">
 					<button
 						type="button"
-						className="bg-red-600 text-black py-2 px-3 rounded text-base font-extrabold hover:bg-red-500 transition-transform duration-200"
+						className="bg-white text-black py-2 px-3 rounded text-base font-extrabold hover:bg-gray-400 transition-transform duration-200"
 						title="Go Back"
 					>
-						X
+						&#8592;
 					</button>
 				</Link>
 			</motion.div>

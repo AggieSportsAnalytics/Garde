@@ -330,6 +330,7 @@ const WebcamPose = ({
 			const res = await axios.post(`/api/convert-video/${fencerId}`, formData, {
 				withCredentials: true,
 				headers: {
+					Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_KEY}`,
 					"Content-Type": "multipart/form-data",
 				},
 			});

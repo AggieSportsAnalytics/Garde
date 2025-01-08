@@ -11,6 +11,16 @@ html {
   scroll-behavior: smooth;
 }
 
+.ProseMirror {
+  min-height: 345px;
+}
+
+@media (max-width: 640px) {
+  .ProseMirror {
+    min-height: 200px;
+  }
+}
+
 .editor-content .ProseMirror {
   /* min-height: 380px; */
   background-color: white;

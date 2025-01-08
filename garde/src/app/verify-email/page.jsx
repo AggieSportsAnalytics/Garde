@@ -28,6 +28,7 @@ function VerifyEmail() {
 				const res = await axios.get("/api/verify_email", {
 					withCredentials: true,
 					headers: {
+						ApiKey: `Bearer ${process.env.NEXT_PUBLIC_API_KEY}`,
 						Authorization: `Bearer ${token}`,
 					},
 				});

@@ -32,7 +32,12 @@ export default function Chatbot({ darkMode }) {
 				{
 					query: userInput,
 				},
-				{ withCredentials: true },
+				{
+					headers: {
+						Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_KEY}`,
+					},
+					withCredentials: true,
+				},
 			);
 
 			const formattedMessage = formatResponse(response.data.response);

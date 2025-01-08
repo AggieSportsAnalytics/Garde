@@ -1,13 +1,28 @@
 import { NextResponse } from "next/server";
 import { SignJWT, jwtVerify, decodeJwt } from "jose";
 
-const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
 const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET);
 
 export async function middleware(req) {
 	const token = req.cookies.get("token")?.value;
+	const apiKey = req.headers?.get("Authorization")?.split("Bearer ")[1];
 
 	const requestedPage = req.nextUrl.pathname;
+
+	if (
+		req.headers?.get("ApiKey")?.split("Bearer ")[1] !==
+			process.env.NEXT_PUBLIC_API_KEY &&
+		requestedPage.includes("/api/verify_email")
+	) {
+		throw new Error("No api key/incorrect api key");
+	}
+	if (
+		apiKey !== process.env.NEXT_PUBLIC_API_KEY &&
+		requestedPage.includes("/api/")
+	) {
+		console.log(requestedPage);
+		throw new Error("No api key/incorrect api key");
+	}
 
 	let redirect = "/";
 	if (
@@ -60,7 +75,14 @@ export async function middleware(req) {
 		return NextResponse.next();
 	} catch (error) {
 		console.error(error);
-		const url = new URL(redirect, req.url);
+		if (requestedPage.includes("/api/")) {
+			return NextResponse.json(
+				{ error: error || "Internal Server error" },
+				{ status: 500 },
+			);
+		}
+
+		const url = new URL(redirect || "/", req.url);
 		url.searchParams.set("restricted", "true");
 		return NextResponse.redirect(url);
 	}
@@ -92,8 +114,20 @@ async function unProtectedMiddleware(req) {
 
 		return response;
 	} catch (error) {
+		// console.error(error);
+		// return NextResponse.next();
+
 		console.error(error);
-		return NextResponse.next();
+		if (req.nextUrl.pathname.includes("/api/")) {
+			return NextResponse.json(
+				{ error: error || "Internal Server error" },
+				{ status: 500 },
+			);
+		}
+
+		const url = new URL("/", req.url);
+		url.searchParams.set("restricted", "true");
+		return NextResponse.redirect(url);
 	}
 }
 

@@ -11,7 +11,6 @@ import {
 	FiRepeat,
 } from "react-icons/fi";
 import { FaBookmark } from "react-icons/fa";
-import axiosInstance from "../axios";
 import VideoSource from "@/src/components/videos/VideoSource";
 import HLSPlayer from "@/src/components/videos/HlsPlayer";
 import CopyButton from "../ui/CopyButton";
@@ -41,7 +40,11 @@ const Videos = ({
 				setLoading(true);
 				setVideoUrl(null);
 				const listUrl = `/api/get-videos/${fencer.fencer_id}`;
-				const response = await axiosInstance.get(listUrl);
+				const response = await axios.get(listUrl, {
+					headers: {
+						Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_KEY}`,
+					},
+				});
 				const vidNames = response.data.videos;
 
 				if (vidNames) {

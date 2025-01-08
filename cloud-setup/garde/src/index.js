@@ -4,17 +4,18 @@ let ORIGIN;
 let DB;
 let BUCKET;
 let JWT_SECRET;
+let API_KEY;
 
 export default {
 	async fetch(request, env) {
 		const url = new URL(request.url);
 		const path = url.pathname;
-		({ ORIGIN, DB, BUCKET, JWT_SECRET } = env);
+		({ ORIGIN, DB, BUCKET, JWT_SECRET, API_KEY } = env);
 
 		JWT_SECRET = new TextEncoder().encode(JWT_SECRET);
 
 		try {
-			const { status } = await verifyAuth(request, JWT_SECRET);
+			const { status } = await verifyAuth(request, JWT_SECRET, API_KEY);
 			if (status < 200 || status >= 300) {
 				throw new Error("Failed to verify token");
 			}
@@ -205,7 +206,7 @@ function handleOptionsRequest() {
 		headers: {
 			"Access-Control-Allow-Origin": ORIGIN,
 			"Access-Control-Allow-Methods": "GET, POST, OPTIONS, PUT, DELETE", // Allow GET, POST, and OPTIONS methods
-			"Access-Control-Allow-Headers": "Content-Type, Authorization", // Allow headers like Content-Type
+			"Access-Control-Allow-Headers": "Content-Type, Authorization, ApiKey", // Allow headers like Content-Type
 			"Access-Control-Allow-Credentials": "true",
 		},
 	});
@@ -219,7 +220,10 @@ function addCorsHeaders(response) {
 		"Access-Control-Allow-Methods",
 		"GET, POST, OPTIONS, PUT, DELETE",
 	);
-	newHeaders.set("Access-Control-Allow-Headers", "Content-Type, Authorization");
+	newHeaders.set(
+		"Access-Control-Allow-Headers",
+		"Content-Type, Authorization, ApiKey",
+	);
 	newHeaders.set("Access-Control-Allow-Credentials", "true");
 
 	return new Response(response.body, {

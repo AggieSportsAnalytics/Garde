@@ -22,6 +22,7 @@ const Contact = () => {
 		try {
 			// Send a POST request to the backend
 			const response = await axios.put("/api/contact_us", formData, {
+				headers: { Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_KEY}` },
 				withCredentials: true,
 			});
 

@@ -8,6 +8,9 @@ function renewSession(decoded) {
 			if (!Number.isNaN(expirationTime) && expirationTime > 0) {
 				const timer = setTimeout(async () => {
 					await axios.get("/api/renew_session", {
+						headers: {
+							Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_KEY}`,
+						},
 						withCredentials: true,
 					});
 					resolve(true);

@@ -10,7 +10,11 @@ axiosInstance.interceptors.request.use(
 	async (config) => {
 		if (!cachedToken) {
 			try {
-				const response = await fetch("/api/get-token");
+				const response = await fetch("/api/get-token", {
+					headers: {
+						Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_KEY}`,
+					},
+				});
 				if (!response?.ok) {
 					throw new Error("Error");
 				}
@@ -23,7 +27,9 @@ axiosInstance.interceptors.request.use(
 			}
 		}
 
-		config.headers.Authorization = `Bearer ${cachedToken}`;
+		config.headers.ApiKey = `Bearer ${process.env.NEXT_PUBLIC_API_KEY}`;
+		config.headers.Authorization = `Bearer ${cachedToken} ${process.env.NEXT_PUBLIC_API_KEY}`;
+
 		return config;
 	},
 	(error) => {

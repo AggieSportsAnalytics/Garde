@@ -9,7 +9,6 @@ import { FaCog } from "react-icons/fa";
 import { FiX } from "react-icons/fi";
 import UuidReveal from "./UuidReveal";
 import axiosInstance from "../axios";
-// import AddFencerInstruction from "./AddFencerInstruction";
 
 function TopBar({
 	id,
@@ -19,6 +18,7 @@ function TopBar({
 	handleRefresh,
 }) {
 	const [isModalVisible, setIsModalVisible] = useState(false);
+	const [fencerToDelete, setFencerToDelete] = useState({});
 
 	const showModal = () => {
 		setIsModalVisible(!isModalVisible);
@@ -28,7 +28,7 @@ function TopBar({
 		setIsModalVisible(false);
 	};
 
-	const removeFencer = async () => {
+	const removeFencer = async (currentFencer) => {
 		try {
 			const confirmed = window.confirm(
 				`Are you sure you want to remove fencer ${currentFencer.fencer_name}? This action is irreversible.`,
@@ -85,15 +85,6 @@ function TopBar({
 								))}
 							</select>
 						</span>
-						<div className="relative hidden md:block">
-							<button
-								onClick={removeFencer}
-								className="whitespace-nowrap absolute top-1/2 transform -translate-y-1/2 right-5 bg-red-600 px-3 py-2 hover:bg-red-500 text-white font-semibold rounded shadow-md cursor-pointer"
-								type="button"
-							>
-								Remove Fencer
-							</button>
-						</div>
 					</>
 				) : (
 					<div className="font-bold text-2xl">No Fencers Added</div>
@@ -151,15 +142,47 @@ function TopBar({
 						{/* <AddFencerInstruction /> */}
 					</div>
 
-					<div className="pt-24 md:hidden text-center">
-						<button
-							onClick={removeFencer}
-							className="top-1/2 transform -translate-y-1/2 right-5 bg-red-600 px-3 py-2 hover:bg-red-500 text-white font-semibold rounded shadow-md cursor-pointer"
-							type="button"
+					<div className="w-full flex flex-col items-center space-y-4">
+						<label htmlFor="fencer-select" className="sr-only">
+							Select Fencer
+						</label>
+						<select
+							id="fencer-select"
+							value={fencerToDelete?.fencer_id || ""}
+							onChange={(e) => {
+								const selectedFencer = fencers.find(
+									(fencer) => fencer.fencer_id === e.target.value,
+								);
+								setFencerToDelete(selectedFencer);
+							}}
+							className="px-2 py-1 border border-gray-600 rounded-lg bg-gray-800 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200"
 						>
-							Remove Fencer
-							<br /> {currentFencer.fencer_name}
-						</button>
+							<option value="" disabled>
+								Select a Fencer to Remove
+							</option>
+							{fencers.map((fencer) => (
+								<option
+									className="bg-gray-800 text-white"
+									key={fencer.fencer_id}
+									value={fencer.fencer_id}
+								>
+									{fencer.fencer_name}
+								</option>
+							))}
+						</select>
+
+						<div className="relative">
+							<button
+								onClick={() => removeFencer(fencerToDelete)}
+								className="bg-red-600 px-3 py-2 hover:bg-red-500 text-white font-semibold rounded shadow-md cursor-pointer"
+								type="button"
+								disabled={
+									!fencerToDelete || Object.keys(fencerToDelete).length === 0
+								}
+							>
+								Remove Fencer
+							</button>
+						</div>
 					</div>
 
 					<div className="mt-auto w-full">

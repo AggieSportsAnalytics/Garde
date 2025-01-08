@@ -28,7 +28,10 @@ export default function DeleteAccountButton({ type, userId }) {
 			// Replace with your actual DELETE API endpoint
 			const response = await axiosInstance.delete(workerUrl);
 
-			const res = await axios.get("/api/logout", { withCredentials: true });
+			const res = await axios.get("/api/logout", {
+				headers: { Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_KEY}` },
+				withCredentials: true,
+			});
 
 			router.push("/");
 			setSuccess("Your account has been successfully deleted.");

@@ -14,7 +14,10 @@ export async function POST(req) {
 
 		// Check the worker API to validate credentials
 		const response = await axios.get(workerUrl, {
-			headers: { Authorization: `Bearer ${req.cookies?.get("token")?.value}` },
+			headers: {
+				Authorization: `Bearer ${req.cookies?.get("token")?.value}`,
+				ApiKey: `Bearer ${process.env.NEXT_PUBLIC_API_KEY}`,
+			},
 		});
 
 		const data = response?.data?.data; // Safeguard check

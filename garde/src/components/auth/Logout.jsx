@@ -13,7 +13,10 @@ export default function Logout() {
 		try {
 			setWaiting(true);
 
-			await axios.get("/api/logout", { withCredentials: true });
+			await axios.get("/api/logout", {
+				headers: { Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_KEY}` },
+				withCredentials: true,
+			});
 
 			router.push("/");
 		} catch (error) {

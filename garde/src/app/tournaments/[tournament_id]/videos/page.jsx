@@ -12,7 +12,6 @@ import {
 import { FaBookmark } from "react-icons/fa";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import axiosInstance from "@/src/components/axios";
 import { useDispatch } from "react-redux";
 import { selectVideoNumber } from "@/src/stores/features/videoNumberSlice";
 import VideoSource from "@/src/components/videos/VideoSource";
@@ -35,7 +34,11 @@ export default function Videos({ params }) {
 			try {
 				setLoading(true);
 				const listUrl = `/api/get-videos/${tournament_id}`;
-				const response = await axiosInstance.get(listUrl);
+				const response = await axios.get(listUrl, {
+					headers: {
+						Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_KEY}`,
+					},
+				});
 				const vidNames = response.data.videos;
 
 				if (vidNames) {

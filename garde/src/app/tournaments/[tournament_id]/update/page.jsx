@@ -2,11 +2,11 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import axios from "axios";
 import TournamentDetail from "@/src/components/tournaments/TournamentDetail";
 import { useSelector } from "react-redux";
 import checkAuth from "@/src/app/hooks/jwt_verify";
 import axiosInstance from "@/src/components/axios";
+import renewSession from "@/src/app/hooks/renew_session";
 
 export default function UpdateTournament({ params }) {
 	const router = useRouter();

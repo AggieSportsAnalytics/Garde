@@ -6,6 +6,7 @@ import { v4 as uuidv4 } from "uuid";
 import TournamentDetail from "@/src/components/tournaments/TournamentDetail";
 import checkAuth from "../../hooks/jwt_verify";
 import axiosInstance from "@/src/components/axios";
+import renewSession from "@/src/app/hooks/renew_session";
 
 export default function OrganizeTournament() {
 	const router = useRouter();
@@ -31,7 +32,6 @@ export default function OrganizeTournament() {
 		is_team_based: false,
 		rules: "",
 		signup_deadline: "",
-
 	});
 
 	useEffect(() => {

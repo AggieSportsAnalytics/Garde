@@ -1,10 +1,18 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, Suspense } from "react";
 import Link from "next/link";
 import axiosInstance from "@/src/components/axios";
 import axios from "axios";
 import { useRouter, useSearchParams } from "next/navigation";
+
+export default function ForgotMyPassword() {
+	return (
+		<Suspense fallback={<div>Loading...</div>}>
+			<ForgotPassword />
+		</Suspense>
+	);
+}
 
 const ForgotPassword = () => {
 	const [password, setPassword] = useState("");
@@ -203,5 +211,3 @@ async function hashPassword(plainPassword) {
 		console.error(error);
 	}
 }
-
-export default ForgotPassword;

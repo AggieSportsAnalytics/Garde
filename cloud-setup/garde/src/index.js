@@ -42,6 +42,9 @@ export default {
 						body.id,
 					);
 				}
+				if (path === "/forgot") {
+					return await forgot(body.email, body.type, body.password);
+				}
 			} else if (request.method === "DELETE") {
 				if (path === "/deleteCoachFencer") {
 					return await deleteCoachFencers(
@@ -460,6 +463,56 @@ async function putAngleData(fencerId, videoId, pose, body) {
 		},
 	);
 	return addCorsHeaders(res);
+}
+
+export async function forgot(email, type, password) {
+	const checkQuery = "SELECT password FROM users WHERE email = ? AND type = ?";
+	const results = await DB.prepare(checkQuery).bind(email, type).first();
+
+	if (!results) {
+		return addCorsHeaders(
+			new Response(
+				JSON.stringify({
+					error: "User not found.",
+				}),
+				{
+					status: 404,
+					headers: {
+						"Content-Type": "application/json",
+					},
+				},
+			),
+		);
+	}
+
+	if (results.password === "google") {
+		return addCorsHeaders(
+			new Response(
+				JSON.stringify({
+					error: "Cannot update password for users with google login.",
+				}),
+				{
+					status: 403,
+					headers: {
+						"Content-Type": "application/json",
+					},
+				},
+			),
+		);
+	}
+
+	const updateQuery =
+		"UPDATE users SET password = ? WHERE email = ? AND type = ?";
+	await DB.prepare(updateQuery).bind(password, email, type).run();
+
+	return addCorsHeaders(
+		new Response(JSON.stringify({ message: "Successfully reset password" }), {
+			status: 200,
+			headers: {
+				"Content-Type": "application/json",
+			},
+		}),
+	);
 }
 
 async function verifyEmail(email, type) {

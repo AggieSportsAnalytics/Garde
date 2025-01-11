@@ -5,17 +5,12 @@ const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET);
 
 export async function middleware(req) {
 	const token = req.cookies.get("token")?.value;
-	const apiKey = req.headers?.get("Authorization")?.split("Bearer ")[1];
+	const apiKey =
+		req.headers?.get("ApiKey")?.split("Bearer ")[1] ||
+		req.headers?.get("Authorization")?.split("Bearer ")[1];
 
 	const requestedPage = req.nextUrl.pathname;
 
-	if (
-		requestedPage.includes("/api/verify_email") &&
-		req.headers?.get("ApiKey")?.split("Bearer ")[1] !==
-			process.env.NEXT_PUBLIC_API_KEY
-	) {
-		throw new Error("No api key/incorrect api key");
-	}
 	if (
 		apiKey !== process.env.NEXT_PUBLIC_API_KEY &&
 		requestedPage.includes("/api/")

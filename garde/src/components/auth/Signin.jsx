@@ -328,6 +328,14 @@ export default function Signin({ isSignUpDefault }) {
 								? "Already have an account? Sign In"
 								: "New here? Sign Up"}
 						</button>
+
+						<button
+							type="button"
+							className="w-full text-blue-400 hover:text-blue-500 text-sm mt-4"
+							onClick={() => router.push("/forgot")}
+						>
+							Forgot your password?
+						</button>
 					</div>
 				</div>
 			)}

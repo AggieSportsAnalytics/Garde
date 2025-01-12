@@ -3,10 +3,11 @@ import nodemailer from "nodemailer";
 
 export async function PUT(req) {
 	try {
-		const {email } = await req.json();
+		const {email, name } = await req.json();
 
 		const emailResult = await sendEmailUpdate(
-			email
+			email,
+			name
 		);
 
 		if (!emailResult.success) {
@@ -47,10 +48,11 @@ async function sendEmailUpdate(email) {
 		to: email,
 		subject: "Your Bout Recordings Are Ready!",
 		html: `
-            <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #ddd; border-radius: 10px;">
+            <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 40px auto; padding: 20px; border: 1px solid #ddd; border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);">
                 <div style="text-align: center; margin-bottom: 20px;">
                     <img src="https://gardeai.com/images/garde-square.png" alt="Garde Logo" style="max-width: 150px; height: auto;">
                 </div>
+                <p>Hi ${name}!</p>
                 <h2 style="color: #84cf1e; text-align: center;">Congratulations!</h2>
                 <p>You can now access your bout recordings and analysis from the Davis Fencing Academy 25th Annual All-Weapons Tournament!</p>
                 <p>Use <a href="[https://gardeai.com/signin]" style="color: #84cf1e; font-weight: bold;">this link</a> to visit our site and sign up for free with your email. Once your account is ready, we’ll send you a follow-up message with access to your recordings.</p>
@@ -61,6 +63,9 @@ async function sendEmailUpdate(email) {
                     <li>Receiving detailed AI-driven feedback after each session</li>
                 </ul>
                 <p>All from home or your academy.</p>
+                <p style="text-align: center; margin: 20px 0;">
+                    <a href="https://gardeai.com/" style="background-color: #4CAF50; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block; font-weight: bold;">Visit Our Website</a>
+                </p>
                 <p>As an early-stage company, we’re offering this free trial to help fencers discover the power of AI-assistance in their training. We’d love to hear your thoughts and feedback as we continue to improve.</p>
                 <p>We can’t wait to start fencing with you!</p>
                 <p>Best regards,<br>The Garde Team</p>

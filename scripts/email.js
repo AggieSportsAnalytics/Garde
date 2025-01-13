@@ -209,7 +209,7 @@ function getBody(subject, body, name, emailStructure) {
 	let footer = `
 	<hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;">
 	<p style="font-size: 0.9em; color: #888; text-align: center;">
-		You are receiving this email because you are on the Garde mailing list. If this message was sent in error, please contact support at <a href="mailto:gardefencing@gmail.com" style="color: #84cf1e;">gardefencing@gmail.com</a>.
+		You are receiving this email because you are on the Garde mailing list. If this message was sent in error, please contact support at <a href="mailto:support@gardeai.com" style="color: #84cf1e;">support@gardeai.com</a>.
 	</p>
 	`;
 

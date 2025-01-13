@@ -581,7 +581,7 @@ async function authGoogle(id, email, name, type) {
 			new Response(
 				JSON.stringify({
 					error:
-						"Garde is currently in closed beta please contact 'gardefencing@gmail.com' to be granted access to Garde",
+						"Garde is currently in closed beta please contact 'support@gardeai.com' to be granted access to Garde",
 				}),
 				{
 					status: 403,
@@ -823,7 +823,7 @@ async function auth(type, name, email, password, id) {
 			new Response(
 				JSON.stringify({
 					error:
-						"Garde is currently in closed beta please contact 'gardefencing@gmail.com' to be granted access to Garde",
+						"Garde is currently in closed beta please contact 'support@gardeai.com' to be granted access to Garde",
 				}),
 				{
 					status: 403,

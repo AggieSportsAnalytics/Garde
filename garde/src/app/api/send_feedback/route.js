@@ -82,7 +82,7 @@ async function sendFeedback(data, email, coachName, fencerName, videoUrl) {
 					<p>Best regards,<br>The Garde Team</p>
 					<hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;">
 					<p style="font-size: 0.9em; color: #888; text-align: center;">
-						You are receiving this email because you are enrolled in Garde. If this message was sent in error, please contact support at <a href="mailto:gardefencing@gmail.com" style="color: #4CAF50;">gardefencing@gmail.com</a>.
+						You are receiving this email because you are enrolled in Garde. If this message was sent in error, please contact support at <a href="mailto:support@gardeai.com" style="color: #4CAF50;">support@gardeai.com</a>.
 					</p>
 				</div>
 			`,
@@ -102,7 +102,7 @@ async function sendFeedback(data, email, coachName, fencerName, videoUrl) {
 				The Garde Team
 		
 				---
-				You are receiving this email because you are enrolled in Garde. If this message was sent in error, please contact support at gardefencing@gmail.com.
+				You are receiving this email because you are enrolled in Garde. If this message was sent in error, please contact support at support@gardeai.com.
 			`,
 	};
 

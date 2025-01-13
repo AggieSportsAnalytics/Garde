@@ -4,6 +4,7 @@ const fs = require("node:fs/promises");
 const yargs = require("yargs/yargs");
 const { hideBin } = require("yargs/helpers");
 const { SignJWT } = require("jose");
+const readline = require("node:readline");
 
 // program description for usage
 const programName = "email.js";
@@ -207,31 +208,60 @@ async function main() {
 				{ name: "Rishit Das", email: "rdas@ucdavis.edu" },
 			];
 		}
-		const body = await getEmailBody(argv.file);
 
-		if (!people || !body || !argv.subject) {
-			console.error("Mailing list, body, or subject is null, exiting");
+		// Confirm screen so user can back out of sending email if mistake
+		const rl = readline.createInterface({
+			input: process.stdin,
+			output: process.stdout,
+		});
+
+		rl.on("SIGINT", () => {
+			console.log("\nOperation cancelled by user.");
 			process.exit(1);
-		}
+		});
 
-		for (const person of people) {
-			const res = await sendEmail(
-				person.email,
-				person.name,
-				body,
-				argv.subject,
-				argv.email_structure,
-			);
+		rl.question(
+			`Are you sure you want to send this email to everyone on the mailing list (${people.length} people)? Type 'yes' to confirm: `,
+			(answer) => {
+				if (answer.toLowerCase() === "yes") {
+					console.log("Proceeding with the operation...");
+					confirmed();
+				} else {
+					console.log("Operation cancelled.");
+					rl.close();
+					process.exit();
+				}
+				rl.close();
+			},
+		);
 
-			if (!res) {
-				console.error(
-					`Email failed to send:\nRecipient: ${person}\nBody: ${body}\nExiting...`,
-				);
+		const confirmed = async () => {
+			const body = await getEmailBody(argv.file);
+
+			if (!people || !body || !argv.subject) {
+				console.error("Mailing list, body, or subject is null, exiting");
 				process.exit(1);
 			}
-		}
 
-		console.log("Script success!");
+			for (const person of people) {
+				const res = await sendEmail(
+					person.email,
+					person.name,
+					body,
+					argv.subject,
+					argv.email_structure,
+				);
+
+				if (!res) {
+					console.error(
+						`Email failed to send:\nRecipient: ${person}\nBody: ${body}\nExiting...`,
+					);
+					process.exit(1);
+				}
+			}
+
+			console.log("Script success!");
+		};
 	} catch (error) {
 		console.error(error);
 		console.error("Script failure");

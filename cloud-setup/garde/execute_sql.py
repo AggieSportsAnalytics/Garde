@@ -19,12 +19,6 @@ Version 1.0.0 2024-12-22
 Created by Vikram Penumarti
 """
 
-## SQL commands to create the tables
-
-sql_command = """
-
-"""
-
 
 def set_parser(
     program_name: str,
@@ -41,11 +35,28 @@ def set_parser(
         formatter_class=argparse.RawTextHelpFormatter,
     )
     parser.add_argument(
-        "--db", required=True, type=str, help="[Optional] Name of DB to execute SQL on"
+        "--db", required=True, type=str, help="[Required] Name of DB to execute SQL on"
+    )
+    parser.add_argument(
+        "--path",
+        "-p",
+        required=False,
+        type=str,
+        help="[Optional] Path to file containing sql command to execute",
     )
     parser.add_argument("-v", "--version", action="version", version=program_version)
 
     return parser
+
+
+def read_file(path):
+    if path is None:
+        path = "./command.sql"
+
+    with open(path, "r") as file:
+        command = file.read().strip()
+
+    return command
 
 
 # Function to execute the wrangler command with SQL commands
@@ -82,4 +93,5 @@ if __name__ == "__main__":
 
     database_name: str = args.db
 
+    sql_command = read_file(args.path)
     execute_sql(database_name, sql_command)

@@ -33,7 +33,7 @@ export default function Signin({ isSignUpDefault }) {
 					withCredentials: true,
 				});
 				const { captchaVerified } = res.data;
-				if (captchaVerified) {
+				if (captchaVerified === "true") {
 					setPassed(true);
 				}
 			} catch (error) {

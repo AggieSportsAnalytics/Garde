@@ -11,7 +11,7 @@ const programDescription = `
 This is a Node.js script to automate email sending to mailing list.
 `;
 const programVersion =
-	"Version 1.0.0 2024-09-12\nCreated by Honoré Alexander and Vikram Penumarti";
+	"Version 1.0.0 2025-01-12\nCreated by Honoré Alexander and Vikram Penumarti";
 
 // Added function name
 // (async () => {

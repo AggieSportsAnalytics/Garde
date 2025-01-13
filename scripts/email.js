@@ -1,11 +1,8 @@
-const express = require("express");
+
 const nodemailer = require("nodemailer");
 require("dotenv").config();
 
-const app = express();
-app.use(express.json());
-
-app.put("/send-feedback", async (req, res) => {
+(async () => {
 	try {
 		const { email, name } = req.body;
 
@@ -66,8 +63,4 @@ app.put("/send-feedback", async (req, res) => {
 		res.status(500).json({ error: "Failed to send email. Please try again later." });
 	}
 });
-//start server
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-	console.log(`Server is running on http://localhost:${PORT}`);
-});
+

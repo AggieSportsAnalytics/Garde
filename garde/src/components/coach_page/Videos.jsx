@@ -329,7 +329,7 @@ const Videos = ({
 															<FiDownload size={16} /> Download
 														</button>
 														<CopyButton
-															text={`${bucketUrl}/${fencer.fencer_id}/${currentVideo}/full_video.webm`}
+															text={`${bucketUrl}/${fencer.fencer_id}/${video.key}/full_video.webm`}
 															before="Share"
 															after="Copied!"
 															BeforeIcon={FiShare2}

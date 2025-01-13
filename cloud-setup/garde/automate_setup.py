@@ -156,6 +156,13 @@ CREATE TABLE IF NOT EXISTS fencer_instructions (
 );
 """
 
+create_mailing_list_table = """
+CREATE TABLE IF NOT EXISTS mailing_list (
+    name TEXT NOT NULL,
+    email TEXT NOT NULL
+);
+"""
+
 insert_or_replace_fencer_instructions = """
 INSERT OR IGNORE INTO fencer_instructions (name) 
 VALUES 
@@ -184,6 +191,44 @@ VALUES
     ('Advance', 87, 126, 132, 36, 170, 160),
     ('Retreat', 90, 127, 144, 8, 172, 170),
     ('Lunge', 178, 84, 110, 170, 151, 165);
+"""
+
+insert_or_replace_mailing_list = """
+INSERT INTO mailing_list (name, event, email, fencing_tracker_rating) VALUES
+('Daniel Mazza', 'Foil', 'info@mazzadentalcare.com', 'U'),
+('Andrew Scheuerman', 'Foil', 'awsch829@gmail.com', 'D24'),
+('Jay Bhatt', 'Foil', 'Jaylaal@gmail.com', 'D24'),
+('Dylan Heins', 'Épée', 'trunkssword505@gmail.com', 'B24'),
+('James Helge', 'Épée', 'jrhelge@hotmail.com', 'A22'),
+('Oliver Kenny', 'Épée', 'orkenny774@gmail.com', 'C24'),
+('Jonathan Levitsky', 'Épée', 'jlevitsky05@gmail.com', 'B24'),
+('Zachary R. Hicks', 'Épée', 'k4rnavor@gmail.com', 'A24'),
+('Ronen DeMontigny', 'Épée', 'rdemon531@gmail.com', 'U'),
+('Clara Cheung', 'Épée', 'cheungclarah@gmail.com', 'U'),
+('Masaya Takahashi', 'Sabre', 'masaryashi@gmail.com', 'E24'),
+('Morgane Bhatt', 'Foil', 'morgane.bhatt@gmail.com', 'B23'),
+('Lucas Peterson', 'Foil', 'L.peterson06@icloud.com', 'D24'),
+('Tomer Kibbar', 'Sabre', 'tomer.kibbar@gmail.com', NULL),
+('Edward Posada', NULL, 'edfences@yahoo.com', NULL),
+('Feifei Sune', NULL, 'elisa18900@gmail.com', NULL),
+('Corina Mafesan', NULL, 'corince@yahoo.com', NULL),
+('Ken Flores', NULL, 'calfencer@gmail.com', NULL),
+('Maxx Zander', 'Épée', 'zoe.z.zander@icloud.com', NULL),
+('Jennifer Oakes', NULL, 'oakesjemac@gmail.com', NULL),
+('Ashley Retsosamudra', NULL, 'iaretsosamudra@ucdavis.edu', NULL),
+('Jay Park', NULL, 'misc.mail00@gmail.com', NULL),
+('Amy Sternad', NULL, 'amy.sternad@gmail.com', NULL),
+('Arjun Bhanot', 'Épée', 'arjunb2829@gmail.com', NULL),
+('Theo Ahn', NULL, 'roscoeahn@yahoo.com', NULL),
+('Nathan V', NULL, 'vizcarmb@yahoo.com', NULL),
+('Mateo Dobins', NULL, 'grioir@sbcglobal.net', NULL),
+('Saanvi Divate', NULL, 'rishi.divate@gmail.com', NULL),
+('Winston Wei', NULL, 'ipearlge@gmail.com', NULL),
+('Ethan Becker', NULL, 'ethanbecker@gmail.com', NULL),
+('Joey Guo', 'Épée', '4ourlife@gmail.com', NULL),
+('Sarah Beut', NULL, 'sarahmbeut@gmail.com', NULL),
+('Desmond Nelson', 'Sabre', 'thedailydesmond@gmail.com', NULL),
+('Arnav Talatam', NULL, 'sunshine_8n@yahoo.com', NULL);
 """
 
 
@@ -308,9 +353,11 @@ if __name__ == "__main__":
         execute_sql(database_name, create_ideal_angles_table)
         execute_sql(database_name, create_whitelist_table)
         execute_sql(database_name, create_attempted_signins_table)
+        execute_sql(database_name, create_mailing_list_table)
         execute_sql(database_name, insert_or_replace_fencer_instructions)
         execute_sql(database_name, insert_or_replace_ideal_angles)
         execute_sql(database_name, insert_or_replace_whitelist)
+        execute_sql(database_name, insert_or_replace_mailing_list)
         deploy_script()
     else:
         delete_d1_database(database_name)

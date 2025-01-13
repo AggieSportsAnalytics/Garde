@@ -127,6 +127,10 @@ export default {
 					const pathName = path.split("/");
 					return await getFencer(pathName[pathName.length - 1]);
 				}
+
+				if (path.includes("/getMailingList")) {
+					return await getMailingList();
+				}
 			} else if (request.method === "PUT") {
 				if (path.includes("/putInstruction")) {
 					const pathName = path.split("/");
@@ -911,6 +915,25 @@ async function getFencer(id) {
 		JSON.stringify({
 			data: result.results,
 			message: "Succesfully retrieved fencer sessions",
+		}),
+		{
+			status: 200,
+			headers: {
+				"Content-Type": "application/json",
+			},
+		},
+	);
+
+	return addCorsHeaders(res);
+}
+
+async function getMailingList() {
+	const result = await DB.prepare("SELECT * FROM mailing_list").all();
+
+	const res = new Response(
+		JSON.stringify({
+			people: result.results,
+			message: "Successfully got mailing list",
 		}),
 		{
 			status: 200,

@@ -41,7 +41,7 @@ def set_parser(
         formatter_class=argparse.RawTextHelpFormatter,
     )
     parser.add_argument(
-        "--db", required=True, type=str, help="[Optional] Name of DB to create/destroy"
+        "--db", required=True, type=str, help="[Optional] Name of DB to execute SQL on"
     )
     parser.add_argument("-v", "--version", action="version", version=program_version)
 

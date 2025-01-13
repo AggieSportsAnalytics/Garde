@@ -1,0 +1,20 @@
+<p>Hi ${name}!</p>
+<p>You can now access your bout recordings and analysis from the Davis Fencing Academy 25th Annual All-Weapons Tournament!</p>
+<p>Use <a href="https://gardeai.com/signin" style="color: #84cf1e; font-weight: bold;">this link</a> to visit our site and sign up for free with your email. Once your account is ready, we’ll send you a follow-up message with access to your recordings.</p>
+<p>While you wait, explore the rest of our platform! At Garde, we’re building the ultimate AI-powered fencing coach to help athletes like you train smarter. With a free account, you can test-drive features like:</p>
+<ul style="margin: 20px 0; padding-left: 20px;">
+    <li>Creating custom drills</li>
+    <li>Tracking your accuracy</li>
+    <li>Receiving detailed AI-driven feedback after each session</li>
+</ul>
+<p>All from home or your academy.</p>
+<p style="text-align: center; margin: 20px 0;">
+    <a href="https://gardeai.com/" style="background-color: #4CAF50; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block; font-weight: bold;">Visit Our Website</a>
+</p>
+<p>As an early-stage company, we’re offering this free trial to help fencers discover the power of AI-assistance in their training. We’d love to hear your thoughts and feedback as we continue to improve.</p>
+<p>We can’t wait to start fencing with you!</p>
+<p>Best regards,<br>The Garde Team</p>
+<hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;">
+<p style="font-size: 0.9em; color: #888; text-align: center;">
+    You are receiving this email because you participated in the Davis Fencing Academy 25th Annual All-Weapons Tournament. If this message was sent in error, please contact support at <a href="mailto:gardefencing@gmail.com" style="color: #84cf1e;">gardefencing@gmail.com</a>.
+</p>

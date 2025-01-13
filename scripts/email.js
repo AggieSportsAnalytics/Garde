@@ -5,6 +5,8 @@ const yargs = require("yargs/yargs");
 const { hideBin } = require("yargs/helpers");
 const { SignJWT } = require("jose");
 const readline = require("node:readline");
+const path = require("node:path");
+const { exec } = require("node:child_process");
 
 // program description for usage
 const programName = "email.js";
@@ -18,7 +20,7 @@ const programVersion =
 // (async () => {
 
 // capturing args here
-async function sendEmail(email, name, body, subject, emailStructure) {
+async function sendEmail(email, name, subject, content) {
 	try {
 		// since this is not server code, there is no request to be received
 		// const { email, name } = req.body;
@@ -38,34 +40,6 @@ async function sendEmail(email, name, body, subject, emailStructure) {
 				pass: process.env.EMAIL_PASSWORD,
 			},
 		});
-
-		// Want to make this consistent with the title of the email
-		const header = `
-		<div style="text-align: center; margin-bottom: 20px;">
-			<img src="https://gardeai.com/images/garde-square.png" alt="Garde Logo" style="max-width: 150px; height: auto;">
-		</div>
-		<h2 style="color: #84cf1e; text-align: center;">${subject}</h2>
-		`;
-
-		const footer = `
-		<hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;">
-		<p style="font-size: 0.9em; color: #888; text-align: center;">
-			You are receiving this email because you are on the Garde mailing list. If this message was sent in error, please contact support at <a href="mailto:gardefencing@gmail.com" style="color: #84cf1e;">gardefencing@gmail.com</a>.
-		</p>
-		`;
-
-		// replacing ${name} in string with actual name
-		const parsedBody = body.replace("${name}", name);
-
-		// deciding what to put based off of args
-		let content = header + parsedBody + footer;
-		if (emailStructure === 1) {
-			content = parsedBody + footer;
-		} else if (emailStructure === 2) {
-			content = header + parsedBody;
-		} else if (emailStructure === 3) {
-			content = parsedBody;
-		}
 
 		//content
 		const mailOptions = {
@@ -128,6 +102,13 @@ async function sendEmail(email, name, body, subject, emailStructure) {
 }
 // });
 
+// wrapping content in box
+function wrapWithDiv(content) {
+	const wrapperStart = `<div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #ddd; border-radius: 10px;">`;
+	const wrapperEnd = "</div>";
+	return `${wrapperStart}${content}${wrapperEnd}`;
+}
+
 // creating a function to get the mailing list
 async function getMailingList(token) {
 	try {
@@ -172,6 +153,35 @@ async function getToken() {
 	}
 }
 
+// previewing the email in browser
+async function previewEmailInBrowser(content) {
+	try {
+		const tempFilePath = path.join(__dirname, "email_preview.html");
+
+		// Write the HTML content to the file
+		fs.writeFile(tempFilePath, content, "utf-8");
+
+		const openCommand =
+			process.platform === "win32"
+				? "start"
+				: process.platform === "darwin"
+					? "open"
+					: "xdg-open";
+
+		// Open the file in the default browser
+		exec(`${openCommand} ${tempFilePath}`, (error) => {
+			if (error) {
+				console.error("Failed to open browser:", error);
+			}
+		});
+
+		return tempFilePath;
+	} catch (error) {
+		console.error("Error creating or opening the preview file:", error);
+		return null;
+	}
+}
+
 // get body of email from file (html)
 async function getEmailBody(file = "./email.html") {
 	try {
@@ -184,6 +194,53 @@ async function getEmailBody(file = "./email.html") {
 		console.error("Error reading the file:", err);
 		return null;
 	}
+}
+
+// getting the actual email content
+function getBody(subject, body, name, emailStructure) {
+	// Want to make this consistent with the title of the email
+	let header = `
+	<div style="text-align: center; margin-bottom: 20px;">
+		<img src="https://gardeai.com/images/garde-square.png" alt="Garde Logo" style="max-width: 150px; height: auto;">
+	</div>
+	<h2 style="color: #84cf1e; text-align: center;">${subject}</h2>
+	`;
+
+	let footer = `
+	<hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;">
+	<p style="font-size: 0.9em; color: #888; text-align: center;">
+		You are receiving this email because you are on the Garde mailing list. If this message was sent in error, please contact support at <a href="mailto:gardefencing@gmail.com" style="color: #84cf1e;">gardefencing@gmail.com</a>.
+	</p>
+	`;
+
+	// replacing ${name} in string with actual name
+	const parsedBody = body.replace("${name}", name);
+
+	// deciding what to put based off of args
+	if (
+		emailStructure === 1 ||
+		emailStructure === 3 ||
+		emailStructure === 5 ||
+		emailStructure === 7
+	) {
+		header = "";
+	}
+	if (
+		emailStructure === 2 ||
+		emailStructure === 3 ||
+		emailStructure === 6 ||
+		emailStructure === 7
+	) {
+		footer = "";
+	}
+
+	let content = header + parsedBody + footer;
+
+	if (emailStructure < 4) {
+		content = wrapWithDiv(content);
+	}
+
+	return content;
 }
 
 // main function to wrap things together
@@ -209,6 +266,29 @@ async function main() {
 			];
 		}
 
+		const body = await getEmailBody(argv.file);
+
+		if (!people || !body || !argv.subject) {
+			console.error("Mailing list, body, or subject is null, exiting");
+			process.exit(1);
+		}
+
+		const content = getBody(
+			argv.subject,
+			body,
+			people[0].name,
+			argv.email_structure,
+		);
+
+		console.log("Preview opening in browser...");
+		const tempPath = await previewEmailInBrowser(content);
+
+		if (!tempPath) {
+			fs.unlink(tempPath);
+			console.error("Preview failed, exiting...");
+			process.exit();
+		}
+
 		// Confirm screen so user can back out of sending email if mistake
 		const rl = readline.createInterface({
 			input: process.stdin,
@@ -217,6 +297,7 @@ async function main() {
 
 		rl.on("SIGINT", () => {
 			console.log("\nOperation cancelled by user.");
+			fs.unlink(tempPath);
 			process.exit(1);
 		});
 
@@ -225,31 +306,32 @@ async function main() {
 			(answer) => {
 				if (answer.toLowerCase() === "yes") {
 					console.log("Proceeding with the operation...");
+					fs.unlink(tempPath);
 					confirmed();
+					rl.close();
 				} else {
 					console.log("Operation cancelled.");
+					fs.unlink(tempPath);
 					rl.close();
 					process.exit();
 				}
-				rl.close();
 			},
 		);
 
 		const confirmed = async () => {
-			const body = await getEmailBody(argv.file);
-
-			if (!people || !body || !argv.subject) {
-				console.error("Mailing list, body, or subject is null, exiting");
-				process.exit(1);
-			}
-
 			for (const person of people) {
+				const content = getBody(
+					argv.subject,
+					body,
+					person.name,
+					argv.email_structure,
+				);
+
 				const res = await sendEmail(
 					person.email,
 					person.name,
-					body,
 					argv.subject,
-					argv.email_structure,
+					content,
 				);
 
 				if (!res) {
@@ -300,9 +382,13 @@ function parseArgs() {
 			description: `What combination of header and footer to use from .txt file:\n
 				1) Premade header not used
 				2) Premade footer not used
-				3) Premade header and footer not used
+				3) 1 + 2
+				4) Wrapping div not used
+				5) 4 + 1
+				6) 4 + 2
+				7) 4 + 2 + 1
 
-				This command ONLY accepts "1, 2, or 3"
+				This command ONLY accepts "1-7", no arg means header, footer, and wrapping div used
 			`,
 			demandOption: false,
 		})

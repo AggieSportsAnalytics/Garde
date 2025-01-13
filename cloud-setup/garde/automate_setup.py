@@ -195,6 +195,10 @@ VALUES
 
 insert_or_replace_mailing_list = """
 INSERT INTO mailing_list (name, event, email, fencing_tracker_rating) VALUES
+('Vikram Penumarti', NULL, 'vikram.penumarti@gmail.com', NULL),
+('Honoré Alexander', NULL, 'haalexander@ucdavis.edu', NULL),
+('Sujash Barman', NULL, 'sjbarman@ucdavis.edu', NULL),
+('Rishit Das', NULL, 'rdas@ucdavis.edu', NULL),
 ('Daniel Mazza', 'Foil', 'info@mazzadentalcare.com', 'U'),
 ('Andrew Scheuerman', 'Foil', 'awsch829@gmail.com', 'D24'),
 ('Jay Bhatt', 'Foil', 'Jaylaal@gmail.com', 'D24'),

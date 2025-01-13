@@ -173,7 +173,7 @@ async function getToken() {
 }
 
 // get body of email from file (html)
-async function getEmailBody(file = "./email.txt") {
+async function getEmailBody(file = "./email.html") {
 	try {
 		const body = await fs.readFile(file, "utf8");
 

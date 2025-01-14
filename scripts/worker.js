@@ -54,10 +54,31 @@ async function processVideo({ m3u8File, tempDir, outputDir }) {
 	});
 }
 
-processVideo(workerData)
+async function processVideoWithTimeout(
+	{ m3u8File, tempDir, outputDir },
+	timeoutMs,
+) {
+	const timeoutPromise = new Promise((_, reject) =>
+		setTimeout(() => reject(new Error("Processing timeout")), timeoutMs),
+	);
+
+	const processPromise = processVideo({ m3u8File, tempDir, outputDir });
+
+	return Promise.race([processPromise, timeoutPromise]);
+}
+
+processVideoWithTimeout(workerData, 5 * 60 * 1000) // Set timeout to 5 minutes
 	.then((outputFile) => {
 		parentPort.postMessage({ success: true, outputFile });
 	})
 	.catch((error) => {
 		parentPort.postMessage({ success: false, error: error.message });
 	});
+
+// processVideo(workerData)
+// 	.then((outputFile) => {
+// 		parentPort.postMessage({ success: true, outputFile });
+// 	})
+// 	.catch((error) => {
+// 		parentPort.postMessage({ success: false, error: error.message });
+// 	});

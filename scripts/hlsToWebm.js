@@ -190,56 +190,6 @@ async function uploadWebM(filePath, fileKey) {
 	console.log(`WebM file uploaded: ${fileKey}`);
 }
 
-// async function processVideos() {
-// 	try {
-// 		const videoPrefixes = await listVideosUnderUser();
-
-// 		for (const videos of Object.keys(videoPrefixes)) {
-// 			await downloadVideo(videoPrefixes[videos]);
-// 			const outputFile = await generateWebM(videoPrefixes[videos]);
-// 			await uploadWebM(outputFile, outputFile.split("output/")[1]);
-// 		}
-// 	} catch (error) {
-// 		console.error("Error:", error);
-// 	} finally {
-// 		fs.rmSync(tempDir, { recursive: true, force: true });
-// 	}
-// }
-
-// async function processVideos() {
-// 	try {
-// 		const videoPrefixes = await listVideosUnderUser();
-// 		const maxConcurrentProcesses = os.cpus().length;
-// 		const videoIds = Object.keys(videoPrefixes);
-
-// 		console.log(
-// 			`Processing ${videoIds.length} videos with up to ${maxConcurrentProcesses} concurrent workers.`,
-// 		);
-
-// 		// Split videos into chunks based on available CPU cores
-// 		for (let i = 0; i < videoIds.length; i += maxConcurrentProcesses) {
-// 			const videoChunk = videoIds.slice(i, i + maxConcurrentProcesses);
-
-// 			await Promise.all(
-// 				videoChunk.map(async (videoId) => {
-// 					try {
-// 						const videos = videoPrefixes[videoId];
-// 						await downloadVideo(videos);
-// 						const outputFile = await generateWebM(videos);
-// 						await uploadWebM(outputFile, outputFile.split("output/")[1]);
-// 					} catch (error) {
-// 						console.error(`Error processing video ${videoId}:`, error);
-// 					}
-// 				}),
-// 			);
-// 		}
-// 	} catch (error) {
-// 		console.error("Error:", error);
-// 	} finally {
-// 		fs.rmSync(tempDir, { recursive: true, force: true });
-// 	}
-// }
-
 async function processVideos() {
 	try {
 		const videoPrefixes = await listVideosUnderUser();

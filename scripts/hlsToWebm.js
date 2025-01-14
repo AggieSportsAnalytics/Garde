@@ -1,4 +1,8 @@
-const ffmpeg = require("fluent-ffmpeg");
+// c6i.4xlarge
+
+/**
+ * hlsToWebm.js
+ */
 const path = require("node:path");
 const fs = require("node:fs");
 const {
@@ -10,10 +14,9 @@ const {
 const yargs = require("yargs/yargs");
 const { hideBin } = require("yargs/helpers");
 require("dotenv").config();
-const os = require("node:os");
 const cliProgress = require("cli-progress");
+const { Worker } = require("node:worker_threads");
 
-// Parse arguments
 const argv = yargs(hideBin(process.argv))
 	.option("bucket", {
 		alias: "b",
@@ -27,19 +30,12 @@ const argv = yargs(hideBin(process.argv))
 		type: "string",
 		demandOption: true,
 	})
-	.option("dry", {
-		alias: "d",
-		describe: "Dry run",
-		type: "boolean",
-		demandOption: false,
-	})
 	.help().argv;
 
 const bucketName = argv.bucket;
 const userId = argv.user_id;
-const dry = argv.dry;
 
-// S3 client
+// Configure S3 client
 const s3Client = new S3Client({
 	region: "auto",
 	endpoint: "https://aab5b28251de4c153b96e6f8d3179cbc.r2.cloudflarestorage.com",
@@ -57,16 +53,17 @@ const outputDir = path.join(tempDir, "output");
 fs.mkdirSync(tempDir, { recursive: true });
 fs.mkdirSync(outputDir, { recursive: true });
 
+/**
+ * List all .ts and .m3u8 files under `userId/` prefix (including continuation).
+ */
 async function listVideosUnderUser() {
 	console.log(
 		`Listing videos for prefix "${userId}" in bucket "${bucketName}"...`,
 	);
-
 	let continuationToken = null;
 	const allObjects = [];
 
 	do {
-		// Fetch objects from S3 with the continuation token
 		const response = await s3Client.send(
 			new ListObjectsV2Command({
 				Bucket: bucketName,
@@ -75,25 +72,26 @@ async function listVideosUnderUser() {
 			}),
 		);
 
-		// Add the fetched objects to the list
 		if (response.Contents) {
 			allObjects.push(...response.Contents);
 		}
 
-		// Update the continuation token
 		continuationToken = response.NextContinuationToken;
-	} while (continuationToken); // Continue until there are no more results
+	} while (continuationToken);
 
 	if (allObjects.length === 0) {
 		throw new Error(`No videos found under user ID: ${userId}`);
 	}
 
-	// Filter and organize the objects by video ID
+	// Filter by .ts or .m3u8, then group by videoId (the second segment in the key)
 	const videoPrefixes = allObjects
 		.map((obj) => obj.Key)
-		.filter((key) => key.includes(".ts") || key.includes(".m3u8"))
+		.filter(
+			(key) =>
+				key.includes(".ts") || key.includes(".m3u8") || key.includes(".webm"),
+		)
 		.reduce((acc, key) => {
-			const videoId = key.split("/")[1];
+			const videoId = key.split("/")[1]; // userId/videoId/...
 			if (!acc[videoId]) {
 				acc[videoId] = [];
 			}
@@ -101,106 +99,101 @@ async function listVideosUnderUser() {
 			return acc;
 		}, {});
 
+	const webmFiles = allObjects
+		.map((obj) => obj.Key)
+		.filter((key) => key.endsWith(".webm"));
+
+	console.log(webmFiles);
+
+	for (const webmKey of webmFiles) {
+		const videoId = webmKey.split("/")[1];
+		delete videoPrefixes[videoId];
+		console.log(`Not considering ${videoId} because it has full video`);
+	}
+
 	console.log(
-		`Found ${allObjects.map((obj) => obj.Key).length} objects, or\n${Object.keys(videoPrefixes).length} videos`,
+		`Found ${allObjects.length} objects total. ` +
+			`${Object.keys(videoPrefixes).length} videos contain .ts/.m3u8`,
 	);
+
 	return videoPrefixes;
 }
 
+/**
+ * Download all .ts and .m3u8 files to tempDir
+ */
 async function downloadVideo(videos) {
-	for (const video of videos) {
-		const tempInputPath = path.join(tempDir, video);
-		console.log(`Downloading video from S3: ${video}`);
+	for (const videoKey of videos) {
+		const localPath = path.join(tempDir, videoKey);
+		console.log(`Downloading: s3://${bucketName}/${videoKey}`);
 
-		if (!dry) {
-			const data = await s3Client.send(
-				new GetObjectCommand({ Bucket: bucketName, Key: video }),
-			);
-			fs.mkdirSync(path.dirname(tempInputPath), { recursive: true });
+		const data = await s3Client.send(
+			new GetObjectCommand({ Bucket: bucketName, Key: videoKey }),
+		);
 
-			const writeStream = fs.createWriteStream(tempInputPath);
-			data.Body.pipe(writeStream);
-			await new Promise((resolve) => writeStream.on("close", resolve));
-		}
+		fs.mkdirSync(path.dirname(localPath), { recursive: true });
+		const writeStream = fs.createWriteStream(localPath);
+		data.Body.pipe(writeStream);
+		await new Promise((resolve) => writeStream.on("close", resolve));
 	}
 }
 
-async function generateWebM(videos) {
-	const tempInputPath = path.join(
-		tempDir,
-		`${path.dirname(videos[0])}/playlist.m3u8`,
-	);
-
-	const outputFile = path.join(
-		outputDir,
-		`${path.dirname(videos[0])}/full_video.webm`,
-	);
-
-	const videoPrefix = path.dirname(videos[0]).split("/")[1];
-	// console.log(`Generating WebM file for video ${videoPrefix}...`);
-
-	if (!dry) {
-		fs.mkdirSync(path.dirname(outputFile), { recursive: true });
-
-		await new Promise((resolve, reject) => {
-			ffmpeg(tempInputPath)
-				.outputOptions([
-					"-c:v libvpx-vp9",
-					"-b:v 1M",
-					"-c:a libopus",
-					"-movflags +faststart",
-				])
-				.on("start", (commandLine) => {
-					console.log("FFmpeg WebM command:", commandLine);
-				})
-				.on("stderr", (stderrLine) => {
-					console.log("FFmpeg stderr (WebM):", stderrLine);
-				})
-				.on("end", () => {
-					console.log(`WebM generation completed for ${videoPrefix}`);
-					resolve();
-				})
-				.on("error", (error) => {
-					console.error("Error generating WebM:", error);
-					reject(error);
-				})
-				.save(outputFile);
+/**
+ * Worker Pool Approach: runWorker spawns the worker.js script to handle FFmpeg.
+ */
+function runWorker(videoM3U8, tempDir, outputDir) {
+	return new Promise((resolve, reject) => {
+		// Worker data includes the single .m3u8 path, plus directory info
+		const worker = new Worker(path.join(__dirname, "worker.js"), {
+			workerData: {
+				m3u8File: videoM3U8,
+				tempDir,
+				outputDir,
+			},
 		});
-	}
 
-	return outputFile;
+		worker.on("message", (message) => {
+			if (message.success) {
+				resolve(message.outputFile);
+			} else {
+				reject(new Error(message.error));
+			}
+		});
+
+		worker.on("error", reject);
+		worker.on("exit", (code) => {
+			if (code !== 0) {
+				reject(new Error(`Worker stopped with exit code ${code}`));
+			}
+		});
+	});
 }
 
 async function uploadWebM(filePath, fileKey) {
-	console.log(`Uploading WebM file to S3: ${fileKey}`);
+	console.log(`Uploading WebM to s3://${bucketName}/${fileKey}`);
 
-	if (!dry) {
-		const fileStream = fs.createReadStream(filePath);
+	const fileStream = fs.createReadStream(filePath);
+	await s3Client.send(
+		new PutObjectCommand({
+			Bucket: bucketName,
+			Key: fileKey,
+			Body: fileStream,
+			ContentType: "video/webm",
+		}),
+	);
 
-		await s3Client.send(
-			new PutObjectCommand({
-				Bucket: bucketName,
-				Key: fileKey,
-				Body: fileStream,
-				ContentType: "video/webm",
-			}),
-		);
-	}
-
-	console.log(`WebM file uploaded: ${fileKey}`);
+	console.log(`Upload complete: s3://${bucketName}/${fileKey}`);
 }
 
+/**
+ * Main function: process each "videoId" in parallel, but first download all files,
+ * find the .m3u8, run FFmpeg in a worker, then upload the result.
+ */
 async function processVideos() {
 	try {
 		const videoPrefixes = await listVideosUnderUser();
-		const maxConcurrentProcesses = os.cpus().length;
 		const videoIds = Object.keys(videoPrefixes);
 
-		console.log(
-			`Processing ${videoIds.length} videos with up to ${maxConcurrentProcesses} concurrent workers.`,
-		);
-
-		// Create a progress bar for the number of videos
 		const progressBar = new cliProgress.SingleBar(
 			{
 				format:
@@ -212,31 +205,42 @@ async function processVideos() {
 			cliProgress.Presets.shades_classic,
 		);
 
-		progressBar.start(videoIds.length, 0); // Start the progress bar
+		progressBar.start(videoIds.length, 0);
 
-		// Split videos into chunks based on available CPU cores
-		for (let i = 0; i < videoIds.length; i += maxConcurrentProcesses) {
-			const videoChunk = videoIds.slice(i, i + maxConcurrentProcesses);
+		await Promise.all(
+			videoIds.map(async (videoId) => {
+				try {
+					// Example: ["userId/videoId/video/playlist.m3u8", "userId/videoId/video/segment0.ts", ...]
+					const videos = videoPrefixes[videoId];
 
-			await Promise.all(
-				videoChunk.map(async (videoId) => {
-					try {
-						const videos = videoPrefixes[videoId];
-						await downloadVideo(videos);
-						const outputFile = await generateWebM(videos);
-						await uploadWebM(outputFile, outputFile.split("output/")[1]);
-						progressBar.increment(); // Increment progress after each video
-					} catch (error) {
-						console.error(`Error processing video ${videoId}:`, error);
+					// 1. Download all .ts and .m3u8
+					await downloadVideo(videos);
+
+					// 2. Identify the .m3u8 file
+					const m3u8FileKey = videos.find((key) => key.endsWith(".m3u8"));
+					if (!m3u8FileKey) {
+						throw new Error(`No .m3u8 file found for videoId: ${videoId}`);
 					}
-				}),
-			);
-		}
 
-		progressBar.stop(); // Stop the progress bar when done
+					// 3. Offload FFmpeg to a worker
+					const outputFile = await runWorker(m3u8FileKey, tempDir, outputDir);
+
+					// 4. Upload final .webm
+					const fileKey = outputFile.split("output/")[1]; // e.g. 'videoId/video/full_video.webm'
+					await uploadWebM(outputFile, fileKey);
+
+					progressBar.increment();
+				} catch (error) {
+					console.error(`Error processing video ${videoId}:`, error);
+				}
+			}),
+		);
+
+		progressBar.stop();
 	} catch (error) {
 		console.error("Error:", error);
 	} finally {
+		// Cleanup
 		fs.rmSync(tempDir, { recursive: true, force: true });
 	}
 }

@@ -259,13 +259,14 @@ async function processVideos() {
 		progressBar.stop();
 
 		const remainingVideos = await listVideosUnderUser();
-		if (Object.keys(remainingVideos) > 0) {
-			console.log(
-				`${Object.keys(remainingVideos)} videos remaining\n${remainingVideos}`,
-			);
+
+		console.log(
+			`${Object.keys(remainingVideos).length} videos remaining\n${remainingVideos}`,
+		);
+		if (Object.keys(remainingVideos).length === 0) {
+			fs.rmSync(tempDir, { recursive: true, force: true });
 		}
 
-		fs.rmSync(tempDir, { recursive: true, force: true });
 		process.exit(0);
 	} catch (error) {
 		console.error("Error:", error);

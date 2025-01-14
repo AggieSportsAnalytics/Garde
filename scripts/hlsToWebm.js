@@ -118,7 +118,8 @@ async function listVideosUnderUser() {
 
 	console.log(
 		`Found ${allObjects.length} objects total. ` +
-			`${Object.keys(videoPrefixes).length} videos contain .ts/.m3u8`,
+			`${Object.keys(videoPrefixes).length} videos need to be processed`,
+		`${webmFiles.length} full videos found`,
 	);
 
 	if (check) {
@@ -263,6 +264,9 @@ async function processVideos() {
 				`${Object.keys(remainingVideos)} videos remaining\n${remainingVideos}`,
 			);
 		}
+
+		fs.rmSync(tempDir, { recursive: true, force: true });
+		process.exit(0);
 	} catch (error) {
 		console.error("Error:", error);
 	} finally {

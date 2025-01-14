@@ -13,7 +13,7 @@ const PrivacyPolicy = () => {
 	}, []);
 
 	return (
-		<div className="privacy-policy bg-white">
+		<div className="privacy-policy bg-white p-5">
 			<div dangerouslySetInnerHTML={{ __html: htmlContent }} />
 		</div>
 	);

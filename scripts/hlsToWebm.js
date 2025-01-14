@@ -1,5 +1,3 @@
-// c6i.4xlarge
-
 /**
  * hlsToWebm.js
  */
@@ -30,10 +28,17 @@ const argv = yargs(hideBin(process.argv))
 		type: "string",
 		demandOption: true,
 	})
+	.option("check", {
+		alias: "c",
+		describe: "See how many videos need to be processed",
+		type: "boolean",
+		demandOption: false,
+	})
 	.help().argv;
 
 const bucketName = argv.bucket;
 const userId = argv.user_id;
+const check = argv.check;
 
 // Configure S3 client
 const s3Client = new S3Client({
@@ -115,6 +120,11 @@ async function listVideosUnderUser() {
 		`Found ${allObjects.length} objects total. ` +
 			`${Object.keys(videoPrefixes).length} videos contain .ts/.m3u8`,
 	);
+
+	if (check) {
+		console.log("Exiting, check flag enabled");
+		process.exit(0);
+	}
 
 	return videoPrefixes;
 }
@@ -237,6 +247,13 @@ async function processVideos() {
 		);
 
 		progressBar.stop();
+
+		const remainingVideos = await listVideosUnderUser();
+		if (Object.keys(remainingVideos) > 0) {
+			console.log(
+				`${Object.keys(remainingVideos)} videos remaining\n${remainingVideos}`,
+			);
+		}
 	} catch (error) {
 		console.error("Error:", error);
 	} finally {

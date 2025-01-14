@@ -138,7 +138,7 @@ async function downloadVideo(videos) {
 
 		// Check if the file already exists
 		if (fs.existsSync(localPath)) {
-			console.log(`File already exists, skipping: ${localPath}`);
+			console.log(`.ts segments already exist, skipping: ${localPath}`);
 			continue; // Skip this file if it already exists
 		}
 

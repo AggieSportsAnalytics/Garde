@@ -23,7 +23,7 @@ async function processVideo({ m3u8File, tempDir, outputDir }) {
 
 	if (fs.existsSync(outputFile)) {
 		console.log(`Webm File already exists, skipping: ${outputFile}`);
-		return { status: "skipped", outputFile }; // Consistent return format
+		return outputFile;
 	}
 
 	// Ensure output directory exists

@@ -18,4 +18,4 @@ The fencer page for Garde, this page is used by fencers to perform the instructi
 The coach page for Garde allows the coach to see all thier students' videos and give them feedback. Once the coaches are done seeing the students' performance, they can also view their progression over time which is detailed through graphs. 
 
 ## 🖥️ Code
-Currently, Garde is patent pending and the code is private. However, if you are curious about Garde and would like to know more, please contact gardefencing@gmail.com. 
+Currently, Garde is patent pending and the code is private. However, if you are curious about Garde and would like to know more, please contact support@gardeai.com. 

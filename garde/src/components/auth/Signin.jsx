@@ -312,6 +312,12 @@ export default function Signin({ isSignUpDefault }) {
 								/>
 							)}
 						</div>
+						<Link
+							className="mt-2 flex justify-center text-blue-400"
+							href="/privacy-policy"
+						>
+							Privacy Policy
+						</Link>
 
 						<div
 							className="cf-turnstile flex justify-center pt-4"
@@ -322,7 +328,7 @@ export default function Signin({ isSignUpDefault }) {
 						<button
 							type="button"
 							onClick={toggleSignUp}
-							className="w-full text-blue-400 hover:text-blue-500 text-sm mt-4"
+							className="w-full text-blue-400 hover:text-blue-500 text-sm mt-2"
 						>
 							{isSignUp
 								? "Already have an account? Sign In"

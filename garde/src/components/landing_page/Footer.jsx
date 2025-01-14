@@ -1,5 +1,6 @@
 import React from "react";
 import Image from "next/image";
+import Link from "next/link";
 
 const Footer = () => {
 	return (
@@ -18,8 +19,14 @@ const Footer = () => {
 			<div className="mt-5 flex justify-center text-stone-300">
 				© 2024-2025 Garde™. All Rights Reserved.
 			</div>
+			<Link
+				className="mt-5 flex justify-center text-blue-400"
+				href="/privacy-policy"
+			>
+				Privacy Policy
+			</Link>
 
-			<div className="text-slate-950 mt-5">i</div>
+			<div className="mt-5" />
 		</div>
 	);
 };

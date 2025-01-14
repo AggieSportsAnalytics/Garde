@@ -11,6 +11,7 @@ const yargs = require("yargs/yargs");
 const { hideBin } = require("yargs/helpers");
 require("dotenv").config();
 const os = require("node:os");
+const cliProgress = require("cli-progress");
 
 // Parse arguments
 const argv = yargs(hideBin(process.argv))
@@ -205,6 +206,40 @@ async function uploadWebM(filePath, fileKey) {
 // 	}
 // }
 
+// async function processVideos() {
+// 	try {
+// 		const videoPrefixes = await listVideosUnderUser();
+// 		const maxConcurrentProcesses = os.cpus().length;
+// 		const videoIds = Object.keys(videoPrefixes);
+
+// 		console.log(
+// 			`Processing ${videoIds.length} videos with up to ${maxConcurrentProcesses} concurrent workers.`,
+// 		);
+
+// 		// Split videos into chunks based on available CPU cores
+// 		for (let i = 0; i < videoIds.length; i += maxConcurrentProcesses) {
+// 			const videoChunk = videoIds.slice(i, i + maxConcurrentProcesses);
+
+// 			await Promise.all(
+// 				videoChunk.map(async (videoId) => {
+// 					try {
+// 						const videos = videoPrefixes[videoId];
+// 						await downloadVideo(videos);
+// 						const outputFile = await generateWebM(videos);
+// 						await uploadWebM(outputFile, outputFile.split("output/")[1]);
+// 					} catch (error) {
+// 						console.error(`Error processing video ${videoId}:`, error);
+// 					}
+// 				}),
+// 			);
+// 		}
+// 	} catch (error) {
+// 		console.error("Error:", error);
+// 	} finally {
+// 		fs.rmSync(tempDir, { recursive: true, force: true });
+// 	}
+// }
+
 async function processVideos() {
 	try {
 		const videoPrefixes = await listVideosUnderUser();
@@ -214,6 +249,20 @@ async function processVideos() {
 		console.log(
 			`Processing ${videoIds.length} videos with up to ${maxConcurrentProcesses} concurrent workers.`,
 		);
+
+		// Create a progress bar for the number of videos
+		const progressBar = new cliProgress.SingleBar(
+			{
+				format:
+					"Processing Videos | {bar} | {percentage}% || {value}/{total} videos",
+				barCompleteChar: "\u2588",
+				barIncompleteChar: "\u2591",
+				hideCursor: true,
+			},
+			cliProgress.Presets.shades_classic,
+		);
+
+		progressBar.start(videoIds.length, 0); // Start the progress bar
 
 		// Split videos into chunks based on available CPU cores
 		for (let i = 0; i < videoIds.length; i += maxConcurrentProcesses) {
@@ -226,12 +275,15 @@ async function processVideos() {
 						await downloadVideo(videos);
 						const outputFile = await generateWebM(videos);
 						await uploadWebM(outputFile, outputFile.split("output/")[1]);
+						progressBar.increment(); // Increment progress after each video
 					} catch (error) {
 						console.error(`Error processing video ${videoId}:`, error);
 					}
 				}),
 			);
 		}
+
+		progressBar.stop(); // Stop the progress bar when done
 	} catch (error) {
 		console.error("Error:", error);
 	} finally {

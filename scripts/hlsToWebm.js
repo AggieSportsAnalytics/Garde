@@ -34,11 +34,25 @@ const argv = yargs(hideBin(process.argv))
 		type: "boolean",
 		demandOption: false,
 	})
+	.option("retry", {
+		alias: "r",
+		describe: "Run FFmpeg even if .webm file exists",
+		type: "boolean",
+		demandOption: false,
+	})
+	.option("no_timeout", {
+		alias: "n",
+		describe: "See how many videos need to be processed",
+		type: "boolean",
+		demandOption: false,
+	})
 	.help().argv;
 
 const bucketName = argv.bucket;
 const userId = argv.user_id;
 const check = argv.check;
+const retry = argv.retry;
+const noTimeout = argv.no_timeout;
 
 // Configure S3 client
 const s3Client = new S3Client({
@@ -110,10 +124,12 @@ async function listVideosUnderUser() {
 
 	console.log(webmFiles);
 
-	for (const webmKey of webmFiles) {
-		const videoId = webmKey.split("/")[1];
-		delete videoPrefixes[videoId];
-		console.log(`Not considering ${videoId} because it has full video`);
+	if (!retry) {
+		for (const webmKey of webmFiles) {
+			const videoId = webmKey.split("/")[1];
+			delete videoPrefixes[videoId];
+			console.log(`Not considering ${videoId} because it has full video`);
+		}
 	}
 
 	console.log(

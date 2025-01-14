@@ -13,7 +13,7 @@ const fs = require("node:fs");
  *   outputDir: "/.../temp/output"
  * }
  */
-async function processVideo({ m3u8File, tempDir, outputDir }) {
+async function processVideo({ m3u8File, tempDir, outputDir, retry }) {
 	// Construct the local path of the .m3u8 we downloaded
 	const localM3U8Path = path.join(tempDir, m3u8File);
 
@@ -21,7 +21,7 @@ async function processVideo({ m3u8File, tempDir, outputDir }) {
 	const dirname = path.dirname(m3u8File); // e.g. "userId/videoId/video"
 	const outputFile = path.join(outputDir, dirname, "full_video.webm");
 
-	if (fs.existsSync(outputFile)) {
+	if (fs.existsSync(outputFile) && !retry) {
 		console.log(`Webm File already exists, skipping: ${outputFile}`);
 		return outputFile;
 	}
@@ -72,10 +72,20 @@ async function processVideoWithTimeout(
 	return Promise.race([processPromise, timeoutPromise]);
 }
 
-processVideoWithTimeout(workerData, 5 * 60 * 1000) // Set timeout to 5 minutes
-	.then((outputFile) => {
-		parentPort.postMessage({ success: true, outputFile });
-	})
-	.catch((error) => {
-		parentPort.postMessage({ success: false, error: error.message });
-	});
+if (workerData?.noTimeout) {
+	processVideo(workerData)
+		.then((outputFile) => {
+			parentPort.postMessage({ success: true, outputFile });
+		})
+		.catch((error) => {
+			parentPort.postMessage({ success: false, error: error.message });
+		});
+} else {
+	processVideoWithTimeout(workerData, 5 * 60 * 1000) // Set timeout to 5 minutes
+		.then((outputFile) => {
+			parentPort.postMessage({ success: true, outputFile });
+		})
+		.catch((error) => {
+			parentPort.postMessage({ success: false, error: error.message });
+		});
+}

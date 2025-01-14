@@ -21,6 +21,8 @@ async function processVideo({ m3u8File, tempDir, outputDir, retry }) {
 	const dirname = path.dirname(m3u8File); // e.g. "userId/videoId/video"
 	const outputFile = path.join(outputDir, dirname, "full_video.webm");
 
+	console.log("==========", retry);
+	process.exit(0);
 	if (fs.existsSync(outputFile) && !retry) {
 		console.log(`Webm File already exists, skipping: ${outputFile}`);
 		return outputFile;
@@ -60,14 +62,14 @@ async function processVideo({ m3u8File, tempDir, outputDir, retry }) {
 }
 
 async function processVideoWithTimeout(
-	{ m3u8File, tempDir, outputDir },
+	{ m3u8File, tempDir, outputDir, retry },
 	timeoutMs,
 ) {
 	const timeoutPromise = new Promise((_, reject) =>
 		setTimeout(() => reject(new Error("Processing timeout")), timeoutMs),
 	);
 
-	const processPromise = processVideo({ m3u8File, tempDir, outputDir });
+	const processPromise = processVideo({ m3u8File, tempDir, outputDir, retry });
 
 	return Promise.race([processPromise, timeoutPromise]);
 }

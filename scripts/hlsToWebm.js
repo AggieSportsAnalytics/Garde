@@ -183,6 +183,7 @@ function runWorker(videoM3U8, tempDir, outputDir) {
 				tempDir,
 				outputDir,
 				noTimeout,
+				retry,
 			},
 		});
 

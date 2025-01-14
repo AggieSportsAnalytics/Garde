@@ -21,8 +21,6 @@ async function processVideo({ m3u8File, tempDir, outputDir, retry }) {
 	const dirname = path.dirname(m3u8File); // e.g. "userId/videoId/video"
 	const outputFile = path.join(outputDir, dirname, "full_video.webm");
 
-	console.log("==========", retry);
-	process.exit(0);
 	if (fs.existsSync(outputFile) && !retry) {
 		console.log(`Webm File already exists, skipping: ${outputFile}`);
 		return outputFile;

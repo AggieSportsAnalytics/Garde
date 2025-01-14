@@ -135,6 +135,13 @@ async function listVideosUnderUser() {
 async function downloadVideo(videos) {
 	for (const videoKey of videos) {
 		const localPath = path.join(tempDir, videoKey);
+
+		// Check if the file already exists
+		if (fs.existsSync(localPath)) {
+			console.log(`File already exists, skipping: ${localPath}`);
+			continue; // Skip this file if it already exists
+		}
+
 		console.log(`Downloading: s3://${bucketName}/${videoKey}`);
 
 		const data = await s3Client.send(
@@ -151,33 +158,6 @@ async function downloadVideo(videos) {
 /**
  * Worker Pool Approach: runWorker spawns the worker.js script to handle FFmpeg.
  */
-// function runWorker(videoM3U8, tempDir, outputDir) {
-// 	return new Promise((resolve, reject) => {
-// 		// Worker data includes the single .m3u8 path, plus directory info
-// 		const worker = new Worker(path.join(__dirname, "worker.js"), {
-// 			workerData: {
-// 				m3u8File: videoM3U8,
-// 				tempDir,
-// 				outputDir,
-// 			},
-// 		});
-
-// 		worker.on("message", (message) => {
-// 			if (message.success) {
-// 				resolve(message.outputFile);
-// 			} else {
-// 				reject(new Error(message.error));
-// 			}
-// 		});
-
-// 		worker.on("error", reject);
-// 		worker.on("exit", (code) => {
-// 			if (code !== 0) {
-// 				reject(new Error(`Worker stopped with exit code ${code}`));
-// 			}
-// 		});
-// 	});
-// }
 function runWorker(videoM3U8, tempDir, outputDir) {
 	return new Promise((resolve, reject) => {
 		const worker = new Worker(path.join(__dirname, "worker.js"), {

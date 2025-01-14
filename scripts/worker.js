@@ -21,6 +21,11 @@ async function processVideo({ m3u8File, tempDir, outputDir }) {
 	const dirname = path.dirname(m3u8File); // e.g. "userId/videoId/video"
 	const outputFile = path.join(outputDir, dirname, "full_video.webm");
 
+	if (fs.existsSync(outputFile)) {
+		console.log(`File already exists, skipping: ${outputFile}`);
+		return; // Skip this file if it already exists
+	}
+
 	// Ensure output directory exists
 	fs.mkdirSync(path.dirname(outputFile), { recursive: true });
 
@@ -74,11 +79,3 @@ processVideoWithTimeout(workerData, 5 * 60 * 1000) // Set timeout to 5 minutes
 	.catch((error) => {
 		parentPort.postMessage({ success: false, error: error.message });
 	});
-
-// processVideo(workerData)
-// 	.then((outputFile) => {
-// 		parentPort.postMessage({ success: true, outputFile });
-// 	})
-// 	.catch((error) => {
-// 		parentPort.postMessage({ success: false, error: error.message });
-// 	});

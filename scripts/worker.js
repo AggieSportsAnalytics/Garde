@@ -23,7 +23,7 @@ async function processVideo({ m3u8File, tempDir, outputDir }) {
 
 	if (fs.existsSync(outputFile)) {
 		console.log(`File already exists, skipping: ${outputFile}`);
-		return; // Skip this file if it already exists
+		return { status: "skipped", outputFile }; // Consistent return format
 	}
 
 	// Ensure output directory exists

@@ -37,14 +37,6 @@ export async function PUT(req) {
 			{ status: 200 },
 		);
 
-		response.cookies.set("captchaVerified", true, {
-			httpOnly: true,
-			maxAge: 25 * 60 * 60,
-			sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
-			secure: process.env.NODE_ENV === "production",
-			path: "/",
-		});
-
 		return response;
 	} catch (error) {
 		console.error(error);

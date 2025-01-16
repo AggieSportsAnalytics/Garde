@@ -47,7 +47,7 @@ const ForgotPassword = () => {
 	return (
 		<div className="min-h-screen flex items-center justify-center bg-gray-900 text-white px-4">
 			<div className="absolute top-4 left-4">
-				<Link href="/signin" className="cursor-pointer">
+				<a href="/signin" className="cursor-pointer">
 					<button
 						type="button"
 						className="bg-white text-black py-2 px-4 rounded text-lg font-semibold hover:bg-gray-300 duration-200 hover:scale-110 active:scale-100"
@@ -55,7 +55,7 @@ const ForgotPassword = () => {
 					>
 						&#8592;
 					</button>
-				</Link>
+				</a>
 			</div>
 
 			<div className="bg-gray-800 p-8 rounded-lg shadow-lg max-w-md w-full">

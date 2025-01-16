@@ -6,6 +6,7 @@ import { FencerSword } from "./fencer-sword";
 import MagicButton from "./MagicButton";
 import { Spotlight } from "../ui/Spotlight";
 import { TextGenerateEffect } from "../ui/TextGenerateEffect";
+import Link from "next/link";
 
 function FencerAttire() {
 	const leatherTexture = useTexture("/images/leather-fabric.jpg");
@@ -76,13 +77,13 @@ const Hero = () => {
 						/>
 					</div>
 					<div className="mt-8">
-						<a href="#about">
+						<Link href="#about">
 							<MagicButton
 								title="Learn More"
 								icon={<FaLocationArrow />}
 								position="right"
 							/>
-						</a>
+						</Link>
 					</div>
 				</div>
 

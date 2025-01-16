@@ -19,28 +19,12 @@ export default function Signin({ isSignUpDefault }) {
 	const [success, setSuccess] = useState("");
 	const [loading, setLoading] = useState(false);
 	const [passed, setPassed] = useState(false);
+	const [captchaRun, setCaptchaRun] = useState(false);
 	const [type, setType] = useState("");
 	const router = useRouter();
 	const searchParams = useSearchParams();
 
 	useEffect(() => {
-		const getVerification = async () => {
-			try {
-				const res = await axios.get("/api/get-token", {
-					headers: {
-						Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_KEY}`,
-					},
-					withCredentials: true,
-				});
-				const { captchaVerified } = res.data;
-				if (captchaVerified === "true") {
-					setPassed(true);
-				}
-			} catch (error) {
-				console.error(error);
-			}
-		};
-
 		window.callback = async (token) => {
 			try {
 				await axios.put(
@@ -57,10 +41,10 @@ export default function Signin({ isSignUpDefault }) {
 			} catch (error) {
 				console.error(error);
 				setPassed(false);
+			} finally {
+				setCaptchaRun(true);
 			}
 		};
-
-		getVerification();
 	}, []);
 
 	useEffect(() => {
@@ -324,6 +308,12 @@ export default function Signin({ isSignUpDefault }) {
 							data-sitekey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY}
 							data-callback="callback"
 						/>
+						{!passed && captchaRun && (
+							<p className="text-center text-sm text-red-500 py-1">
+								Please refresh the page and try again, if this issue persists
+								please contact support@gardeai.com
+							</p>
+						)}
 
 						<button
 							type="button"

@@ -63,11 +63,11 @@ const navbar = () => {
 							Contact
 						</span>
 					</Link>
-					<Link href="/signin">
+					<a href="/signin">
 						<button type="button" className="button text-sm">
 							<span className="button-content font-bold">Login/Signup</span>
 						</button>
-					</Link>
+					</a>
 					<Link href="/tournaments">
 						<button type="button" className="button text-sm">
 							<span className="button-content font-bold">Tournaments</span>
@@ -115,11 +115,11 @@ const navbar = () => {
 									Contact
 								</li>
 							</Link>
-							<Link href="/signin">
+							<a href="/signin">
 								<button className="button mt-2">
 									<span className="button-content font-bold">Login/Signup</span>
 								</button>
-							</Link>
+							</a>
 							<Link href="/tournaments">
 								<button className="login mt-4 hover:text-[#ac4bac] transition-colors duration-500 text-md">
 									Tournaments

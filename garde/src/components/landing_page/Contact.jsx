@@ -2,6 +2,7 @@
 import React, { useRef, useState } from "react";
 import axios from "axios";
 import { FaLinkedin, FaYoutube, FaInstagram } from "react-icons/fa";
+import Link from "next/link";
 
 const Contact = () => {
 	const form = useRef();
@@ -97,31 +98,31 @@ const Contact = () => {
 					{/* Social Media Icons */}
 					<div className="flex justify-center space-x-4 mt-6">
 						<div className="bg-slate-500 w-12 h-12 rounded-xl hover:bg-slate-400 flex items-center justify-center">
-							<a
+							<Link
 								href="https://www.linkedin.com/company/gardeai/"
 								target="_blank"
 								rel="noreferrer"
 							>
 								<FaLinkedin className="w-6 h-6 text-white" />
-							</a>
+							</Link>
 						</div>
 						<div className="bg-slate-500 w-12 h-12 rounded-xl hover:bg-slate-400 flex items-center justify-center">
-							<a
+							<Link
 								href="https://www.instagram.com/garde.ai"
 								target="_blank"
 								rel="noreferrer"
 							>
 								<FaInstagram className="w-6 h-6 text-white" />
-							</a>
+							</Link>
 						</div>
 						<div className="bg-slate-500 w-12 h-12 rounded-xl hover:bg-slate-400 flex items-center justify-center">
-							<a
+							<Link
 								href="https://www.youtube.com/@gardefencing"
 								target="_blank"
 								rel="noreferrer"
 							>
 								<FaYoutube className="w-6 h-6 text-white" />
-							</a>
+							</Link>
 						</div>
 					</div>
 				</div>

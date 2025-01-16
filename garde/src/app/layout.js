@@ -72,6 +72,7 @@ export default function RootLayout({ children }) {
 					src="https://challenges.cloudflare.com/turnstile/v0/api.js"
 					async
 					defer
+					data-cfasync="false"
 				/>
 			</head>
 			<GoogleOAuthProvider clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID}>

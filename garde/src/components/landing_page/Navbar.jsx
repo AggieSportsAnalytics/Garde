@@ -63,6 +63,7 @@ const navbar = () => {
 							Contact
 						</span>
 					</Link>
+					{/* Keep this as an <a> tag, need full page refresh for /signin */}
 					<a href="/signin">
 						<button type="button" className="button text-sm">
 							<span className="button-content font-bold">Login/Signup</span>
@@ -115,6 +116,7 @@ const navbar = () => {
 									Contact
 								</li>
 							</Link>
+							{/* Keep this as an <a> tag, need full page refresh for /signin */}
 							<a href="/signin">
 								<button className="button mt-2">
 									<span className="button-content font-bold">Login/Signup</span>

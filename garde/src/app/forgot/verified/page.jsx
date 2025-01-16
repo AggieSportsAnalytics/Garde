@@ -111,6 +111,7 @@ const ForgotPassword = () => {
 	return (
 		<div className="min-h-screen flex items-center justify-center bg-gray-900 text-white px-4">
 			<div className="absolute top-4 left-4">
+				{/* Keep this as an <a> tag, need full page refresh for /signin */}
 				<a href="/signin" className="cursor-pointer">
 					<button
 						type="button"

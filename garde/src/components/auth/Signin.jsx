@@ -20,12 +20,14 @@ export default function Signin({ isSignUpDefault }) {
 	const [loading, setLoading] = useState(false);
 	const [passed, setPassed] = useState(false);
 	const [captchaRun, setCaptchaRun] = useState(false);
+	const [captchaStarted, setCaptchaStarted] = useState(false);
 	const [type, setType] = useState("");
 	const router = useRouter();
 	const searchParams = useSearchParams();
 
 	useEffect(() => {
 		window.callback = async (token) => {
+			setCaptchaStarted(true);
 			try {
 				await axios.put(
 					"/api/siteverify",
@@ -46,6 +48,16 @@ export default function Signin({ isSignUpDefault }) {
 			}
 		};
 	}, []);
+
+	useEffect(() => {
+		const timer = setTimeout(() => {
+			if (!captchaStarted) {
+				window.location.reload();
+			}
+		}, 3000);
+
+		return () => clearTimeout(timer);
+	}, [captchaStarted]);
 
 	useEffect(() => {
 		const initPage = async () => {

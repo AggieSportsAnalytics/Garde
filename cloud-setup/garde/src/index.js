@@ -797,8 +797,9 @@ async function getFencerInstructions() {
 
 // remove this code once Garde goes public
 async function isOnWhitelist(email) {
+	const e = email.toLowerCase();
 	const fetched = await DB.prepare("SELECT * FROM whitelist WHERE email = ?")
-		.bind(email)
+		.bind(e)
 		.all();
 
 	if (fetched.results.length < 1) {

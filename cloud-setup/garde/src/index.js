@@ -28,22 +28,31 @@ export default {
 				const body = await request.json();
 
 				if (path === "/verifyEmail") {
-					return await verifyEmail(body.email, body.type);
+					return await verifyEmail(body.email.toLowerCase(), body.type);
 				}
 				if (path === "/authGoogle") {
-					return await authGoogle(body.id, body.email, body.name, body.type);
+					return await authGoogle(
+						body.id,
+						body.email.toLowerCase(),
+						body.name,
+						body.type,
+					);
 				}
 				if (path === "/auth") {
 					return await auth(
 						body.type,
 						body.name,
-						body.email,
+						body.email.toLowerCase(),
 						body.password,
 						body.id,
 					);
 				}
 				if (path === "/forgot") {
-					return await forgot(body.email, body.type, body.password);
+					return await forgot(
+						body.email.toLowerCase(),
+						body.type,
+						body.password,
+					);
 				}
 			} else if (request.method === "DELETE") {
 				if (path === "/deleteCoachFencer") {
@@ -96,7 +105,7 @@ export default {
 				if (path === "/verify") {
 					return await verify(
 						url.searchParams.get("type"),
-						url.searchParams.get("email"),
+						url.searchParams.get("email").toLowerCase(),
 					);
 				}
 
@@ -164,7 +173,7 @@ export default {
 						body.fencerId,
 						body.coachId,
 						body.fencerName,
-						body.fencerEmail,
+						body.fencerEmail.toLowerCase(),
 					);
 				}
 			}
@@ -286,7 +295,7 @@ async function putOwned(userId, body) {
 			userId,
 			body.user_type,
 			body.user_name,
-			body.user_email,
+			body.user_email.toLowerCase(),
 			body.tournament_id,
 			body.relation,
 		)
@@ -410,7 +419,7 @@ async function putTournament(unique_id, body) {
 			category,
 			prize_pool,
 			organizer_name,
-			organizer_email,
+			organizer_email.toLowerCase(),
 			organizer_phone,
 			location,
 			privacy,

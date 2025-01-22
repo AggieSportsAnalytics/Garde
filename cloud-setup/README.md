@@ -14,7 +14,8 @@
    - [Run the Development Server](#4-run-the-local-worker)
 3. [Installing Additional Packages](#installing-additional-packages)
 4. [Testing Your Setup](#testing-your-setup)
-5. [Troubleshooting](#troubleshooting)
+5. [Deploying Your Changes](#deploying-your-changes)
+6. [Troubleshooting](#troubleshooting)
 
 ---
 
@@ -94,6 +95,18 @@ npm install axios
 1. Open `http://localhost:8000` in your browser, there should be {"error":"Failed to verify token"}.
 2. Verify that the web app loads without errors (if running).
 3. Ensure API calls to this backend are functioning correctly with the `wrangler.toml` configuration.
+
+---
+
+## Deploying Your Changes
+
+Deploy the cloudflare worker:
+
+> Note: If you are publishing the whole app (including web app), this command is automatically run in the [deploy script](../scripts/deploy.sh) alongside the web app deployment. Otherwise, for small bug fixes, this command will suffice.
+
+```bash
+wrangler deploy
+```
 
 ---
 

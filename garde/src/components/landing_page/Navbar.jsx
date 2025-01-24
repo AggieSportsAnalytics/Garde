@@ -74,6 +74,11 @@ const navbar = () => {
 							<span className="button-content font-bold">Tournaments</span>
 						</button>
 					</Link>
+					<Link href="/feedback_page">
+    					<button type="button" className="button text-sm">
+       						<span className="button-content font-bold">Feedback</span>
+    					</button>
+					</Link>
 				</div>
 				<div className="md:hidden flex items-center">
 					<label className="hamburger">
@@ -127,6 +132,7 @@ const navbar = () => {
 									Tournaments
 								</button>
 							</Link>
+							
 						</ul>
 					</div>
 				</div>

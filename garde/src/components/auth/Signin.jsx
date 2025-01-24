@@ -175,6 +175,7 @@ export default function Signin({ isSignUpDefault }) {
 		}
 	};
 
+
 	const handleGoogleError = () => {
 		setLoading(false);
 		setSuccess("");

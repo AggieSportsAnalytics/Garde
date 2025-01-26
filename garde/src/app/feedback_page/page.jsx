@@ -2,6 +2,10 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { loadStripe } from "@stripe/stripe-js";
+import { Elements, CardElement, useStripe, useElements } from "@stripe/react-stripe-js";
+
+const stripePromise = loadStripe("pk_test_51QkxRkP5D7WqTYQ8sjwDeSroNy6MIB53eO87oBYZX0iUPJtrYebY8ZZGbb6TRBISHzIcw9hHQmqise8y4IFFdxMy00J0bnbDb4");
 
 const FeedbackPage = () => {
   const [selectedCoach, setSelectedCoach] = useState(null);
@@ -15,6 +19,7 @@ const FeedbackPage = () => {
   const [paymentConfirmed, setPaymentConfirmed] = useState(false);
   const [viewingProfile, setViewingProfile] = useState(false); //profile modal state
   const [profileCoach, setProfileCoach] = useState(null); //selected coach profile being viewed
+  const [amountToPay, setAmountToPay] = useState(5000); // set amount to pay (in cents)
   const router = useRouter();
 
   const coaches = [
@@ -36,11 +41,12 @@ const FeedbackPage = () => {
     },
   ];
 
-//different cases for text boxes
-
+  // handle form fields changes...
   const handleCoachSelection = (coach) => {
     setSelectedCoach(coach);
   };
+
+
 
   const handleVideoUpload = (e) => {
     setVideoFile(e.target.files[0]);
@@ -66,11 +72,43 @@ const FeedbackPage = () => {
     setSpecificFeedback(e.target.value);
   };
 
-  const handlePayment = () => {
-    setPaymentConfirmed(true);
-    //add PayPal or Stripe integration here
+  //PAYMENT LOGIC HANDLER --> calls create-payment-intent
+  const handlePayment = async (stripe, elements) => {
+    if (!stripe || !elements) return;
+
+    try {
+      //xall the server to create a payment intent
+      const response = await fetch("/api/payments/create-payment-intent", {
+        method: "POST",
+        body: JSON.stringify({ amount: amountToPay }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      const { clientSecret } = await response.json();
+
+      //confirm the payment using clientSecret
+      const { error } = await stripe.confirmCardPayment(clientSecret, {
+        payment_method: {
+          card: elements.getElement(CardElement),
+          billing_details: {
+            name: name,
+          },
+        },
+      });
+
+      if (error) {
+        alert(error.message);
+      } else {
+        setPaymentConfirmed(true);
+      }
+    } catch (error) {
+      alert("Payment failed: " + error.message);
+    }
   };
 
+  //toggle profile open/closed
   const openProfile = (coach) => {
     setProfileCoach(coach);
     setViewingProfile(true);
@@ -88,7 +126,7 @@ const FeedbackPage = () => {
           Get Personalized Feedback from a Coach
         </h1>
 
-        {/* Coach Selection */}
+        {/* select coach */}
         <div className="mb-10">
           <h2 className="text-3xl font-semibold text-gray-300 mb-6">Select a Coach</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -127,7 +165,7 @@ const FeedbackPage = () => {
           </div>
         </div>
 
-        {/*upload media + descriptions*/}
+        {/* Upload media + descriptions */}
         {selectedCoach && (
           <div className="mb-10">
             <h2 className="text-3xl font-semibold text-gray-300 mb-6">Upload Your Video</h2>
@@ -158,7 +196,6 @@ const FeedbackPage = () => {
                 onChange={handleTitleChange}
                 className="border-2 border-gray-600 p-4 rounded-lg bg-gray-800 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
               />
-              
               <textarea
                 placeholder="Describe your video. What is the context of the video? Where was it taken? etc."
                 value={videoDescription}
@@ -167,12 +204,19 @@ const FeedbackPage = () => {
                 rows="6"
               />
               <textarea
-                placeholder="Request specific feedback. What type of feedback do you want? Is there a specific area that you'd like help with? Write a few sentences here explaining what you want out of this coaching session."
+                placeholder="Request specific feedback. What type of feedback do you want? Is there a specific area that you'd like help with?"
                 value={specificFeedback}
                 onChange={handleSpecificFeedbackChange}
                 className="border-2 border-gray-600 p-4 rounded-lg bg-gray-800 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
                 rows="6"
               />
+              
+              {/* Stripe Card Input */}
+              <div className="mb-6">
+                <label className="text-lg font-semibold">Payment Information</label>
+                <CardElement className="border-2 border-gray-600 p-4 rounded-lg bg-gray-800 text-white focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              </div>
+              
               <button
                 onClick={handlePayment}
                 className="w-full py-4 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors"
@@ -183,20 +227,20 @@ const FeedbackPage = () => {
           </div>
         )}
 
-        {/* payment confirmation */}
+        {/* confirm payment */}
         {paymentConfirmed && (
           <div className="mt-6 text-center text-green-500 text-xl">
             <p>Payment confirmed. You will be assigned to {selectedCoach.name} shortly!</p>
           </div>
         )}
 
-        {/* refund footer*/}
+        {/* refunds */}
         <p className="mt-8 text-center text-sm text-gray-400">
           If you have not received feedback within 5 business days, we offer a money-back guarantee. Please contact support@gardeai.com for any inquiries related to refunds.
         </p>
       </div>
 
-      {/*modal for coach profiles*/}
+      {/* coach profile modal */}
       {viewingProfile && profileCoach && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
           <div className="bg-gray-900 text-white rounded-lg p-6 max-w-md w-full">
@@ -218,4 +262,10 @@ const FeedbackPage = () => {
   );
 };
 
-export default FeedbackPage;
+export default function WrappedFeedbackPage() {
+  return (
+    <Elements stripe={stripePromise}>
+      <FeedbackPage />
+    </Elements>
+  );
+}

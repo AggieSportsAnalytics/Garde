@@ -40,12 +40,10 @@ const Contact = () => {
 
 	return (
 		<>
-			<div className="bg-white" id="contact">
-				<div className="mt-16">
-					<h1 className="text-center text-blue-600 text-4xl md:text-6xl font-extrabold font-platypi">
-						Contact Us.
-					</h1>
-				</div>
+			<div id="contact">
+				<h1 className="text-center text-[#1a2b3b] text-4xl md:text-6xl font-extrabold font-platypi">
+					Contact Us.
+				</h1>
 
 				<div className="flex justify-center mt-10 px-4">
 					<h4 className="text-gray-700 font-platypi mt-5 text-base md:text-xl text-center">

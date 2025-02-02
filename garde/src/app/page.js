@@ -22,10 +22,10 @@ export default function Home() {
 	}, []);
 
 	return (
-		<div className="">
+		<div className="bg-[#faf9f5]">
 			<Navbar />
 			<Hero />
-			<About />
+			{/* <About /> */}
 			<Showcase />
 			<Contact />
 			<Footer />

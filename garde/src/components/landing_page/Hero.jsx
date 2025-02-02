@@ -24,9 +24,9 @@ const Hero = () => {
 	}, []);
 
 	return (
-		<div className="relative min-h-screen flex">
+		<div className="relative min-h-screen flex bg-[#faf9f5]">
 			{/* Left side with light background */}
-			<div className="w-full md:w-1/2 bg-[#F9FAFB] px-4 pt-32 md:pt-36 relative">
+			<div className="w-full md:w-1/2 px-4 pt-32 md:pt-36 relative">
 				<div className="max-w-xl mx-auto">
 					{/* Login buttons */}
 					<div className="flex gap-4 mb-16">
@@ -44,15 +44,15 @@ const Hero = () => {
 
 					{/* Brand and Problem Statement */}
 					<div className="space-y-6">
-						<h1 className="text-6xl font-platypi text-[#1a2b3b]">
-							Garde
-						</h1>
+						<h1 className="text-6xl font-platypi text-[#1a2b3b]">Garde</h1>
 						<TextGenerateEffect
 							words="Smart Coaching, Smarter Fencing"
 							className="text-3xl font-platypi text-[#2c3e50]"
 						/>
 						<p className="text-lg text-gray-600 max-w-lg">
-							Elevate your fencing game with AI-powered analysis and personalized coaching. Get instant feedback and improve your technique.
+							Elevate your fencing game with AI-powered analysis and
+							personalized coaching. Get instant feedback and improve your
+							technique.
 						</p>
 					</div>
 
@@ -70,7 +70,7 @@ const Hero = () => {
 			</div>
 
 			{/* Right side with dark background */}
-			<div className="hidden md:block w-1/2 bg-[#1a2b3b] relative">
+			<div className="hidden md:block w-1/2 bg-[#1a2b3b] relative rounded-l-lg">
 				<div className="absolute inset-0 flex items-center justify-center p-8">
 					<div className="w-full max-w-2xl">
 						<AnimatePresence mode="wait">
@@ -85,16 +85,14 @@ const Hero = () => {
 								transition={{ duration: 0.5, ease: "easeInOut" }}
 							/>
 						</AnimatePresence>
-						
+
 						{/* Image navigation dots */}
 						<div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-2">
 							{sampleImages.map((_, index) => (
 								<button
 									key={index}
 									className={`w-2 h-2 rounded-full transition ${
-										index === currentImageIndex
-											? "bg-white"
-											: "bg-white/50"
+										index === currentImageIndex ? "bg-white" : "bg-white/50"
 									}`}
 									onClick={() => setCurrentImageIndex(index)}
 								/>

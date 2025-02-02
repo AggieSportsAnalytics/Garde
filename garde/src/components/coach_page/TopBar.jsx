@@ -45,7 +45,7 @@ function TopBar({
 	};
 
 	return (
-		<div className="text-white">
+		<div className="text-white bg-black">
 			<header className="flex items-center justify-between border-b py-4 px-4">
 				<Link href="/" className="cursor-pointer">
 					<button

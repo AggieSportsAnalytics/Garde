@@ -1,6 +1,6 @@
 export default function CoachPageScaffold() {
 	return (
-		<>
+		<div className="bg-black">
 			<div className="text-white">
 				<header className="flex items-center justify-between border-b py-4 px-4 top-1 relative">
 					<div className="bg-gray-700 h-10 w-12 rounded animate-pulse" />
@@ -44,6 +44,6 @@ export default function CoachPageScaffold() {
 					</div>
 				</div>
 			</div>
-		</>
+		</div>
 	);
 }

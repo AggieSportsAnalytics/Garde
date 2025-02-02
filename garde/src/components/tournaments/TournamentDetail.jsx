@@ -70,7 +70,7 @@ export default function TournamentDetail({
 	};
 
 	return (
-		<>
+		<div className="bg-gray-900 pb-10">
 			<Link href={backTo} className="cursor-pointer">
 				<button
 					type="button"
@@ -80,8 +80,10 @@ export default function TournamentDetail({
 					&#8592;
 				</button>
 			</Link>
-			<div className="p-6 max-w-3xl mx-auto bg-black text-white min-h-screen">
-				<h1 className="text-2xl font-bold mb-4">Organize a Tournament</h1>
+			<div className="p-6 rounded-lg max-w-3xl mx-auto bg-black text-white min-h-screen">
+				<h1 className="text-2xl font-bold mb-4">
+					{isOrganize ? "Organize a" : "Update"} Tournament
+				</h1>
 				<form onSubmit={onSubmit} className="space-y-4">
 					<div>
 						<label className="block text-sm font-medium text-gray-400">
@@ -307,6 +309,6 @@ export default function TournamentDetail({
 					</button>
 				</form>
 			</div>
-		</>
+		</div>
 	);
 }

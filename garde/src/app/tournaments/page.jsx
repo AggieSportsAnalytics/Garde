@@ -335,7 +335,7 @@ function Tournaments() {
 	};
 
 	return (
-		<>
+		<div className="bg-black pb-28">
 			<Loader loading={loading} />
 			<div className="bg-black text-white min-h-screen flex flex-col justify-start">
 				<Navbar setLoggedIn={setLoggedIn} loggedIn={loggedIn} />
@@ -469,6 +469,6 @@ function Tournaments() {
 				</div>
 				<RestrictedAlert redirect={"/tournaments"} />
 			</div>
-		</>
+		</div>
 	);
 }

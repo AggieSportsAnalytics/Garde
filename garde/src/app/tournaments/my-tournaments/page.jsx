@@ -76,7 +76,7 @@ export default function MyTournaments() {
 	}, [router]);
 
 	return (
-		<>
+		<div className="bg-black">
 			<Loader loading={loading} />
 			<div className="p-6 max-w-7xl mx-auto text-white min-h-screen">
 				<Link href="/tournaments" className="cursor-pointer">
@@ -152,6 +152,6 @@ export default function MyTournaments() {
 					)}
 				</section>
 			</div>
-		</>
+		</div>
 	);
 }

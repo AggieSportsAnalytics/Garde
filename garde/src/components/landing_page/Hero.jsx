@@ -30,15 +30,17 @@ const Hero = () => {
 				<div className="max-w-xl mx-auto">
 					{/* Login buttons */}
 					<div className="flex gap-4 mb-16">
-						<Link href="/login">
-							<button className="px-6 py-2 bg-[#1a2b3b] text-white rounded-lg hover:bg-[#2c3e50] transition">
-								Login
-							</button>
+						<Link
+							href="/signin"
+							className="px-6 py-2 bg-[#1a2b3b] text-white rounded-lg hover:bg-[#2c3e50] transition"
+						>
+							Login
 						</Link>
-						<Link href="/signup">
-							<button className="px-6 py-2 border border-[#1a2b3b] text-[#1a2b3b] rounded-lg hover:bg-gray-50 transition">
-								Sign Up
-							</button>
+						<Link
+							href="/signin?isSignUp=true"
+							className="px-6 py-2 border border-[#1a2b3b] text-[#1a2b3b] rounded-lg hover:bg-gray-50 transition"
+						>
+							Sign Up
 						</Link>
 					</div>
 

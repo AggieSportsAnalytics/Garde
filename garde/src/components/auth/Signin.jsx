@@ -10,8 +10,7 @@ import checkAuth from "@/src/app/hooks/jwt_verify";
 import RestrictedAlert from "../ui/RestrictedAlert";
 import axios from "axios";
 
-export default function Signin({ isSignUpDefault }) {
-	const [isSignUp, setIsSignUp] = useState(isSignUpDefault || false);
+export default function Signin() {
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
 	const [name, setName] = useState(""); // Only used for sign-up
@@ -24,6 +23,10 @@ export default function Signin({ isSignUpDefault }) {
 	const [type, setType] = useState("");
 	const router = useRouter();
 	const searchParams = useSearchParams();
+
+	const [isSignUp, setIsSignUp] = useState(
+		searchParams.get("isSignUp") || false,
+	);
 
 	useEffect(() => {
 		window.callback = async (token) => {
@@ -188,6 +191,7 @@ export default function Signin({ isSignUpDefault }) {
 		setEmail("");
 		setPassword("");
 		setType("");
+		router.push(`?isSignUp=${!isSignUp}`);
 		setIsSignUp(!isSignUp);
 	};
 

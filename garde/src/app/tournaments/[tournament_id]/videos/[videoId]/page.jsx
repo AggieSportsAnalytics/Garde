@@ -53,7 +53,7 @@ export default function VideoPage({ params }) {
 	};
 
 	return (
-		<div className="bg-gray-900">
+		<div className="bg-gray-900 pb-6">
 			<div className="text-white text-center pt-5 text-3xl">
 				Video {videoNumber}
 			</div>

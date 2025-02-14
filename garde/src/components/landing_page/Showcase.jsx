@@ -1,19 +1,37 @@
 "use client";
 import React from "react";
-import { Carousel, Card } from "../ui/apple-cards-carousel";
+import { motion } from "framer-motion";
 
 const Showcase = () => {
-	const cards = data.map((card, index) => (
-		<Card key={card.src} card={card} index={index} />
-	));
-
 	return (
 		<div id="features" className="w-full h-full pt-20 pb-10">
-			<h2 className="flex justify-center text-[#1a2b3b] text-4xl sm:text-5xl md:text-6xl mt-10 font-platypi font-semibold">
-				Get to know Garde.
-			</h2>
-			<div className="mt-6">
-				<Carousel items={cards} />
+			<div className="max-w-7xl mx-auto px-4">
+				<div className="flex flex-col md:flex-row items-center justify-between gap-8">
+					{/* Left Side: Video */}
+					<div className="md:w-1/2">
+						<motion.video
+							src="/images/fencing-vid.mp4"
+							autoPlay
+							loop
+							muted
+							playsInline
+							className="w-full h-auto rounded-lg shadow-lg"
+							initial={{ opacity: 0, x: -50 }}
+							animate={{ opacity: 1, x: 0 }}
+							transition={{ duration: 1 }}
+						/>
+					</div>
+					{/* Right Side: Text Content */}
+					<div className="md:w-1/2 text-center md:text-left gap-3">
+						<h2 className="text-[#1a2b3b] text-4xl sm:text-5xl md:text-6xl font-platypi font-semibold flex justify-center">
+							Meet GSX-a1
+						</h2>
+						<h2 className="text-[#1a2b3b] text-lg sm:text-5xl md:text-xl mt-10 font-platypi">
+							Generative Sports Expert Alpha 1 is a State of the Art AI assistant built by Garde and trained on
+							specialized fencing datasets to help you analyze your bouts and perform at your best.
+						</h2>
+					</div>
+				</div>
 			</div>
 		</div>
 	);

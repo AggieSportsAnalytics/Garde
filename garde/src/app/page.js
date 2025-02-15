@@ -1,6 +1,8 @@
 "use client";
 
 import Hero from "../components/landing_page/Hero";
+import Features from "../components/landing_page/Features";
+import Banner from "../components/landing_page/Banner";
 import About from "../components/landing_page/About";
 import Contact from "../components/landing_page/Contact";
 import Footer from "../components/landing_page/Footer";
@@ -27,6 +29,8 @@ export default function Home() {
 			<Hero />
 			{/* <About /> */}
 			<Showcase />
+			<Features />
+			<Banner />
 			<Contact />
 			<Footer />
 		</div>

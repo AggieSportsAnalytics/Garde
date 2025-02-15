@@ -1,117 +1,115 @@
-"use client";
-import React, { useState, useRef } from "react";
+import React, { useState } from 'react'
 import Image from "next/image";
-import Link from "next/link";
-import "../../app/globals.css";
+import Link from 'next/link';
+import { Button } from '../ui/button';
+import "../../app/globals.css"
+import { motion } from "framer-motion";
+import { FaTrophy } from "react-icons/fa";
+import { BiLogIn, BiLogOut } from "react-icons/bi";
 
-const navbar = () => {
-	const [nav, setNav] = useState(false);
-	const hamburgerRef = useRef(null);
+const Navbar = ({ setLoggedIn, loggedIn }) => {
+	const [menuOpen, setMenuOpen] = useState(false);
 
-	const handleNav = () => {
-		setNav(!nav);
-		if (hamburgerRef.current) {
-			hamburgerRef.current.checked = !nav;
+	const handleAuth = async () => {
+		if (loggedIn) {
+			// Handle logout logic
+			setLoggedIn(false);
+		} else {
+			// Redirect to sign-in page
 		}
 	};
 
 	return (
-		<div className="navbar fixed md:w-[800px] w-[340px] mt-4 md:mt-12 left-1/2 transform -translate-x-1/2 h-16 z-[100] rounded-full duration-500">
-			<div className="flex justify-between items-center w-full h-full px-4">
+		<motion.nav
+			initial={{ y: -100 }}
+			animate={{ y: 0 }}
+			transition={{ type: "spring", stiffness: 100 }}
+			className="fixed top-4 left-4 right-4 z-50 flex items-center justify-between p-4 bg-white/10 backdrop-blur-lg rounded-2xl shadow-lg text-white"
+		>
+			{/* Logo or Brand Name */}
+			<Link href="/" className="flex items-center">
 				<Image
-					src="/images/garde-wide.png"
-					alt="logo"
-					width={120}
-					height={120}
-					quality={100}
-					className="rounded-3xl hover:animate-pulse object-contain bg-black p-1"
+					src="/images/garde-square.png" // Ensure this path is correct
+					alt="Garde Logo"
+					width={55} // Adjust width as needed
+					height={55} // Adjust height as needed
+					className="object-contain rounded-xl"
 				/>
-				<div className="hidden md:flex items-center justify-center space-x-4">
-					<Link href="/#about">
-						<span className="text-sm text-gray-300 hover:text-[#5bb1d5] transition-colors duration-500">
-							About
-						</span>
-					</Link>
-					<Link href="/#features">
-						<span className="text-sm text-gray-300 hover:text-[#5bb1d5] transition-colors duration-500">
-							Features
-						</span>
-					</Link>
-					<Link href="/#contact">
-						<span className="text-sm text-gray-300 hover:text-[#5bb1d5] transition-colors duration-500">
-							Contact
-						</span>
-					</Link>
-					{/* Keep this as an <a> tag, need full page refresh for /signin */}
-					<a href="/signin">
-						<button type="button" className="button text-sm">
-							<span className="button-content font-bold">Login/Signup</span>
-						</button>
-					</a>
-					<Link href="/tournaments">
-						<button type="button" className="button text-sm">
-							<span className="button-content font-bold">Tournaments</span>
-						</button>
-					</Link>
-				</div>
-				<div className="md:hidden flex items-center">
-					<label className="hamburger">
-						<input type="checkbox" ref={hamburgerRef} onClick={handleNav} />
-						<svg viewBox="0 0 32 32">
-							<path
-								className="line line-top-bottom"
-								d="M27 10 13 10C10.8 10 9 8.2 9 6 9 3.5 10.8 2 13 2 15.2 2 17 3.8 17 6L17 26C17 28.2 18.8 30 21 30 23.2 30 25 28.2 25 26 25 23.8 23.2 22 21 22L7 22"
-							></path>
-							<path className="line" d="M7 16 27 16"></path>
-						</svg>
-					</label>
-				</div>
-			</div>
+			</Link>
 
-			<div
-				className={nav ? "md:hidden fixed right-0 top-0 h-screen" : "hidden"}
-			>
-				<div
-					className={
-						nav
-							? "mt-20 navbar fixed right-0 top-0 w-[75%] sm:w-[60%] md:w-[45%] h-[500px] rounded-lg bg-[#121317] p-10 transition-transform duration-500 transform translate-x-0"
-							: "fixed right-[-100%] top-0 p-10 transition-transform duration-500 transform translate-x-full"
-					}
-				>
-					<div className="text-center py-2 mx-auto mb-6 flex flex-col">
-						<ul className="space-y-2">
-							<Link href="/#about">
-								<li className="text-[17px] text-[#6e7273] hover:text-[#ac4bac] transition-colors duration-500">
-									About
-								</li>
-							</Link>
-							<Link href="/#features">
-								<li className="text-[17px] text-[#6e7273] hover:text-[#ac4bac] transition-colors duration-500">
-									Features
-								</li>
-							</Link>
-							<Link href="/#contact">
-								<li className="text-[17px] text-[#6e7273] hover:text-[#ac4bac] transition-colors duration-500">
-									Contact
-								</li>
-							</Link>
-							{/* Keep this as an <a> tag, need full page refresh for /signin */}
-							<a href="/signin">
-								<button className="button mt-2">
-									<span className="button-content font-bold">Login/Signup</span>
-								</button>
-							</a>
-							<Link href="/tournaments">
-								<button className="login mt-4 hover:text-[#ac4bac] transition-colors duration-500 text-md">
-									Tournaments
-								</button>
-							</Link>
-						</ul>
+			{/* Menu Section */}
+			<div className="ml-auto flex items-center gap-4">
+				{/* Desktop Menu */}
+				<div className="hidden md:flex items-center gap-6">
+					<Link href="/tournaments/my-tournaments" className="flex items-center gap-2 hover:text-blue-300 transition-colors duration-200">
+						<FaTrophy size={20} />
+						<span className="text-slate-800">My Tournaments</span>
+					</Link>
+					<div
+						onClick={handleAuth}
+						className="flex items-center gap-2 cursor-pointer hover:text-blue-300 transition-colors duration-200"
+					>
+						{loggedIn ? (
+							<>
+								<BiLogOut size={20} />
+								<span>Logout</span>
+							</>
+						) : (
+							<>
+								<BiLogIn size={20} />
+								<span className='text-slate-800'>Sign-In/Sign-Up</span>
+							</>
+						)}
+					</div>
+				</div>
+
+				{/* Mobile Menu Button */}
+				<div className="md:hidden">
+					<div
+						className="p-2 rounded-full hover:bg-white/10 transition-colors duration-200 cursor-pointer"
+						onClick={() => setMenuOpen((prev) => !prev)}
+					>
+						<div className="space-y-1">
+							<div className="w-6 h-1 bg-white" />
+							<div className="w-6 h-1 bg-white" />
+							<div className="w-6 h-1 bg-white" />
+						</div>
 					</div>
 				</div>
 			</div>
-		</div>
-	);
-};
 
-export default navbar;
+			{/* Mobile Menu Dropdown */}
+			{menuOpen && (
+				<motion.div
+					initial={{ opacity: 0, y: -10 }}
+					animate={{ opacity: 1, y: 0 }}
+					exit={{ opacity: 0, y: -10 }}
+					className="absolute top-full right-0 w-64 bg-gray-800/95 backdrop-blur-sm p-4 rounded-lg shadow-lg md:hidden z-50 mt-2"
+				>
+					<Link href="/tournaments/my-tournaments" className="flex items-center gap-2 w-full text-left text-white hover:text-blue-500 mb-4 transition-colors duration-200">
+						<FaTrophy size={20} />
+						<span>My Tournaments</span>
+					</Link>
+					<div
+						onClick={handleAuth}
+						className="flex items-center gap-2 w-full text-left text-white hover:text-blue-500 transition-colors duration-200 cursor-pointer"
+					>
+						{loggedIn ? (
+							<>
+								<BiLogOut size={20} />
+								<span>Logout</span>
+							</>
+						) : (
+							<>
+								<BiLogIn size={20} />
+								<span>Sign-In/Sign-Up</span>
+							</>
+						)}
+					</div>
+				</motion.div>
+			)}
+		</motion.nav>
+	);
+}
+
+export default Navbar;

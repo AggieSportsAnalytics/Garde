@@ -112,7 +112,7 @@ function Feedback({
 	setLoading,
 }) {
 	return (
-		<div className="flex flex-row mx-10 pt-10 text-white space-x-6">
+		<div className="flex flex-row px-10 py-10 text-white space-x-6 bg-black">
 			{/* Video Gallery */}
 			<div className="w-1/2">
 				<Videos

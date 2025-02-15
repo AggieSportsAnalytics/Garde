@@ -1,12 +1,11 @@
 "use client";
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import "../../app/globals.css";
 
 const navbar = () => {
 	const [nav, setNav] = useState(false);
-	const [shadow, setShadow] = useState(false);
 	const hamburgerRef = useRef(null);
 
 	const handleNav = () => {
@@ -16,50 +15,30 @@ const navbar = () => {
 		}
 	};
 
-	useEffect(() => {
-		const changeShadow = () => {
-			if (window.scrollY >= 90) {
-				setShadow(true);
-			} else {
-				setShadow(false);
-			}
-		};
-
-		window.addEventListener("scroll", changeShadow);
-	}, []);
-
 	return (
-		<div
-			className={
-				shadow
-					? "navbar fixed md:w-[800px] w-[340px] mt-4 md:mt-12 left-1/2 transform -translate-x-1/2 h-16 z-[100] rounded-full duration-500"
-					: "fixed md:w-[800px] w-[340px] mt-4 md:mt-12 left-1/2 transform -translate-x-1/2 h-16 z-[100]"
-			}
-		>
+		<div className="navbar fixed md:w-[800px] w-[340px] mt-4 md:mt-12 left-1/2 transform -translate-x-1/2 h-16 z-[100] rounded-full duration-500">
 			<div className="flex justify-between items-center w-full h-full px-4">
-				<Link href="/#home">
-					<Image
-						src="/images/garde-wide.png"
-						alt="logo"
-						width={120}
-						height={120}
-						quality={100}
-						className="rounded-3xl hover:animate-pulse object-contain"
-					/>
-				</Link>
+				<Image
+					src="/images/garde-wide.png"
+					alt="logo"
+					width={120}
+					height={120}
+					quality={100}
+					className="rounded-3xl hover:animate-pulse object-contain bg-black p-1"
+				/>
 				<div className="hidden md:flex items-center justify-center space-x-4">
 					<Link href="/#about">
-						<span className="text-sm text-[#6e7273] hover:text-[#5bb1d5] transition-colors duration-500">
+						<span className="text-sm text-gray-300 hover:text-[#5bb1d5] transition-colors duration-500">
 							About
 						</span>
 					</Link>
 					<Link href="/#features">
-						<span className="text-sm text-[#6e7273] hover:text-[#5bb1d5] transition-colors duration-500">
+						<span className="text-sm text-gray-300 hover:text-[#5bb1d5] transition-colors duration-500">
 							Features
 						</span>
 					</Link>
 					<Link href="/#contact">
-						<span className="text-sm text-[#6e7273] hover:text-[#5bb1d5] transition-colors duration-500">
+						<span className="text-sm text-gray-300 hover:text-[#5bb1d5] transition-colors duration-500">
 							Contact
 						</span>
 					</Link>

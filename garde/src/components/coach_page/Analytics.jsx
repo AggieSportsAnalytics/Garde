@@ -244,7 +244,7 @@ function Analytics({ fencer, currentVideo, videos }) {
 	};
 
 	return (
-		<div className="p-4 bg-gray-900 rounded-lg shadow-lg mt-10">
+		<div className="p-4 bg-gray-900 shadow-lg">
 			<div className="flex flex-row items-center">
 				<h2 className="text-white text-xl mb-4">
 					Fencer {fencer.name}'s Sessions

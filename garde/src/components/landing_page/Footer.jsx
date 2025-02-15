@@ -4,15 +4,15 @@ import Link from "next/link";
 
 const Footer = () => {
 	return (
-		<div>
-			<div className="mt-20 flex justify-center">
+		<>
+			<div className="flex justify-center">
 				<Image
 					src="/images/garde-wide.png"
 					alt="logo"
 					width={150}
 					height={150}
 					quality={100}
-					className="mt-[100px] rounded-2xl p-1"
+					className="mt-8 rounded-2xl p-1 bg-black"
 				/>
 			</div>
 
@@ -20,14 +20,12 @@ const Footer = () => {
 				© 2024-2025 Garde™. All Rights Reserved.
 			</div>
 			<Link
-				className="mt-5 flex justify-center text-blue-400"
+				className="py-5 flex justify-center text-blue-400"
 				href="/privacy-policy"
 			>
 				Privacy Policy
 			</Link>
-
-			<div className="mt-5" />
-		</div>
+		</>
 	);
 };
 

@@ -4,9 +4,7 @@ import Signin from "../../components/auth/Signin";
 export default function () {
 	return (
 		<Suspense fallback={<div>Loading...</div>}>
-			<div>
-				<Signin isSignUpDefault={false} />
-			</div>
+			<Signin />
 		</Suspense>
 	);
 }

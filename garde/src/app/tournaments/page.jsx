@@ -72,7 +72,7 @@ function Navbar({ setLoggedIn, loggedIn }) {
 				duration={2}
 				filter={false}
 				words="Tournaments"
-				className="hidden md:block text-lg md:text-2xl lg:text-3xl absolute left-1/2 -translate-x-1/2 font-bold mb-4 whitespace-nowrap"
+				className="hidden md:block text-lg md:text-2xl lg:text-3xl absolute left-1/2 -translate-x-1/2 font-bold mb-4 whitespace-nowrap text-white"
 			/>
 			<div className="text-white md:hidden text-2xl absolute left-1/2 -translate-x-1/2 font-bold mb-4 whitespace-nowrap">
 				Tournaments
@@ -335,7 +335,7 @@ function Tournaments() {
 	};
 
 	return (
-		<>
+		<div className="bg-black pb-28">
 			<Loader loading={loading} />
 			<div className="bg-black text-white min-h-screen flex flex-col justify-start">
 				<Navbar setLoggedIn={setLoggedIn} loggedIn={loggedIn} />
@@ -469,6 +469,6 @@ function Tournaments() {
 				</div>
 				<RestrictedAlert redirect={"/tournaments"} />
 			</div>
-		</>
+		</div>
 	);
 }

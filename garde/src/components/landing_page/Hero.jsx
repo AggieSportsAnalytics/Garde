@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { FaCloudUploadAlt } from "react-icons/fa";
+import { PlaceholdersAndVanishInput } from "../ui/placeholders-and-vanish-input";
 
 // Sample images array - replace with your actual image paths
 const sampleImages = [
@@ -14,6 +15,8 @@ const sampleImages = [
 
 const Hero = () => {
 	const [currentImageIndex, setCurrentImageIndex] = useState(0);
+	const [uploading, setUploading] = useState(false);
+	const [uploadError, setUploadError] = useState("");
 
 	// Auto-advance images every 5 seconds
 	useEffect(() => {
@@ -22,6 +25,42 @@ const Hero = () => {
 		}, 5000);
 		return () => clearInterval(timer);
 	}, []);
+
+	const placeholders = [
+		"Show me every attack that I missed...",
+		"Show me how to improve my timing...",
+		"Analyze my footwork during this bout...",
+		"How can I improve against this opponent...",
+		"Ask me anything..."
+	];
+
+	const handleInputChange = (e) => {
+		console.log(e.target.value);
+	};
+
+	const handleSubmit = (e) => {
+		e.preventDefault();
+		// Redirect to upload page or handle submission
+		window.location.href = '/upload';
+	};
+
+	const handleFileUpload = async (e) => {
+		const file = e.target.files[0];
+		if (file) {
+			setUploading(true);
+			setUploadError("");
+			
+			try {
+				// Your upload logic here
+				console.log("File selected:", file);
+				// await uploadFile(file);
+			} catch (error) {
+				setUploadError("Upload failed. Please try again.");
+			} finally {
+				setUploading(false);
+			}
+		}
+	};
 
 	return (
 		<div className="relative min-h-screen flex bg-[#faf9f5]">
@@ -58,15 +97,43 @@ const Hero = () => {
 						</p>
 					</div>
 
-					{/* Upload CTA Button */}
+					{/* Replace the Upload CTA Button with the new input */}
 					<div className="mt-8">
-						<Link href="/upload">
-							<button className="group px-8 py-4 bg-[#1a2b3b] text-white rounded-lg hover:bg-[#2c3e50] transition flex items-center gap-3 text-lg">
-								<FaCloudUploadAlt className="text-xl" />
-								Upload your bout for AI feedback
-								<FaLocationArrow className="group-hover:translate-x-1 transition" />
-							</button>
-						</Link>
+						<PlaceholdersAndVanishInput
+							placeholders={placeholders}
+							onChange={handleInputChange}
+							onSubmit={handleSubmit}
+						/>
+					</div>
+
+					{/* New Upload Button */}
+					<div className="mt-4 flex flex-col items-center">
+						<label
+							htmlFor="video-upload"
+							className={`flex items-center gap-2 px-6 py-3 bg-black text-white rounded-full hover:bg-gray-800 transition-colors cursor-pointer ${
+								uploading ? 'opacity-50 cursor-not-allowed' : ''
+							}`}
+						>
+							{uploading ? (
+								<span>Uploading...</span>
+							) : (
+								<>
+									<FaCloudUploadAlt className="text-xl" />
+									<span>Upload Your Bout</span>
+								</>
+							)}
+							<input
+								id="video-upload"
+								type="file"
+								accept="video/*"
+								onChange={handleFileUpload}
+								className="hidden"
+								disabled={uploading}
+							/>
+						</label>
+						{uploadError && (
+							<p className="mt-2 text-red-500 text-sm">{uploadError}</p>
+						)}
 					</div>
 				</div>
 			</div>

@@ -1,91 +1,38 @@
 import React from "react";
 import "../../app/globals.css";
-import { LampContainer } from "../ui/lamp";
-import { AnimatedTooltip } from "../ui/animated-tooltip";
-import { TypewriterEffectSmooth } from "../ui/typewriter-effect";
-
-const tools = [
-	{
-		id: 1,
-		name: "TensorflowJS",
-		designation: "AI/ML Library used for Pose Estimation",
-		image: "/images/tensorflowJS.png",
-	},
-	{
-		id: 2,
-		name: "Cloudflare",
-		designation: "Database, CDN, & Video Storage",
-		image: "/images/cloudflare.png",
-	},
-	{
-		id: 3,
-		name: "Meta Llama",
-		designation: "LLM",
-		image: "/images/meta_ai.jpg",
-	},
-	{
-		id: 4,
-		name: "PineconeDB",
-		designation: "Vector Storage",
-		image: "/images/pinecone.png",
-	},
-	{
-		id: 7,
-		name: "NextJS",
-		designation: "Web Development",
-		image: "/images/nextjs.png",
-	},
-	{
-		id: 8,
-		name: "Tailwind CSS",
-		designation: "Frontend Web Development",
-		image: "/images/tailwindcsslogo.webp",
-	},
-];
-
-const words = [
-	{
-		text: "Built",
-	},
-	{
-		text: "using",
-	},
-	{
-		text: "the",
-	},
-	{
-		text: "industry",
-	},
-	{
-		text: "leading",
-	},
-	{
-		text: "tech",
-	},
-	{
-		text: "stack.",
-	},
-];
+import { motion } from "framer-motion";
 
 const Features = () => {
 	return (
-		<>
-			<div className="flex justify-center mt-10">
-				<TypewriterEffectSmooth
-					words={words}
-					className="font-platypi text-2xl md:text-3xl lg:text-4xl text-center"
-				/>
-			</div>
-
-			<LampContainer className="w-full mt-10">
-				<div className="flex flex-wrap justify-center mt-10 md:mt-20 w-full px-4">
-					<AnimatedTooltip
-						items={tools}
-						className="w-full sm:w-1/2 md:w-1/3 lg:w-1/4 max-w-xs mx-2 mb-4"
+		<div className="max-w-7xl mx-auto px-4 my-8">
+			<div className="flex flex-col md:flex-row items-center justify-between gap-8">
+				{/* Left Side: Action Text */}
+				<div className="md:w-1/2 text-center md:text-left">
+					<motion.h2
+						className="text-4xl sm:text-5xl md:text-6xl font-platypi text-[#1a2b3b]"
+						initial={{ opacity: 0, x: -50 }}
+						animate={{ opacity: 1, x: 0 }}
+						transition={{ duration: 1, delay: 0.5 }}
+					>
+						See GSX-a1 in action
+					</motion.h2>
+				</div>
+				{/* Right Side: Fencing Video */}
+				<div className="md:w-1/2">
+					<motion.video
+						src="/images/fencing-vid.mp4"
+						autoPlay
+						loop
+						muted
+						playsInline
+						className="w-full h-auto rounded-lg shadow-lg"
+						initial={{ opacity: 0, x: 50 }}
+						animate={{ opacity: 1, x: 0 }}
+						transition={{ duration: 1 }}
 					/>
 				</div>
-			</LampContainer>
-		</>
+			</div>
+		</div>
 	);
 };
 

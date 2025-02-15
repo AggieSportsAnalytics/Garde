@@ -7,27 +7,72 @@ const Showcase = () => {
 		<div id="features" className="w-full h-full pt-20 pb-10">
 			<div className="max-w-7xl mx-auto px-4">
 				<div className="flex flex-col md:flex-row items-center justify-between gap-8">
-					{/* Left Side: Video */}
-					<div className="md:w-1/2">
-						<motion.video
-							src="/images/fencing-vid.mp4"
-							autoPlay
-							loop
-							muted
-							playsInline
-							className="w-full h-auto rounded-lg shadow-lg"
-							initial={{ opacity: 0, x: -50 }}
-							animate={{ opacity: 1, x: 0 }}
-							transition={{ duration: 1 }}
-						/>
+					{/* Left Side: Features Grid */}
+					<div className="md:w-1/2 grid grid-cols-1 md:grid-cols-2 gap-6">
+						{/* Feature Card: Advanced Reasoning */}
+						<div className="flex flex-col items-center text-center p-4 border rounded-lg shadow">
+							<img
+								src="/images/advanced-reasoning.png"
+								alt="Advanced Reasoning"
+								className="w-20 h-20 object-contain"
+							/>
+							<h3 className="mt-2 text-xl font-bold text-[#1a2b3b]">
+								Advanced Reasoning
+							</h3>
+							<p className="mt-2 text-sm text-gray-600">
+								Empowers tactical decisions with intelligent data analysis and predictive algorithms.
+							</p>
+						</div>
+						{/* Feature Card: Vision Analysis */}
+						<div className="flex flex-col items-center text-center p-4 border rounded-lg shadow">
+							<img
+								src="/images/vision.png"
+								alt="Vision Analysis"
+								className="w-20 h-20 object-contain"
+							/>
+							<h3 className="mt-2 text-xl font-bold text-[#1a2b3b]">
+								Vision Analysis
+							</h3>
+							<p className="mt-2 text-sm text-gray-600">
+								Provides real-time analysis to capture critical insights from every movement.
+							</p>
+						</div>
+						{/* Feature Card: Speech-to-Speech */}
+						<div className="flex flex-col items-center text-center p-4 border rounded-lg shadow">
+							<img
+								src="/images/speech.jpg"
+								alt="Speech-to-Speech"
+								className="w-20 h-20 object-contain"
+							/>
+							<h3 className="mt-2 text-xl font-bold text-[#1a2b3b]">
+								Speech-to-Speech
+							</h3>
+							<p className="mt-2 text-sm text-gray-600">
+								Enables interactive voice feedback to guide your performance dynamically.
+							</p>
+						</div>
+						{/* Feature Card: Pose Mapping */}
+						<div className="flex flex-col items-center text-center p-4 border rounded-lg shadow">
+							<img
+								src="/images/pose-mapping.jpg"
+								alt="Pose Mapping"
+								className="w-20 h-20 object-contain"
+							/>
+							<h3 className="mt-2 text-xl font-bold text-[#1a2b3b]">
+								Pose Mapping
+							</h3>
+							<p className="mt-2 text-sm text-gray-600">
+								Tracks and maps body movements to optimize your fencing stance and form.
+							</p>
+						</div>
 					</div>
-					{/* Right Side: Text Content */}
+					{/* Right Side: Introduction to GSX-a1 */}
 					<div className="md:w-1/2 text-center md:text-left gap-3">
 						<h2 className="text-[#1a2b3b] text-4xl sm:text-5xl md:text-6xl font-platypi font-semibold flex justify-center">
 							Meet GSX-a1
 						</h2>
 						<h2 className="text-[#1a2b3b] text-lg sm:text-5xl md:text-xl mt-10 font-platypi">
-							Generative Sports Expert Alpha 1 is a State of the Art AI assistant built by Garde and trained on
+							Generative Sports Expert Alpha 1 is a state-of-the-art AI assistant built by Garde and trained on
 							specialized fencing datasets to help you analyze your bouts and perform at your best.
 						</h2>
 					</div>

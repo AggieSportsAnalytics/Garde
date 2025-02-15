@@ -24,16 +24,16 @@ const Navbar = ({ setLoggedIn, loggedIn }) => {
 			initial={{ y: -100 }}
 			animate={{ y: 0 }}
 			transition={{ type: "spring", stiffness: 100 }}
-			className="sticky top-0 z-50 flex items-center justify-between backdrop-blur-sm bg-[#1a2b3b] text-white p-4 border-b border-white/10"
+			className="fixed top-4 left-4 right-4 z-50 flex items-center justify-between p-4 bg-white/10 backdrop-blur-lg rounded-2xl shadow-lg text-white"
 		>
 			{/* Logo or Brand Name */}
 			<Link href="/" className="flex items-center">
 				<Image
-					src="/images/garde-wide.png" // Ensure this path is correct
+					src="/images/garde-square.png" // Ensure this path is correct
 					alt="Garde Logo"
-					width={90} // Adjust width as needed
-					height={30} // Adjust height as needed
-					className="object-contain"
+					width={55} // Adjust width as needed
+					height={55} // Adjust height as needed
+					className="object-contain rounded-xl"
 				/>
 			</Link>
 
@@ -43,7 +43,7 @@ const Navbar = ({ setLoggedIn, loggedIn }) => {
 				<div className="hidden md:flex items-center gap-6">
 					<Link href="/tournaments/my-tournaments" className="flex items-center gap-2 hover:text-blue-300 transition-colors duration-200">
 						<FaTrophy size={20} />
-						<span>My Tournaments</span>
+						<span className="text-slate-800">My Tournaments</span>
 					</Link>
 					<div
 						onClick={handleAuth}
@@ -57,7 +57,7 @@ const Navbar = ({ setLoggedIn, loggedIn }) => {
 						) : (
 							<>
 								<BiLogIn size={20} />
-								<span>Sign-In/Sign-Up</span>
+								<span className='text-slate-800'>Sign-In/Sign-Up</span>
 							</>
 						)}
 					</div>

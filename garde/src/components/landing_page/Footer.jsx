@@ -4,7 +4,7 @@ import Link from "next/link";
 
 const Footer = () => {
 	return (
-		<>
+		<footer className="bg-black py-4">
 			<div className="flex justify-center">
 				<Image
 					src="/images/garde-wide.png"
@@ -12,20 +12,28 @@ const Footer = () => {
 					width={150}
 					height={150}
 					quality={100}
-					className="mt-8 rounded-2xl p-1 bg-black"
+					className="mt-4 rounded-2xl p-1 bg-black"
 				/>
 			</div>
 
-			<div className="mt-5 flex justify-center text-stone-300">
+			<div className="mt-2 flex justify-center text-stone-300">
 				© 2024-2025 Garde™. All Rights Reserved.
 			</div>
 			<Link
-				className="py-5 flex justify-center text-blue-400"
+				className="py-2 flex justify-center text-blue-400"
 				href="/privacy-policy"
 			>
 				Privacy Policy
 			</Link>
-		</>
+			<div className="flex justify-center">
+				<a
+					href="mailto:gardefencing@gmail.com"
+					className="py-1 text-blue-400"
+				>
+					gardefencing@gmail.com
+				</a>
+			</div>
+		</footer>
 	);
 };
 

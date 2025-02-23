@@ -14,6 +14,9 @@ const sampleImages = [
 ];
 
 const Hero = () => {
+	const handleUploadClick = () => {
+		window.location.href = "http://3.90.235.230";
+	};
 	const [currentImageIndex, setCurrentImageIndex] = useState(0);
 	const [uploading, setUploading] = useState(false);
 	const [uploadError, setUploadError] = useState("");
@@ -126,7 +129,7 @@ const Hero = () => {
 								id="video-upload"
 								type="file"
 								accept="video/*"
-								onChange={handleFileUpload}
+								onClick={handleUploadClick}
 								className="hidden"
 								disabled={uploading}
 							/>
@@ -139,7 +142,7 @@ const Hero = () => {
 			</div>
 
 			{/* Right side with dark background */}
-			<div className="hidden md:block w-1/2 bg-[#12375a] relative rounded-l-lg">
+			<div className="hidden md:block w-1/2 bg-[#1a2b3b] relative rounded-l-lg">
 				<div className="absolute inset-0 flex items-center justify-center p-8">
 					<div className="w-full max-w-2xl">
 						<AnimatePresence mode="wait">

@@ -1,6 +1,4 @@
-import { FaLocationArrow } from "react-icons/fa6";
 import { TextGenerateEffect } from "../ui/TextGenerateEffect";
-import Link from "next/link";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { FaCloudUploadAlt } from "react-icons/fa";
@@ -34,7 +32,7 @@ const Hero = () => {
 		"Show me how to improve my timing...",
 		"Analyze my footwork during this bout...",
 		"How can I improve against this opponent...",
-		"Ask me anything..."
+		"Ask me anything...",
 	];
 
 	const handleInputChange = (e) => {
@@ -44,7 +42,7 @@ const Hero = () => {
 	const handleSubmit = (e) => {
 		e.preventDefault();
 		// Redirect to upload page or handle submission
-		window.location.href = '/upload';
+		window.location.href = "/upload";
 	};
 
 	const handleFileUpload = async (e) => {
@@ -52,7 +50,7 @@ const Hero = () => {
 		if (file) {
 			setUploading(true);
 			setUploadError("");
-			
+
 			try {
 				// Your upload logic here
 				console.log("File selected:", file);
@@ -70,20 +68,20 @@ const Hero = () => {
 			{/* Left side with light background */}
 			<div className="w-full md:w-1/2 px-4 pt-32 md:pt-36 relative">
 				<div className="max-w-xl mx-auto">
-					{/* Login buttons */}
+					{/* DO NOT USE NEXT/LINK FOR ROUTING TO SIGNIN PAGE */}
 					<div className="flex gap-4 mb-16">
-						<Link
+						<a
 							href="/signin"
 							className="px-6 py-2 bg-[#1a2b3b] text-white rounded-lg hover:bg-[#2c3e50] transition"
 						>
 							Login
-						</Link>
-						<Link
+						</a>
+						<a
 							href="/signin?isSignUp=true"
 							className="px-6 py-2 border border-[#1a2b3b] text-[#1a2b3b] rounded-lg hover:bg-gray-50 transition"
 						>
 							Sign Up
-						</Link>
+						</a>
 					</div>
 
 					{/* Brand and Problem Statement */}
@@ -114,7 +112,7 @@ const Hero = () => {
 						<label
 							htmlFor="video-upload"
 							className={`flex items-center gap-2 px-6 py-3 bg-black text-white rounded-full hover:bg-gray-800 transition-colors cursor-pointer ${
-								uploading ? 'opacity-50 cursor-not-allowed' : ''
+								uploading ? "opacity-50 cursor-not-allowed" : ""
 							}`}
 						>
 							{uploading ? (

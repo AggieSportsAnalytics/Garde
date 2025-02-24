@@ -20,7 +20,8 @@ const Features = () => {
 				{/* Right Side: Fencing Video */}
 				<div className="md:w-1/2">
 					<motion.video
-						src="/images/fencing-vid.mp4"
+						// mp4 codec not supported on mobile, weird, but use this webm
+						src="/images/fencing-vid.webm"
 						autoPlay
 						loop
 						muted

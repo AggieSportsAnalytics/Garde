@@ -1,21 +1,57 @@
-import React, { useState } from 'react'
+"use client";
+
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
-import Link from 'next/link';
-import { Button } from '../ui/button';
-import "../../app/globals.css"
+import Link from "next/link";
+import "../../app/globals.css";
 import { motion } from "framer-motion";
 import { FaTrophy } from "react-icons/fa";
 import { BiLogIn, BiLogOut } from "react-icons/bi";
+import { useRouter } from "next/navigation";
+import checkAuth from "@/src/app/hooks/jwt_verify";
+import renewSession from "@/src/app/hooks/renew_session";
+import axios from "axios";
 
-const Navbar = ({ setLoggedIn, loggedIn }) => {
+const Navbar = () => {
 	const [menuOpen, setMenuOpen] = useState(false);
+	const [loggedIn, setLoggedIn] = useState(false);
+	const router = useRouter();
 
-	const handleAuth = async () => {
-		if (loggedIn) {
-			// Handle logout logic
+	useEffect(() => {
+		const initPage = async () => {
+			try {
+				const decoded = await checkAuth(router, "signin", "", true);
+
+				if (decoded) {
+					setLoggedIn(true);
+				} else {
+					setLoggedIn(false);
+				}
+
+				renewSession(decoded).then((val) => {
+					if (!val) {
+						setLoggedIn(false);
+					}
+				});
+			} catch (error) {
+				console.error(error);
+			}
+		};
+
+		initPage();
+	}, []);
+
+	const handleLogout = async () => {
+		try {
+			await axios.get("/api/logout", {
+				headers: {
+					Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_KEY}`,
+				},
+				withCredentials: true,
+			});
 			setLoggedIn(false);
-		} else {
-			// Redirect to sign-in page
+		} catch (error) {
+			console.error(error);
 		}
 	};
 
@@ -41,26 +77,33 @@ const Navbar = ({ setLoggedIn, loggedIn }) => {
 			<div className="ml-auto flex items-center gap-4">
 				{/* Desktop Menu */}
 				<div className="hidden md:flex items-center gap-6">
-					<Link href="/tournaments/my-tournaments" className="flex items-center gap-2 hover:text-blue-300 transition-colors duration-200">
-						<FaTrophy size={20} />
-						<span className="text-slate-800">My Tournaments</span>
-					</Link>
-					<div
-						onClick={handleAuth}
-						className="flex items-center gap-2 cursor-pointer hover:text-blue-300 transition-colors duration-200"
+					<Link
+						href="/tournaments/my-tournaments"
+						className="flex items-center gap-2 hover:text-blue-300 transition-colors duration-200"
 					>
-						{loggedIn ? (
-							<>
-								<BiLogOut size={20} />
-								<span>Logout</span>
-							</>
-						) : (
-							<>
-								<BiLogIn size={20} />
-								<span className='text-slate-800'>Sign-In/Sign-Up</span>
-							</>
-						)}
-					</div>
+						<FaTrophy size={20} className="text-slate-200" />
+						<span className="text-slate-400">My Tournaments</span>
+					</Link>
+
+					{loggedIn ? (
+						<button
+							onClick={handleLogout}
+							type="button"
+							className="flex hover:text-blue-300 transition-colors duration-200"
+						>
+							<BiLogOut size={20} className="text-slate-200" />
+							<span className="text-slate-400 ml-2">Logout</span>
+						</button>
+					) : (
+						// DO NOT USE NEXT/LINK FOR ROUTING TO SIGNIN PAGE
+						<a
+							href="/signin"
+							className="flex hover:text-blue-300 transition-colors duration-200"
+						>
+							<BiLogIn size={20} className="text-slate-200" />
+							<span className="text-slate-400 ml-2">Sign-In/Sign-Up</span>
+						</a>
+					)}
 				</div>
 
 				{/* Mobile Menu Button */}
@@ -70,9 +113,9 @@ const Navbar = ({ setLoggedIn, loggedIn }) => {
 						onClick={() => setMenuOpen((prev) => !prev)}
 					>
 						<div className="space-y-1">
-							<div className="w-6 h-1 bg-white" />
-							<div className="w-6 h-1 bg-white" />
-							<div className="w-6 h-1 bg-white" />
+							<div className="w-6 h-1 bg-slate-400" />
+							<div className="w-6 h-1 bg-slate-400" />
+							<div className="w-6 h-1 bg-slate-400" />
 						</div>
 					</div>
 				</div>
@@ -86,30 +129,38 @@ const Navbar = ({ setLoggedIn, loggedIn }) => {
 					exit={{ opacity: 0, y: -10 }}
 					className="absolute top-full right-0 w-64 bg-gray-800/95 backdrop-blur-sm p-4 rounded-lg shadow-lg md:hidden z-50 mt-2"
 				>
-					<Link href="/tournaments/my-tournaments" className="flex items-center gap-2 w-full text-left text-white hover:text-blue-500 mb-4 transition-colors duration-200">
+					<Link
+						href="/tournaments/my-tournaments"
+						className="flex items-center gap-2 w-full text-left text-white hover:text-blue-500 mb-4 transition-colors duration-200"
+					>
 						<FaTrophy size={20} />
 						<span>My Tournaments</span>
 					</Link>
-					<div
-						onClick={handleAuth}
-						className="flex items-center gap-2 w-full text-left text-white hover:text-blue-500 transition-colors duration-200 cursor-pointer"
-					>
-						{loggedIn ? (
-							<>
-								<BiLogOut size={20} />
-								<span>Logout</span>
-							</>
-						) : (
-							<>
-								<BiLogIn size={20} />
-								<span>Sign-In/Sign-Up</span>
-							</>
-						)}
-					</div>
+					{loggedIn ? (
+						<button
+							onClick={handleLogout}
+							type="button"
+							className="flex hover:text-blue-300 transition-colors duration-200"
+						>
+							<BiLogOut size={20} />
+							<span className="ml-2">Logout</span>
+						</button>
+					) : (
+						// DO NOT USE NEXT/LINK FOR ROUTING TO SIGNIN PAGE
+						<a
+							href="/signin"
+							className="flex hover:text-blue-500 transition-colors duration-200"
+						>
+							<BiLogIn size={20} />
+							<span className="text-white ml-2 hover:text-blue-500">
+								Sign-In/Sign-Up
+							</span>
+						</a>
+					)}
 				</motion.div>
 			)}
 		</motion.nav>
 	);
-}
+};
 
 export default Navbar;

@@ -39,11 +39,15 @@ const Contact = () => {
 	};
 
 	return (
-		<section className="bg-[#faf9f5] py-12">
+		<section className="bg-[#faf9f5] py-12 px-6">
 			{/* Floating Centered Card */}
 			<div className="max-w-lg mx-auto bg-[#2c3e50] p-8 rounded-3xl shadow-2xl">
-				<h2 className="text-4xl font-platypi text-white text-center mb-8">Interested?</h2>
-				<h3 className="text-lg font-platypi text-white text-center mb-8">Fill out the form below and we will be in touch shortly!</h3>
+				<h2 className="text-4xl font-platypi text-white text-center mb-8">
+					Interested?
+				</h2>
+				<h3 className="text-lg font-platypi text-white text-center mb-8">
+					Fill out the form below and we will be in touch shortly!
+				</h3>
 				<form ref={form} onSubmit={sendEmail} className="space-y-6">
 					<div>
 						<label htmlFor="name" className="block text-lg text-gray-300 mb-2">
@@ -70,7 +74,10 @@ const Contact = () => {
 						/>
 					</div>
 					<div>
-						<label htmlFor="message" className="block text-lg text-gray-300 mb-2">
+						<label
+							htmlFor="message"
+							className="block text-lg text-gray-300 mb-2"
+						>
 							Message
 						</label>
 						<textarea
@@ -100,17 +107,29 @@ const Contact = () => {
 				<div className="flex justify-center mt-4">
 					<div className="flex space-x-4">
 						<div className="bg-slate-500 w-12 h-12 rounded-xl hover:bg-slate-400 flex items-center justify-center">
-							<Link href="https://www.linkedin.com/company/gardeai/" target="_blank" rel="noreferrer">
+							<Link
+								href="https://www.linkedin.com/company/gardeai/"
+								target="_blank"
+								rel="noreferrer"
+							>
 								<FaLinkedin className="w-6 h-6 text-white" />
 							</Link>
 						</div>
 						<div className="bg-slate-500 w-12 h-12 rounded-xl hover:bg-slate-400 flex items-center justify-center">
-							<Link href="https://www.instagram.com/garde.ai" target="_blank" rel="noreferrer">
+							<Link
+								href="https://www.instagram.com/garde.ai"
+								target="_blank"
+								rel="noreferrer"
+							>
 								<FaInstagram className="w-6 h-6 text-white" />
 							</Link>
 						</div>
 						<div className="bg-slate-500 w-12 h-12 rounded-xl hover:bg-slate-400 flex items-center justify-center">
-							<Link href="https://www.youtube.com/@gardefencing" target="_blank" rel="noreferrer">
+							<Link
+								href="https://www.youtube.com/@gardefencing"
+								target="_blank"
+								rel="noreferrer"
+							>
 								<FaYoutube className="w-6 h-6 text-white" />
 							</Link>
 						</div>

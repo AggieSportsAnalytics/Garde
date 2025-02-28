@@ -92,6 +92,8 @@ export default function Fencer_Page2() {
 	const [uploadAngles, setUploadAngles] = useState(false);
 	const [coaches, setCoaches] = useState([]);
 	const [currentCoach, setCurrentCoach] = useState({});
+	const [initialAnalysis, setInitialAnalysis] = useState("");
+	const [hashFile, setHashFie] = useState("");
 	const router = useRouter();
 
 	const [sumAngles, setSumAngles] = useState({
@@ -886,6 +888,8 @@ export default function Fencer_Page2() {
 									setVideoId={setVideoId}
 									setUploadAngles={setUploadAngles}
 									setIsRecording={setIsRecording}
+									setAnalysis={setInitialAnalysis}
+									setHashFile={setHashFie}
 								/>
 							</div>
 
@@ -911,7 +915,11 @@ export default function Fencer_Page2() {
 								pointerEvents: "auto",
 							}}
 						>
-							<Chatbot darkMode={darkMode} />
+							<Chatbot
+								darkMode={darkMode}
+								hashFile={hashFile}
+								initialAnalysis={initialAnalysis}
+							/>
 						</div>
 
 						<div

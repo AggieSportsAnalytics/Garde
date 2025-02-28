@@ -8,6 +8,8 @@ const Stream_Vid = ({
 	toggleRecording,
 	fencerId,
 	setVideoId,
+	setAnalysis,
+	setHashFile,
 }) => {
 	const refFileInput = useRef(null);
 	const [videoAdded, setVideoAdded] = useState(false); // Track if video has been added
@@ -54,6 +56,20 @@ const Stream_Vid = ({
 					"Content-Type": "multipart/form-data",
 				},
 			});
+
+			const response = await axios.post(
+				`${process.env.NEXT_PUBLIC_CHAT_URL}/upload`,
+				formData,
+				{
+					headers: {
+						"Content-Type": "multipart/form-data",
+						"X-Session-ID": fencerId,
+					},
+				},
+			);
+			const { analysis, hash_file } = response.data;
+			setAnalysis(analysis);
+			setHashFile(hash_file);
 		} catch (error) {
 			console.error("Error during file upload:", error);
 		}

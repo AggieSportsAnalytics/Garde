@@ -1,8 +1,7 @@
 import React, { useState } from "react";
 import axios from "axios";
-import TypingEffect from "react-typing-effect";
 
-export default function Chatbot({ darkMode }) {
+export default function Chatbot({ darkMode, hashFile, initialAnalysis }) {
 	const [userInput, setUserInput] = useState("");
 	const [chatHistory, setChatHistory] = useState([]);
 
@@ -28,7 +27,7 @@ export default function Chatbot({ darkMode }) {
 
 		try {
 			const response = await axios.post(
-				"/api/query",
+				`${process.env.NEXT_PUBLIC_CHAT_URL}/chat`,
 				{
 					query: userInput,
 				},

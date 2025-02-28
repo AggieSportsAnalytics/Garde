@@ -13,7 +13,7 @@ const sampleImages = [
 
 const Hero = () => {
 	const handleUploadClick = () => {
-		window.location.href = "http://3.90.235.230";
+		window.location.href = process.env.NEXT_PUBLIC_CHAT_URL;
 	};
 	const [currentImageIndex, setCurrentImageIndex] = useState(0);
 	const [uploading, setUploading] = useState(false);
@@ -42,25 +42,7 @@ const Hero = () => {
 	const handleSubmit = (e) => {
 		e.preventDefault();
 		// Redirect to upload page or handle submission
-		window.location.href = "/upload";
-	};
-
-	const handleFileUpload = async (e) => {
-		const file = e.target.files[0];
-		if (file) {
-			setUploading(true);
-			setUploadError("");
-
-			try {
-				// Your upload logic here
-				console.log("File selected:", file);
-				// await uploadFile(file);
-			} catch (error) {
-				setUploadError("Upload failed. Please try again.");
-			} finally {
-				setUploading(false);
-			}
-		}
+		window.location.href = process.env.NEXT_PUBLIC_CHAT_URL;
 	};
 
 	return (

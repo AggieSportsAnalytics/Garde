@@ -35,6 +35,8 @@ const WebcamPose = ({
 	setVideoId,
 	setUploadAngles,
 	setIsRecording,
+	setAnalysis,
+	setHashFile,
 }) => {
 	const videoRef = useRef(null);
 	const webcamRef = useRef(null);
@@ -334,6 +336,20 @@ const WebcamPose = ({
 					"Content-Type": "multipart/form-data",
 				},
 			});
+
+			const response = await axios.post(
+				`${process.env.NEXT_PUBLIC_CHAT_URL}/upload`,
+				formData,
+				{
+					headers: {
+						"Content-Type": "multipart/form-data",
+						"X-Session-ID": fencerId,
+					},
+				},
+			);
+			const { analysis, hash_file } = response.data;
+			setAnalysis(analysis);
+			setHashFile(hash_file);
 		} catch (error) {
 			console.error("Error during file upload:", error);
 		}

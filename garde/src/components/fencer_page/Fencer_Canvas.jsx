@@ -355,8 +355,10 @@ const WebcamPose = ({
 		try {
 			const newId = fencerId ? fencerId : "no-id";
 
+			const API_URL = `${process.env.NEXT_PUBLIC_CONVERT_URL}/api/convert-video/${newId}`;
+
 			const results = await Promise.allSettled([
-				axios.post(`/api/convert-video/${newId}`, formData, {
+				axios.post(API_URL, formData, {
 					withCredentials: true,
 					headers: {
 						Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_KEY}`,

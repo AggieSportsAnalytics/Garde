@@ -286,7 +286,7 @@ export default function Fencer_Page2() {
 
 		const checkQueries = async () => {
 			try {
-				const fp = getFingerprint();
+				const fp = await getFingerprint();
 				setFingerprint(fp);
 
 				const res = await axios.post(

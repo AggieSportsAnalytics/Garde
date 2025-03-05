@@ -45,6 +45,15 @@ CREATE TABLE IF NOT EXISTS users (
 );
 """
 
+create_videos_table = """
+CREATE TABLE IF NOT EXISTS videos (
+    video_id TEXT PRIMARY KEY,
+    fencer_id TEXT NOT NULL,
+    messages TEXT NOT NULL,
+    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+"""
+
 create_coach_fencers_table = """
 CREATE TABLE IF NOT EXISTS coach_fencer (
     coach_id TEXT,       
@@ -358,6 +367,7 @@ if __name__ == "__main__":
         execute_sql(database_name, create_whitelist_table)
         execute_sql(database_name, create_attempted_signins_table)
         execute_sql(database_name, create_mailing_list_table)
+        execute_sql(database_name, create_videos_table)
         execute_sql(database_name, insert_or_replace_fencer_instructions)
         execute_sql(database_name, insert_or_replace_ideal_angles)
         execute_sql(database_name, insert_or_replace_whitelist)

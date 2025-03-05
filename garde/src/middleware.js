@@ -19,10 +19,7 @@ export async function middleware(req) {
 	}
 
 	let redirect = "/";
-	if (
-		requestedPage.includes("/fencer_page") ||
-		requestedPage.includes("/coach_page")
-	) {
+	if (requestedPage.includes("/coach_page")) {
 		redirect = "/signin";
 	} else if (
 		requestedPage.includes("/tournaments/organize") ||
@@ -35,6 +32,7 @@ export async function middleware(req) {
 	} else if (requestedPage.includes("/api/renew_session")) {
 		return NextResponse.next();
 	} else if (
+		requestedPage.includes("/fencer_page") ||
 		requestedPage.includes("/tournaments") ||
 		requestedPage.includes("/api/") ||
 		requestedPage.includes("/verify-email") ||

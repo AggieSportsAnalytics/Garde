@@ -17,12 +17,11 @@ import Plotly from "plotly.js-dist-min";
 import Modal from "react-modal";
 import FencerInstructionMenu from "./FencerInstructionMenu";
 import { MdBuild } from "react-icons/md";
-import axios from "axios";
-import { v4 as uuidv4 } from "uuid";
 import axiosInstance from "../axios";
+import HLSPlayer from "@/src/components/videos/HlsPlayer";
+import axios from "axios";
 
 const WebcamPose = ({
-	onVideoChange,
 	isRecording,
 	videoSource,
 	runtime = "mediapipe",
@@ -32,11 +31,11 @@ const WebcamPose = ({
 	containerHeight,
 	darkMode,
 	fencerId,
-	setVideoId,
 	setUploadAngles,
 	setIsRecording,
 	setAnalysis,
-	setHashFile,
+	setInitialLoading,
+	videoId,
 }) => {
 	const videoRef = useRef(null);
 	const webcamRef = useRef(null);
@@ -48,11 +47,31 @@ const WebcamPose = ({
 
 	const [latestPose, setLatestPose] = useState(null);
 	const [showInstructionMenu, setInstructionMenu] = useState(false);
-	const [recordedChunks, setRecordedChunks] = useState([]);
+	const [videoSrc, setVideoSrc] = useState(null);
+	const [videoUrl, setVideoUrl] = useState(null);
 
 	useEffect(() => {
 		Modal.setAppElement("body");
 	}, []);
+
+	useEffect(() => {
+		const newId = fencerId ? fencerId : "no-id";
+
+		const bucketUrl = process.env.NEXT_PUBLIC_BUCKET_URL;
+		const videoUrl = `${bucketUrl}/${newId}/${videoId}/playlist.m3u8`;
+
+		fetch(videoUrl, { method: "HEAD" })
+			.then((response) => {
+				if (response.ok) {
+					setVideoUrl(videoUrl);
+				} else {
+					setVideoUrl(null);
+				}
+			})
+			.catch(() => {
+				setVideoUrl(null);
+			});
+	}, [fencerId, videoId]);
 
 	useEffect(() => {
 		if (videoRef.current && videoSource) {
@@ -322,36 +341,61 @@ const WebcamPose = ({
 	}, [isRecording, videoSource, runtime, modelType]);
 
 	const handleDataAvailable = async (event) => {
+		setInitialLoading(true);
+
 		const formData = new FormData();
-		const videoId = uuidv4();
-		setVideoId(videoId);
 		setUploadAngles(true);
 		formData.append("video", event.data, videoId);
 
-		try {
-			const res = await axios.post(`/api/convert-video/${fencerId}`, formData, {
-				withCredentials: true,
-				headers: {
-					Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_KEY}`,
-					"Content-Type": "multipart/form-data",
-				},
-			});
+		const videoBlob = new Blob([event.data], { type: "video/webm" });
+		const videoURL = URL.createObjectURL(videoBlob);
 
-			const response = await axios.post(
-				`${process.env.NEXT_PUBLIC_CHAT_URL}/upload`,
-				formData,
-				{
+		setVideoSrc(videoURL);
+
+		try {
+			const newId = fencerId ? fencerId : "no-id";
+
+			const results = await Promise.allSettled([
+				axios.post(`/api/convert-video/${newId}`, formData, {
+					withCredentials: true,
+					headers: {
+						Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_KEY}`,
+						"Content-Type": "multipart/form-data",
+					},
+				}),
+				axiosInstance.put(
+					`${process.env.NEXT_PUBLIC_GARDE_WORKER}/putVideo/${newId}/${videoId}`,
+					{ messages: [] },
+					{
+						headers: { "Content-Type": "application/json" },
+					},
+				),
+				axios.post(`${process.env.NEXT_PUBLIC_CHAT_URL}/upload`, formData, {
 					headers: {
 						"Content-Type": "multipart/form-data",
-						"X-Session-ID": fencerId,
 					},
-				},
-			);
-			const { analysis, hash_file } = response.data;
-			setAnalysis(analysis);
-			setHashFile(hash_file);
+				}),
+			]);
+
+			// const response = await axios.post(
+			// 	`${process.env.NEXT_PUBLIC_CHAT_URL}/upload`,
+			// 	{ videoUrl: videoUrl },
+			// 	{
+			// 		headers: {
+			// 			"Content-Type": "application/json",
+			// 		},
+			// 	},
+			// );
+
+			const uploadResult = results[2];
+			if (uploadResult.status === "fulfilled") {
+				const { analysis } = uploadResult.value.data;
+				setAnalysis(analysis);
+			}
 		} catch (error) {
 			console.error("Error during file upload:", error);
+		} finally {
+			setInitialLoading(false);
 		}
 	};
 
@@ -377,11 +421,15 @@ const WebcamPose = ({
 						>
 							{videoSource ? (
 								<video
-									className="rounded-md"
+									className="rounded-md z-50"
 									ref={videoRef}
-									style={{ width: "100%", height: "100%" }}
+									style={{
+										width: "100%",
+										height: "100%",
+									}}
 									autoPlay
 									muted={false}
+									controls
 									onEnded={() => {
 										setIsRecording(false);
 										setUploadAngles(true);
@@ -389,8 +437,9 @@ const WebcamPose = ({
 								/>
 							) : (
 								<Webcam
-									className="rounded-md"
+									className="rounded-md z-50"
 									ref={webcamRef}
+									controls
 									style={{ width: "100%", height: "100%" }}
 								/>
 							)}
@@ -404,30 +453,57 @@ const WebcamPose = ({
 									left: 0,
 									width: "100%",
 									height: "100%",
+									pointerEvents: "none",
 								}}
 							/>
 						</div>
 					</>
-				) : null}
+				) : (
+					<>
+						{videoSrc ? (
+							<video
+								className="rounded-md z-50"
+								ref={videoRef}
+								style={{
+									width: "100%",
+									height: "100%",
+								}}
+								autoPlay
+								muted={false}
+								controls
+								src={videoSrc}
+							/>
+						) : (
+							<HLSPlayer videoUrl={videoUrl} />
+						)}
+					</>
+				)}
 			</div>
 			<div
 				id="3d-plot"
 				style={{
-					width: "200px",
-					height: "200px",
+					width: "100px",
+					height: "100px",
 					position: "absolute",
-					bottom: "0px",
+					bottom: "50px",
 					right: "0px",
 					zIndex: 10,
 					background: "rgba(0,0,0,0)",
 					borderRadius: "15px",
 					border: "2px solid white",
-					overflow: "hidden",
 				}}
-			></div>
+			/>
 
-			<div
+			{/* <div
 				style={{ position: "absolute", top: "-10%", left: "90%", zIndex: 20 }}
+			> */}
+			<div
+				style={{
+					position: "absolute",
+					top: "10px",
+					right: "10px",
+					zIndex: 20,
+				}}
 			>
 				<MdBuild
 					className="w-10 h-10 hover:bg-slate-700 rounded-md"

@@ -12,7 +12,10 @@ export async function POST(req, { params }) {
 	try {
 		const formData = await req.formData();
 		const videoFile = formData.get("video");
-		const { fencerId } = params;
+		let { fencerId } = params;
+		if (!fencerId || fencerId === "") {
+			fencerId = "no-id";
+		}
 
 		if (!videoFile) {
 			return NextResponse.json(

@@ -26,11 +26,8 @@ const Footer = () => {
 				Privacy Policy
 			</Link>
 			<div className="flex justify-center">
-				<a
-					href="mailto:gardefencing@gmail.com"
-					className="py-1 text-blue-400"
-				>
-					gardefencing@gmail.com
+				<a href="mailto:support@gardeai.com" className="py-1 text-blue-400">
+					support@gardeai.com
 				</a>
 			</div>
 		</footer>

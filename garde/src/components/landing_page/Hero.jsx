@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { FaCloudUploadAlt } from "react-icons/fa";
 import { PlaceholdersAndVanishInput } from "../ui/placeholders-and-vanish-input";
+import { useRouter } from "next/navigation";
 
 // Sample images array - replace with your actual image paths
 const sampleImages = [
@@ -12,12 +13,8 @@ const sampleImages = [
 ];
 
 const Hero = () => {
-	const handleUploadClick = () => {
-		window.location.href = process.env.NEXT_PUBLIC_CHAT_URL;
-	};
 	const [currentImageIndex, setCurrentImageIndex] = useState(0);
-	const [uploading, setUploading] = useState(false);
-	const [uploadError, setUploadError] = useState("");
+	const router = useRouter();
 
 	// Auto-advance images every 5 seconds
 	useEffect(() => {
@@ -35,14 +32,11 @@ const Hero = () => {
 		"Ask me anything...",
 	];
 
-	const handleInputChange = (e) => {
-		console.log(e.target.value);
-	};
-
 	const handleSubmit = (e) => {
 		e.preventDefault();
 		// Redirect to upload page or handle submission
-		window.location.href = process.env.NEXT_PUBLIC_CHAT_URL;
+		// window.location.href = process.env.NEXT_PUBLIC_CHAT_URL;
+		router.push("/fencer_page");
 	};
 
 	return (
@@ -84,39 +78,20 @@ const Hero = () => {
 					<div className="mt-8">
 						<PlaceholdersAndVanishInput
 							placeholders={placeholders}
-							onChange={handleInputChange}
 							onSubmit={handleSubmit}
 						/>
 					</div>
 
 					{/* New Upload Button */}
 					<div className="mt-4 flex flex-col items-center">
-						<label
-							htmlFor="video-upload"
-							className={`flex items-center gap-2 px-6 py-3 bg-black text-white rounded-full hover:bg-gray-800 transition-colors cursor-pointer ${
-								uploading ? "opacity-50 cursor-not-allowed" : ""
-							}`}
+						<button
+							className="flex items-center gap-2 px-6 py-3 bg-black text-white rounded-full hover:bg-gray-800 transition-colors cursor-pointer"
+							onClick={handleSubmit}
+							type="button"
 						>
-							{uploading ? (
-								<span>Uploading...</span>
-							) : (
-								<>
-									<FaCloudUploadAlt className="text-xl" />
-									<span>Upload Your Bout</span>
-								</>
-							)}
-							<input
-								id="video-upload"
-								type="file"
-								accept="video/*"
-								onClick={handleUploadClick}
-								className="hidden"
-								disabled={uploading}
-							/>
-						</label>
-						{uploadError && (
-							<p className="mt-2 text-red-500 text-sm">{uploadError}</p>
-						)}
+							<FaCloudUploadAlt className="text-xl" />
+							<span>Upload Your Bout</span>
+						</button>
 					</div>
 				</div>
 			</div>

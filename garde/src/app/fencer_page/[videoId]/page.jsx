@@ -399,7 +399,7 @@ export default function Fencer_Page2() {
 
 	async function addQuery() {
 		try {
-			const fp = fingerprint ? fingerprint : getFingerprint();
+			const fp = fingerprint ? fingerprint : await getFingerprint();
 
 			const res = await axios.post(
 				"/api/get-queries",

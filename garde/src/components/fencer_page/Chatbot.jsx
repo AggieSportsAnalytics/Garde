@@ -27,12 +27,19 @@ export default function Chatbot({
 		if (!response) return "";
 
 		return response
-			.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>") // Convert bold markdown to HTML
-			.replace(/__(.*?)__/g, "<em>$1</em>") // Convert italic markdown to HTML
-			.replace(/\n/g, "<br />") // Replace newlines with HTML line breaks
-			.replace(/-\s(.*?)$/gm, "<li>$1</li>") // Convert hyphens to list items
-			.replace(/<li>/g, "<ul><li>")
-			.replace(/<\/li>\s*(?!<li>)/g, "</li></ul>"); // Wrap lists
+			.replace(/######\s?(.*?)(\n|$)/g, "<h6>$1</h6>") // H6
+			.replace(/#####\s?(.*?)(\n|$)/g, "<h5>$1</h5>") // H5
+			.replace(/####\s?(.*?)(\n|$)/g, "<h4>$1</h4>") // H4
+			.replace(/###\s?(.*?)(\n|$)/g, "<h3>$1</h3>") // H3
+			.replace(/##\s?(.*?)(\n|$)/g, "<h2>$1</h2>") // H2
+			.replace(/#\s?(.*?)(\n|$)/g, "<h1>$1</h1>") // H1
+			.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>") // Bold
+			.replace(/__(.*?)__/g, "<em>$1</em>") // Italic
+			.replace(/\n{2,}/g, "</p><p>") // Paragraphs
+			.replace(/\n/g, "<br>") // Single line breaks
+			.replace(/- (.*?)(\n|$)/g, "<li>$1</li>") // List items
+			.replace(/<\/li>(?!<li>)/g, "</li></ul>") // Ensure list closure
+			.replace(/<li>/, "<ul><li>"); // Ensure list opening
 	};
 
 	async function addQuery() {

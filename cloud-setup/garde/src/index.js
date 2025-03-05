@@ -649,7 +649,8 @@ async function verifyEmail(email, type) {
 
 async function authGoogle(id, email, name, type) {
 	// remove this code once Garde goes public
-	const isWhitelisted = await isOnWhitelist(email, DB);
+	// const isWhitelisted = await isOnWhitelist(email, DB);
+	const isWhitelisted = true;
 	if (!isWhitelisted) {
 		await DB.prepare(`
 			INSERT OR IGNORE INTO attempted_signins (name, email)
@@ -892,7 +893,8 @@ async function isOnWhitelist(email) {
 
 async function auth(type, name, email, password, id) {
 	// remove this code once Garde goes public
-	const isWhitelisted = await isOnWhitelist(email, DB);
+	// const isWhitelisted = await isOnWhitelist(email, DB);
+	const isWhitelisted = true;
 	if (!isWhitelisted) {
 		await DB.prepare(`
 			INSERT OR IGNORE INTO attempted_signins (name, email)

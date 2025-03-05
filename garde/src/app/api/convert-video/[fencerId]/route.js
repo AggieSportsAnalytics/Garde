@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
-import ffmpeg from "fluent-ffmpeg"; // can uninstall
+import ffmpeg from "fluent-ffmpeg";
 import { promises as fsPromises } from "node:fs";
 import path from "node:path";
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
-import pLimit from "p-limit"; // can uninstall
+import pLimit from "p-limit";
 
 ffmpeg.setFfmpegPath(process.env.FFMPEG_PATH);
 const limit = pLimit(5);

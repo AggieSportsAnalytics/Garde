@@ -78,11 +78,11 @@ const Navbar = () => {
 				{/* Desktop Menu */}
 				<div className="hidden md:flex items-center gap-6">
 					<Link
-						href="/tournaments/my-tournaments"
+						href="/tournaments"
 						className="flex items-center gap-2 hover:text-blue-300 transition-colors duration-200"
 					>
 						<FaTrophy size={20} className="text-slate-200" />
-						<span className="text-slate-400">My Tournaments</span>
+						<span className="text-slate-400">Tournaments</span>
 					</Link>
 
 					{loggedIn ? (
@@ -130,11 +130,11 @@ const Navbar = () => {
 					className="absolute top-full right-0 w-64 bg-gray-800/95 backdrop-blur-sm p-4 rounded-lg shadow-lg md:hidden z-50 mt-2"
 				>
 					<Link
-						href="/tournaments/my-tournaments"
+						href="/tournaments"
 						className="flex items-center gap-2 w-full text-left text-white hover:text-blue-500 mb-4 transition-colors duration-200"
 					>
 						<FaTrophy size={20} />
-						<span>My Tournaments</span>
+						<span>Tournaments</span>
 					</Link>
 					{loggedIn ? (
 						<button

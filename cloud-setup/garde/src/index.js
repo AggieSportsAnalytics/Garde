@@ -137,8 +137,18 @@ export default {
 					return await getFencer(pathName[pathName.length - 1]);
 				}
 
+				if (path.includes("/getVideo")) {
+					const pathName = path.split("/");
+					return await getVideo(pathName[pathName.length - 1]);
+				}
+
 				if (path.includes("/getMailingList")) {
 					return await getMailingList();
+				}
+
+				if (path.includes("/getMessages")) {
+					const pathName = path.split("/");
+					return await getMessages(pathName[pathName.length - 1]);
 				}
 			} else if (request.method === "PUT") {
 				if (path.includes("/putInstruction")) {
@@ -166,6 +176,19 @@ export default {
 				if (path.includes("/putUserAngles")) {
 					const [_, __, fencerId, videoId, pose] = path.split("/");
 					return await putAngleData(fencerId, videoId, pose, body);
+				}
+
+				if (path.includes("/putVideo")) {
+					const [_, __, fencerId, videoId] = path.split("/");
+					return await putVideo(fencerId, videoId, body);
+				}
+
+				if (path.includes("/updateMessages")) {
+					const pathName = path.split("/");
+					return await updateMessgaes(
+						pathName[pathName.length - 1],
+						body.messages,
+					);
 				}
 
 				if (path === "/putCoachFencer") {
@@ -446,6 +469,55 @@ async function putTournament(unique_id, body) {
 	return addCorsHeaders(res);
 }
 
+async function putVideo(fencerId, videoId, body) {
+	const queryPut =
+		"INSERT OR REPLACE INTO videos (video_id, fencer_id, messages) VALUES (?, ?, ?);";
+
+	await DB.prepare(queryPut).bind(videoId, fencerId, body.messages).run();
+
+	const res = new Response(
+		JSON.stringify({ message: "Successfully added video" }),
+		{
+			status: 201,
+			headers: {
+				"Content-Type": "application/json",
+			},
+		},
+	);
+	return addCorsHeaders(res);
+}
+
+async function getMessages(video_id) {
+	const updateQuery = "SELECT * FROM videos WHERE video_id = ?";
+
+	const messages = await DB.prepare(updateQuery).bind(video_id).run();
+
+	const res = new Response(JSON.stringify({ messages: messages }), {
+		status: 200,
+		headers: {
+			"Content-Type": "application/json",
+		},
+	});
+	return addCorsHeaders(res);
+}
+
+async function updateMessgaes(video_id, messages) {
+	const updateQuery = "UPDATE videos SET messages = ? WHERE video_id = ?";
+
+	await DB.prepare(updateQuery).bind(messages, video_id).run();
+
+	const res = new Response(
+		JSON.stringify({ message: "Successfully updated messages" }),
+		{
+			status: 200,
+			headers: {
+				"Content-Type": "application/json",
+			},
+		},
+	);
+	return addCorsHeaders(res);
+}
+
 async function putAngleData(fencerId, videoId, pose, body) {
 	const queryPut =
 		"INSERT OR REPLACE INTO fencer_sessions (fencer_id, video_id, pose, feet_distance, speed, elbow_left, hip_left, knee_left, elbow_right, hip_right, knee_right) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
@@ -577,7 +649,8 @@ async function verifyEmail(email, type) {
 
 async function authGoogle(id, email, name, type) {
 	// remove this code once Garde goes public
-	const isWhitelisted = await isOnWhitelist(email, DB);
+	// const isWhitelisted = await isOnWhitelist(email, DB);
+	const isWhitelisted = true;
 	if (!isWhitelisted) {
 		await DB.prepare(`
 			INSERT OR IGNORE INTO attempted_signins (name, email)
@@ -820,7 +893,8 @@ async function isOnWhitelist(email) {
 
 async function auth(type, name, email, password, id) {
 	// remove this code once Garde goes public
-	const isWhitelisted = await isOnWhitelist(email, DB);
+	// const isWhitelisted = await isOnWhitelist(email, DB);
+	const isWhitelisted = true;
 	if (!isWhitelisted) {
 		await DB.prepare(`
 			INSERT OR IGNORE INTO attempted_signins (name, email)
@@ -925,6 +999,27 @@ async function getFencer(id) {
 		JSON.stringify({
 			data: result.results,
 			message: "Succesfully retrieved fencer sessions",
+		}),
+		{
+			status: 200,
+			headers: {
+				"Content-Type": "application/json",
+			},
+		},
+	);
+
+	return addCorsHeaders(res);
+}
+
+async function getVideo(id) {
+	const result = await DB.prepare("SELECT * FROM videos WHERE fencer_id = ?")
+		.bind(id)
+		.all();
+
+	const res = new Response(
+		JSON.stringify({
+			data: result.results,
+			message: "Succesfully retrieved fencer videos",
 		}),
 		{
 			status: 200,

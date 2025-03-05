@@ -1,18 +1,22 @@
 import React, { useRef, useState } from "react";
 import axios from "axios";
-import { v4 as uuidv4 } from "uuid";
+import axiosInstance from "../axios";
 
 const Stream_Vid = ({
 	onVideoChange,
 	isRecording,
 	toggleRecording,
 	fencerId,
-	setVideoId,
 	setAnalysis,
-	setHashFile,
+	videoCount,
+	setInitialLoading,
+	videoId,
+	initialAnalysis,
 }) => {
 	const refFileInput = useRef(null);
 	const [videoAdded, setVideoAdded] = useState(false); // Track if video has been added
+	const [blockUpload, setBlockUpload] = useState(false);
+	const [streamDone, setStreamDone] = useState(false);
 
 	const handleFileChange = async (event) => {
 		const file = event.target.files[0];
@@ -26,8 +30,9 @@ const Stream_Vid = ({
 		}
 	};
 
-	const addVideo = () => {
+	const addVideo = async () => {
 		if (!videoAdded) {
+			setBlockUpload(true);
 			refFileInput.current.click();
 		} else {
 			onVideoChange(null); // Clear the video source
@@ -42,44 +47,61 @@ const Stream_Vid = ({
 	};
 
 	const handleVideoUpload = async (file) => {
+		setInitialLoading(true);
+
 		const formData = new FormData();
-		const videoId = uuidv4();
 		// videoId should be set to this uuid when video ends automatically so angles can upload
-		setVideoId(videoId);
 		formData.append("video", file, videoId);
 
 		try {
-			const res = await axios.post(`/api/convert-video/${fencerId}`, formData, {
-				withCredentials: true,
-				headers: {
-					Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_KEY}`,
-					"Content-Type": "multipart/form-data",
-				},
-			});
+			const newId = fencerId ? fencerId : "no-id";
 
-			const response = await axios.post(
-				`${process.env.NEXT_PUBLIC_CHAT_URL}/upload`,
-				formData,
-				{
+			const results = await Promise.allSettled([
+				axios.post(`/api/convert-video/${newId}`, formData, {
+					withCredentials: true,
+					headers: {
+						Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_KEY}`,
+						"Content-Type": "multipart/form-data",
+					},
+				}),
+				axiosInstance.put(
+					`${process.env.NEXT_PUBLIC_GARDE_WORKER}/putVideo/${newId}/${videoId}`,
+					{ messages: [] },
+					{
+						headers: { "Content-Type": "application/json" },
+					},
+				),
+				axios.post(`${process.env.NEXT_PUBLIC_CHAT_URL}/upload`, formData, {
 					headers: {
 						"Content-Type": "multipart/form-data",
-						"X-Session-ID": fencerId,
 					},
-				},
-			);
-			const { analysis, hash_file } = response.data;
-			setAnalysis(analysis);
-			setHashFile(hash_file);
+				}),
+			]);
+
+			// const response = await axios.post(
+			// 	`${process.env.NEXT_PUBLIC_CHAT_URL}/upload`,
+			// 	{ videoUrl: videoUrl },
+			// 	{
+			// 		headers: {
+			// 			"Content-Type": "application/json",
+			// 		},
+			// 	},
+			// );
+
+			const uploadResult = results[2];
+			if (uploadResult.status === "fulfilled") {
+				const { analysis } = uploadResult.value.data;
+				setAnalysis(analysis);
+			}
 		} catch (error) {
 			console.error("Error during file upload:", error);
+		} finally {
+			setInitialLoading(false);
 		}
 	};
 
 	return (
-		<div
-			className="flex flex-col items-start space-y-4"
-			style={{ paddingTop: "2rem" }}
-		>
+		<div className="flex flex-col">
 			<input
 				type="file"
 				accept="video/*"
@@ -90,15 +112,46 @@ const Stream_Vid = ({
 			<div className="flex gap-2">
 				<button
 					type="button"
-					className="bg-white text-black font-bold py-2 px-4 rounded shadow-md hover:bg-gray-100"
+					className={
+						(videoCount >= 3 && !fencerId) ||
+						blockUpload ||
+						streamDone ||
+						initialAnalysis
+							? "bg-gray-200 cursor-not-allowed text-gray-400 font-bold py-2 px-4 rounded shadow-md"
+							: "bg-white text-black font-bold py-2 px-4 rounded shadow-md hover:bg-gray-100"
+					}
 					onClick={addVideo}
+					disabled={
+						(videoCount >= 3 && !fencerId) ||
+						blockUpload ||
+						streamDone ||
+						initialAnalysis
+					}
 				>
 					{videoAdded ? "Remove Video" : "Add Video"}
 				</button>
 				<button
 					type="button"
-					className="bg-white text-black font-bold py-2 px-4 rounded shadow-md hover:bg-gray-100"
-					onClick={toggleRecording}
+					className={
+						(videoCount >= 3 && !fencerId) ||
+						blockUpload ||
+						streamDone ||
+						initialAnalysis
+							? "bg-gray-200 cursor-not-allowed text-gray-400 font-bold py-2 px-4 rounded shadow-md"
+							: "bg-white text-black font-bold py-2 px-4 rounded shadow-md hover:bg-gray-100"
+					}
+					onClick={() => {
+						toggleRecording();
+						if (isRecording) {
+							setStreamDone(true);
+						}
+					}}
+					disabled={
+						(videoCount >= 3 && !fencerId) ||
+						blockUpload ||
+						streamDone ||
+						initialAnalysis
+					}
 				>
 					{isRecording && !videoAdded ? "Stop Recording" : "Record Video"}
 				</button>

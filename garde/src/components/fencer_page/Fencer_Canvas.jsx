@@ -344,7 +344,8 @@ const WebcamPose = ({
 		setUploadAngles(true);
 
 		const formData = new FormData();
-		const videoBlob = new Blob([event.data], { type: "video/mp4" });
+		const mimeType = event.data.type || "video/webm";
+		const videoBlob = new Blob([event.data], { type: mimeType });
 		formData.append("video", videoBlob, videoId);
 
 		const videoURL = URL.createObjectURL(videoBlob);
@@ -355,6 +356,23 @@ const WebcamPose = ({
 			const newId = fencerId ? fencerId : "no-id";
 
 			const API_URL = `${process.env.NEXT_PUBLIC_CONVERT_URL}`;
+
+			const buff = await axios.post(
+				`${API_URL}/convert-video/mp4/${newId}`,
+				formData,
+				{
+					withCredentials: true,
+					headers: {
+						Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_KEY}`,
+						"Content-Type": "multipart/form-data",
+					},
+					responseType: "arraybuffer",
+				},
+			);
+
+			const mp4Vid = new FormData();
+			const blob = new Blob([buff.data], { type: "video/mp4" });
+			mp4Vid.append("video", blob, videoId);
 
 			const results = await Promise.allSettled([
 				axios.post(`${API_URL}/convert-video/hls/${newId}`, formData, {
@@ -373,21 +391,13 @@ const WebcamPose = ({
 				),
 				axios.post(
 					`${process.env.NEXT_PUBLIC_CHAT_URL}/analyze/upload`,
-					formData,
+					mp4Vid,
 					{
 						headers: {
 							"Content-Type": "multipart/form-data",
 						},
 					},
 				),
-				await axios.post(`${API_URL}/convert-video/mp4/${newId}`, formData, {
-					withCredentials: true,
-					headers: {
-						Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_KEY}`,
-						"Content-Type": "multipart/form-data",
-					},
-					responseType: "arraybuffer",
-				}),
 			]);
 
 			const uploadResult = results[2];

@@ -75,7 +75,7 @@ const Stream_Vid = ({
 			mp4Vid.append("video", blob, videoId);
 
 			const results = await Promise.allSettled([
-				axios.post(`${API_URL}/convert-video/hls/${newId}`, mp4Vid, {
+				axios.post(`${API_URL}/convert-video/hls/${newId}`, formData, {
 					withCredentials: true,
 					headers: {
 						Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_KEY}`,

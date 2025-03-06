@@ -56,10 +56,28 @@ const Stream_Vid = ({
 		try {
 			const newId = fencerId ? fencerId : "no-id";
 
-			const API_URL = `${process.env.NEXT_PUBLIC_CONVERT_URL}/convert-video/${newId}`;
+			const API_URL = `${process.env.NEXT_PUBLIC_CONVERT_URL}`;
+
+			const buff = await axios.post(
+				`${API_URL}/convert-video/mp4/${newId}`,
+				formData,
+				{
+					withCredentials: true,
+					headers: {
+						Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_KEY}`,
+						"Content-Type": "multipart/form-data",
+					},
+					responseType: "arraybuffer",
+				},
+			);
+
+			const mp4Vid = new FormData();
+			const blob = new Blob([buff.data], { type: "video/mp4" });
+
+			mp4Vid.append("video", blob, videoId);
 
 			const results = await Promise.allSettled([
-				axios.post(API_URL, formData, {
+				axios.post(`${API_URL}/convert-video/hls/${newId}`, mp4Vid, {
 					withCredentials: true,
 					headers: {
 						Authorization: `Bearer ${process.env.NEXT_PUBLIC_API_KEY}`,

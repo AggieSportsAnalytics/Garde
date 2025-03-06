@@ -116,10 +116,10 @@ export default function Chatbot({
 		}
 		const bucketUrl = process.env.NEXT_PUBLIC_BUCKET_URL;
 		if (fencerId && videoId) {
-			const videoUrl = `${bucketUrl}/${fencerId}/${videoId}/full_video.webm`;
+			const videoUrl = `${bucketUrl}/${fencerId}/${videoId}/full_video.mp4`;
 			setVideoUrl(videoUrl);
 		} else if (!fencerId) {
-			const videoUrl = `${bucketUrl}/no-id/${videoId}/full_video.webm`;
+			const videoUrl = `${bucketUrl}/no-id/${videoId}/full_video.mp4`;
 			setVideoUrl(videoUrl);
 		}
 		if (videoId) {
@@ -130,11 +130,9 @@ export default function Chatbot({
 	//use either real initialAnalysis or dummy data in debug mode
 	useEffect(() => {
 		const getInitialAnalysis = async () => {
-			console.log(initialAnalysis);
 			const formattedAnalysis = await marked(
 				initialAnalysis.replace(/\n/g, "<br />"),
 			);
-			console.log(formattedAnalysis);
 
 			setChatHistory([{ sender: "bot", message: formattedAnalysis }]);
 

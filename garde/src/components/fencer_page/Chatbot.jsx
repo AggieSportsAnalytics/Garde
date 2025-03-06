@@ -2,6 +2,9 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import axiosInstance from "../axios";
 import { useRouter } from "next/navigation";
+import { marked } from "marked";
+import parse from "html-react-parser";
+import DOMPurify from "dompurify";
 
 export default function Chatbot({
 	darkMode,
@@ -23,33 +26,33 @@ export default function Chatbot({
 	const router = useRouter();
 
 	// Function to sanitize and format the bot's response
-	const formatResponse = (response) => {
-		if (!response) return "";
+	// const formatResponse = (response) => {
+	// 	if (!response) return "";
 
-		return response
-			.replace(
-				/######\s?(.*?)(\n|$)/g,
-				"<h6 class='text-sm font-semibold'>$1</h6>",
-			)
-			.replace(
-				/#####\s?(.*?)(\n|$)/g,
-				"<h5 class='text-base font-semibold'>$1</h5>",
-			)
-			.replace(
-				/####\s?(.*?)(\n|$)/g,
-				"<h4 class='text-lg font-semibold'>$1</h4>",
-			)
-			.replace(/###\s?(.*?)(\n|$)/g, "<h3 class='text-xl font-bold'>$1</h3>")
-			.replace(/##\s?(.*?)(\n|$)/g, "<h2 class='text-2xl font-bold'>$1</h2>")
-			.replace(/#\s?(.*?)(\n|$)/g, "<h1 class='text-3xl font-bold'>$1</h1>")
-			.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>") // Bold
-			.replace(/__(.*?)__/g, "<em>$1</em>") // Italic
-			.replace(/\n{2,}/g, "</p><p>") // Paragraphs
-			.replace(/\n/g, "<br>") // Single line breaks
-			.replace(/- (.*?)(\n|$)/g, "<li>$1</li>") // List items
-			.replace(/<\/li>(?!<li>)/g, "</li></ul>") // Ensure list closure
-			.replace(/<li>/, "<ul><li>"); // Ensure list opening
-	};
+	// 	return response
+	// 		.replace(/\n/g, "<br />") // Single line breaks
+	// 		.replace(
+	// 			/######\s?(.*?)(\n|$)/g,
+	// 			"<h6 class='text-sm font-semibold'>$1</h6>",
+	// 		)
+	// 		.replace(
+	// 			/#####\s?(.*?)(\n|$)/g,
+	// 			"<h5 class='text-base font-semibold'>$1</h5>",
+	// 		)
+	// 		.replace(
+	// 			/####\s?(.*?)(\n|$)/g,
+	// 			"<h4 class='text-lg font-semibold'>$1</h4>",
+	// 		)
+	// 		.replace(/###\s?(.*?)(\n|$)/g, "<h3 class='text-xl font-bold'>$1</h3>")
+	// 		.replace(/##\s?(.*?)(\n|$)/g, "<h2 class='text-2xl font-bold'>$1</h2>")
+	// 		.replace(/#\s?(.*?)(\n|$)/g, "<h1 class='text-3xl font-bold'>$1</h1>")
+	// 		.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>") // Bold
+	// 		.replace(/__(.*?)__/g, "<em>$1</em>") // Italic
+	// 		.replace(/\n{2,}/g, "</p><p>") // Paragraphs
+	// 		.replace(/- (.*?)(\n|$)/g, "<li>$1</li>") // List items
+	// 		.replace(/<\/li>(?!<li>)/g, "</li></ul>") // Ensure list closure
+	// 		.replace(/<li>/, "<ul><li>"); // Ensure list opening
+	// };
 
 	async function addQuery() {
 		try {
@@ -126,8 +129,12 @@ export default function Chatbot({
 
 	//use either real initialAnalysis or dummy data in debug mode
 	useEffect(() => {
-		if (initialAnalysis) {
-			const formattedAnalysis = formatResponse(initialAnalysis);
+		const getInitialAnalysis = async () => {
+			console.log(initialAnalysis);
+			const formattedAnalysis = await marked(
+				initialAnalysis.replace(/\n/g, "<br />"),
+			);
+			console.log(formattedAnalysis);
 
 			setChatHistory([{ sender: "bot", message: formattedAnalysis }]);
 
@@ -136,6 +143,10 @@ export default function Chatbot({
 					{ sender: "bot", message: formattedAnalysis },
 				]),
 			});
+		};
+
+		if (initialAnalysis) {
+			getInitialAnalysis();
 		}
 	}, [initialAnalysis]);
 
@@ -164,7 +175,7 @@ export default function Chatbot({
 		try {
 			//real API call
 			const response = await axios.post(
-				`${process.env.NEXT_PUBLIC_CHAT_URL}/chat`,
+				`${process.env.NEXT_PUBLIC_CHAT_URL}/analyze/chat`,
 				{
 					query: currentInput,
 					messages: chatHistory,
@@ -184,7 +195,9 @@ export default function Chatbot({
 				setChatCount((prev) => prev + 1);
 			}
 
-			const formattedMessage = formatResponse(response.data.analysis);
+			const formattedMessage = await marked(
+				response.data.analysis.replace(/\n/g, "<br />"),
+			);
 
 			fullHistory.push({ sender: "bot", message: formattedMessage });
 
@@ -269,10 +282,9 @@ export default function Chatbot({
 								{chat.sender === "user" ? (
 									<div>{chat.message}</div>
 								) : (
-									<div
-										className="bot-message"
-										dangerouslySetInnerHTML={{ __html: chat.message }}
-									/>
+									<div className="bot-message">
+										{parse(DOMPurify.sanitize(chat.message))}
+									</div>
 								)}
 							</div>
 							{chat.sender === "bot" && index === chatHistory.length - 1 && (

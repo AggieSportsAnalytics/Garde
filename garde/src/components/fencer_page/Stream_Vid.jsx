@@ -56,7 +56,7 @@ const Stream_Vid = ({
 		try {
 			const newId = fencerId ? fencerId : "no-id";
 
-			const API_URL = `/api/convert-video/${newId}`;
+			const API_URL = `${process.env.NEXT_PUBLIC_CONVERT_URL}/convert-video/${newId}`;
 
 			const results = await Promise.allSettled([
 				axios.post(API_URL, formData, {
@@ -73,11 +73,15 @@ const Stream_Vid = ({
 						headers: { "Content-Type": "application/json" },
 					},
 				),
-				axios.post(`${process.env.NEXT_PUBLIC_CHAT_URL}/upload`, formData, {
-					headers: {
-						"Content-Type": "multipart/form-data",
+				axios.post(
+					`${process.env.NEXT_PUBLIC_CHAT_URL}/analyze/upload`,
+					formData,
+					{
+						headers: {
+							"Content-Type": "multipart/form-data",
+						},
 					},
-				}),
+				),
 			]);
 
 			// const response = await axios.post(

@@ -355,7 +355,7 @@ const WebcamPose = ({
 		try {
 			const newId = fencerId ? fencerId : "no-id";
 
-			const API_URL = `${NEXT_PUBLIC_CONVERT_URL}/convert-video/${newId}`;
+			const API_URL = `${process.env.NEXT_PUBLIC_CONVERT_URL}/convert-video/${newId}`;
 
 			const results = await Promise.allSettled([
 				axios.post(API_URL, formData, {

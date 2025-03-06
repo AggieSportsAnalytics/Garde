@@ -266,7 +266,7 @@ const WebcamPose = ({
 	};
 
 	useEffect(() => {
-		const options = { mimeType: "video/mp4" };
+		const options = { mimeType: "video/webm; codecs=vp9" };
 
 		if (videoSource || isRecording) {
 			runPoseDetection();
@@ -344,8 +344,9 @@ const WebcamPose = ({
 		setUploadAngles(true);
 
 		const formData = new FormData();
-		const mimeType = event.data.type || "video/webm";
-		const videoBlob = new Blob([event.data], { type: mimeType });
+		const videoBlob = new Blob([event.data], {
+			type: "video/webm; codecs=vp9",
+		});
 		formData.append("video", videoBlob, videoId);
 
 		const videoURL = URL.createObjectURL(videoBlob);

@@ -383,16 +383,6 @@ const WebcamPose = ({
 				),
 			]);
 
-			// const response = await axios.post(
-			// 	`${process.env.NEXT_PUBLIC_CHAT_URL}/upload`,
-			// 	{ videoUrl: videoUrl },
-			// 	{
-			// 		headers: {
-			// 			"Content-Type": "application/json",
-			// 		},
-			// 	},
-			// );
-
 			const uploadResult = results[2];
 			if (uploadResult.status === "fulfilled") {
 				const { analysis } = uploadResult.value.data;

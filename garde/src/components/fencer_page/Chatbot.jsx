@@ -116,10 +116,10 @@ export default function Chatbot({
 		}
 		const bucketUrl = process.env.NEXT_PUBLIC_BUCKET_URL;
 		if (fencerId && videoId) {
-			const videoUrl = `${bucketUrl}/${fencerId}/${videoId}/playlist.m3u8`;
+			const videoUrl = `${bucketUrl}/${fencerId}/${videoId}/full_video.webm`;
 			setVideoUrl(videoUrl);
 		} else if (!fencerId) {
-			const videoUrl = `${bucketUrl}/no-id/${videoId}/playlist.m3u8`;
+			const videoUrl = `${bucketUrl}/no-id/${videoId}/full_video.webm`;
 			setVideoUrl(videoUrl);
 		}
 		if (videoId) {
@@ -148,7 +148,7 @@ export default function Chatbot({
 		if (initialAnalysis) {
 			getInitialAnalysis();
 		}
-	}, [initialAnalysis]);
+	}, [initialAnalysis, videoId]);
 
 	const handleSubmit = async (e) => {
 		e.preventDefault();

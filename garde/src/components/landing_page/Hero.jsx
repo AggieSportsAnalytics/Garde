@@ -35,7 +35,6 @@ const Hero = () => {
 	const handleSubmit = (e) => {
 		e.preventDefault();
 		// Redirect to upload page or handle submission
-		// window.location.href = process.env.NEXT_PUBLIC_CHAT_URL;
 		router.push("/fencer_page");
 	};
 

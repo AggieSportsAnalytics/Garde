@@ -93,7 +93,7 @@ const Stream_Vid = ({
 				),
 				axios.post(
 					`${process.env.NEXT_PUBLIC_CHAT_URL}/analyze/upload`,
-					formData,
+					mp4Vid,
 					{
 						headers: {
 							"Content-Type": "multipart/form-data",

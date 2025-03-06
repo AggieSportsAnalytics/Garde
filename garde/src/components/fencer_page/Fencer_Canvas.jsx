@@ -341,12 +341,12 @@ const WebcamPose = ({
 
 	const handleDataAvailable = async (event) => {
 		setInitialLoading(true);
+		setUploadAngles(true);
 
 		const formData = new FormData();
-		setUploadAngles(true);
-		formData.append("video", event.data, videoId);
-
 		const videoBlob = new Blob([event.data], { type: "video/mp4" });
+		formData.append("video", videoBlob, videoId);
+
 		const videoURL = URL.createObjectURL(videoBlob);
 
 		setVideoSrc(videoURL);

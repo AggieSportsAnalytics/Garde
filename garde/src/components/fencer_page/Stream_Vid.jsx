@@ -50,7 +50,6 @@ const Stream_Vid = ({
 		setInitialLoading(true);
 
 		const formData = new FormData();
-		// videoId should be set to this uuid when video ends automatically so angles can upload
 		formData.append("video", file, videoId);
 
 		try {
@@ -73,7 +72,6 @@ const Stream_Vid = ({
 
 			const mp4Vid = new FormData();
 			const blob = new Blob([buff.data], { type: "video/mp4" });
-
 			mp4Vid.append("video", blob, videoId);
 
 			const results = await Promise.allSettled([

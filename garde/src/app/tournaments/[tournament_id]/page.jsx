@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useSelector } from "react-redux";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
 	FaMapMarkerAlt,
 	FaUserAlt,
@@ -28,7 +28,7 @@ export default function TournamentPage({ params }) {
 	const [users, setUsers] = useState([]);
 	const [joining, setJoining] = useState(false);
 	const [loading, setLoading] = useState(false);
-	const { tournament_id } = params;
+	const { tournament_id } = React.use(params);
 	const [token, setToken] = useState("");
 	const [pinned, setPinned] = useState([]);
 	const router = useRouter();

@@ -13,7 +13,7 @@ import Pinned from "@/src/components/videos/Pinned";
 export default function VideoPage({ params }) {
 	const [isLooping, setIsLooping] = useState(false);
 	const [pinned, setPinned] = useState([]);
-	const { tournament_id, videoId } = params;
+	const { tournament_id, videoId } = React.use(params);
 
 	const videoNumber = useSelector((state) => state.videoNumber.videoNumber);
 

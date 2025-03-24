@@ -3,15 +3,6 @@ import Webcam from "react-webcam";
 import * as poseDetection from "@tensorflow-models/pose-detection";
 import "@tensorflow/tfjs-core";
 import "@tensorflow/tfjs-backend-webgl";
-
-// Conditionally import OpenAI only on the client-side
-// let OpenAI;
-// if (typeof window !== "undefined") {
-// 	const { OpenAI: OpenAIClient } = require("openai");
-// 	OpenAI = OpenAIClient;
-// }
-
-// const { Configuration, OpenAIApi } = require("openai");
 import "@mediapipe/pose";
 import Plotly from "plotly.js-dist-min";
 import Modal from "react-modal";
@@ -59,18 +50,21 @@ const WebcamPose = ({
 
 		const bucketUrl = process.env.NEXT_PUBLIC_BUCKET_URL;
 		const videoUrl = `${bucketUrl}/${newId}/${videoId}/playlist.m3u8`;
-
-		fetch(videoUrl, { method: "HEAD" })
-			.then((response) => {
-				if (response.ok) {
-					setVideoUrl(videoUrl);
-				} else {
-					setVideoUrl(null);
-				}
-			})
-			.catch(() => {
-				setVideoUrl(null);
-			});
+		setVideoUrl(videoUrl);
+		// fetch(videoUrl, { method: "HEAD" })
+		// 	.then((response) => {
+		// 		if (response.ok) {
+		// 			console.log("NEW VIDEO URL", videoUrl);
+		// 			setVideoUrl(videoUrl);
+		// 		} else {
+		// 			console.log("NULL URL");
+		// 			setVideoUrl(null);
+		// 		}
+		// 	})
+		// 	.catch(() => {
+		// 		console.log("ERR URL");
+		// 		setVideoUrl(null);
+		// 	});
 	}, [fencerId, videoId]);
 
 	useEffect(() => {
@@ -80,7 +74,7 @@ const WebcamPose = ({
 				.play()
 				.catch((e) => console.error("Error playing the video:", e));
 		}
-	}, [videoSource, videoRef.current]);
+	}, [videoSource]);
 
 	const runPoseDetection = async () => {
 		const model = poseDetection.SupportedModels.BlazePose;

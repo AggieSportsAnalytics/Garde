@@ -1,6 +1,5 @@
 "use client";
 
-// webm might run faster than mp4
 // video_id as hash over uuid so I don't need to convert everytime
 
 import React, { useState, useEffect, useCallback, memo, useRef } from "react";
@@ -83,6 +82,7 @@ export default function Fencer_Page2() {
 	const [initialLoading, setInitialLoading] = useState(false);
 	const [fingerprint, setFingerprint] = useState("");
 	const [decodeRun, setDecodeRun] = useState(false);
+	const [blockUpload, setBlockUpload] = useState(false);
 	const router = useRouter();
 	const { videoId } = useParams();
 
@@ -920,6 +920,8 @@ export default function Fencer_Page2() {
 								videoId={videoId}
 								videoCount={videoCount}
 								initialAnalysis={initialAnalysis}
+								blockUpload={blockUpload}
+								setBlockUpload={setBlockUpload}
 							/>
 							<div className="w-full mt-10">
 								<MemoizedInstruction
@@ -982,6 +984,7 @@ export default function Fencer_Page2() {
 								initialLoading={initialLoading}
 								fingerprint={fingerprint}
 								fencerId={fencerId}
+								setBlockUpload={setBlockUpload}
 							/>
 						</div>
 

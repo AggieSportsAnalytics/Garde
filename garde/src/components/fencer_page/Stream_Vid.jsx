@@ -12,10 +12,11 @@ const Stream_Vid = ({
 	setInitialLoading,
 	videoId,
 	initialAnalysis,
+	setBlockUpload,
+	blockUpload,
 }) => {
 	const refFileInput = useRef(null);
 	const [videoAdded, setVideoAdded] = useState(false); // Track if video has been added
-	const [blockUpload, setBlockUpload] = useState(false);
 	const [streamDone, setStreamDone] = useState(false);
 
 	const handleFileChange = async (event) => {

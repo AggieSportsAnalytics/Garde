@@ -17,6 +17,7 @@ export default function Chatbot({
 	isLoggedIn,
 	decodeRun,
 	fingerprint,
+	setBlockUpload,
 }) {
 	const [userInput, setUserInput] = useState("");
 	const [chatHistory, setChatHistory] = useState([]);
@@ -87,6 +88,7 @@ export default function Chatbot({
 								: msg,
 						),
 					);
+					setBlockUpload(true);
 				}
 			} catch (error) {
 				console.error(error);

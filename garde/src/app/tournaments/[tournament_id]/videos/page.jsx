@@ -19,7 +19,7 @@ import Loader from "@/src/components/ui/Loader";
 import CopyButton from "@/src/components/ui/CopyButton";
 
 export default function Videos({ params }) {
-	const { tournament_id } = params;
+	const { tournament_id } = React.use(params);
 	const [isGridLayout, setIsGridLayout] = useState(true);
 	const [pinned, setPinned] = useState([]);
 	const [videos, setVideos] = useState([]);

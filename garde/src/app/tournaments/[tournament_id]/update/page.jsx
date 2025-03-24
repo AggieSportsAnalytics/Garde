@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import TournamentDetail from "@/src/components/tournaments/TournamentDetail";
 import { useSelector } from "react-redux";
@@ -10,7 +10,7 @@ import renewSession from "@/src/app/hooks/renew_session";
 
 export default function UpdateTournament({ params }) {
 	const router = useRouter();
-	const { tournament_id } = params;
+	const { tournament_id } = React.use(params);
 
 	const [formData, setFormData] = useState({
 		name: "",

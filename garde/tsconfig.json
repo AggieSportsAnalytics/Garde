@@ -22,16 +22,20 @@
       }
     ],
     "paths": {
-            "@/*": ["./*"]
+      "@/*": [
+        "./*"
+      ]
     },
-    "strictNullChecks": true
+    "strictNullChecks": true,
+    "target": "ES2017"
   },
   "include": [
     "next-env.d.ts",
     ".next/types/**/*.ts",
     "**/*.ts",
-    "**/*.tsx"
-, "src/components/ui/button.jsx"  ],
+    "**/*.tsx",
+    "src/components/ui/button.jsx"
+  ],
   "exclude": [
     "node_modules"
   ]

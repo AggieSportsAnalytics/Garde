@@ -233,7 +233,7 @@ export default function Chatbot({
 						{10 - chatCount} chats left without signing in for 24 hours
 					</p>
 					<p className="text-center">
-						Get unlimited chats by signing up for a free account
+						Get unlimited chats/uploads by signing up for a free account
 					</p>
 				</>
 			)}
@@ -295,12 +295,49 @@ export default function Chatbot({
 				)}
 			</div>
 
-			<form onSubmit={handleSubmit} className="flex">
+			{/* <form onSubmit={handleSubmit} className="flex">
 				<input
 					type="text"
 					value={userInput}
 					onChange={(e) => setUserInput(e.target.value)}
 					className={`flex-1 px-3 py-2 rounded-l-lg focus:outline-none ${
+						darkMode
+							? "bg-gray-700 text-white"
+							: "bg-gray-100 text-black border border-gray-300"
+					}`}
+					placeholder="Ask about your fencing technique..."
+					disabled={
+						loading ||
+						chatHistory.length === 0 ||
+						(10 - chatCount <= 0 && !isLoggedIn)
+					}
+				/>
+				<button
+					type="submit"
+					className={`px-4 py-2 rounded-r-lg ${
+						darkMode ? "bg-blue-600" : "bg-blue-500"
+					} text-white ${
+						loading ||
+						chatHistory.length === 0 ||
+						(10 - chatCount <= 0 && !isLoggedIn)
+							? "opacity-50 cursor-not-allowed"
+							: "hover:bg-blue-600"
+					}`}
+					disabled={
+						loading ||
+						chatHistory.length === 0 ||
+						(10 - chatCount <= 0 && !isLoggedIn)
+					}
+				>
+					Send
+				</button>
+			</form> */}
+			<form onSubmit={handleSubmit} className="flex w-full max-w-xl mx-auto">
+				<input
+					type="text"
+					value={userInput}
+					onChange={(e) => setUserInput(e.target.value)}
+					className={`flex-1 min-w-0 px-3 py-2 rounded-l-lg focus:outline-none ${
 						darkMode
 							? "bg-gray-700 text-white"
 							: "bg-gray-100 text-black border border-gray-300"

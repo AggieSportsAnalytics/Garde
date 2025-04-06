@@ -114,7 +114,7 @@ const Stream_Vid = ({
 	};
 
 	return (
-		<div className="flex flex-col">
+		<div className="flex">
 			<input
 				type="file"
 				accept="video/*"
@@ -122,7 +122,7 @@ const Stream_Vid = ({
 				style={{ display: "none" }}
 				onChange={handleFileChange}
 			/>
-			<div className="flex gap-2">
+			<div className="flex flex-col md:flex-row items-center md:items-start space-y-2 md:space-y-0 md:space-x-2">
 				<button
 					type="button"
 					className={

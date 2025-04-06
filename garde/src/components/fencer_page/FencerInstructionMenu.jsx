@@ -149,11 +149,8 @@ const FencerInstructionMenu = ({ setInstructionMenu, onSave }) => {
 	};
 
 	return (
-		<div
-			className="fixed inset-0 flex items-center justify-center z-50 bg-opacity-0"
-			style={{ paddingTop: "80px" }}
-		>
-			<div className="max-h-[850px] overflow-y-auto bg-white rounded-lg shadow-lg p-8 w-[800px] max-w-[90%] mx-auto relative">
+		<div className="fixed inset-0 flex items-center justify-center z-50 bg-opacity-0">
+			<div className="overflow-y-auto bg-white rounded-lg shadow-lg p-8 w-3/4 mx-auto relative max-h-[90vh]">
 				<button
 					className="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
 					onClick={() => setInstructionMenu(false)}
@@ -232,7 +229,7 @@ const FencerInstructionMenu = ({ setInstructionMenu, onSave }) => {
 					</div>
 				</div>
 
-				<div className="flex items-center mb-6">
+				<div className="flex md:flex-row md:space-y-0 space-y-2 flex-col items-center mb-6">
 					<select
 						id="fencerDropdown"
 						className="flex-1 mr-4 p-2 border rounded"
@@ -251,7 +248,7 @@ const FencerInstructionMenu = ({ setInstructionMenu, onSave }) => {
 					<input
 						name="time"
 						placeholder="Time (s)"
-						className="w-20 mr-4 p-2 border rounded"
+						className="mr-4 p-2 border rounded"
 						value={timeValue}
 						onChange={(e) => setTimeValue(e.target.value)}
 						type="number"

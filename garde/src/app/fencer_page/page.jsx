@@ -29,7 +29,7 @@ export default function Fencer_Page() {
 
 				if (decoded?.id) {
 					const vids = await getVideos(decoded.id);
-					if (vids[vids.length - 1]?.video_id) {
+					if (vids?.[vids.length - 1]?.video_id) {
 						router.push(`/fencer_page/${vids[vids.length - 1].video_id}`);
 						return;
 					}

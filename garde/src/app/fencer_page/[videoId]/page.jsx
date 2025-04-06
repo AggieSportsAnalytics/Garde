@@ -63,7 +63,6 @@ export default function Fencer_Page2() {
 	const [videoInput, setVideoInput] = useState(false);
 	const [feedback, setFeedback] = useState([]);
 	const [feedbackEnabled, setFeedbackEnabled] = useState(false);
-	const [isMobile, setIsMobile] = useState(false);
 	const previousFeedback = useRef({ message: "", timestamp: 0 });
 	const [isTimerRunning, setIsTimerRunning] = useState(false);
 	const [darkMode, setDarkMode] = useState(false);
@@ -253,12 +252,6 @@ export default function Fencer_Page2() {
 
 	useEffect(() => {
 		const fetchAuthData = async () => {
-			if (typeof window !== "undefined") {
-				const userAgent = navigator.userAgent;
-				const mobileDevice = /iPhone|iPad|iPod|Android/i.test(userAgent);
-				setIsMobile(mobileDevice);
-			}
-
 			try {
 				const decoded = await checkAuth(router, "signin", "fencer", true);
 
@@ -723,287 +716,261 @@ export default function Fencer_Page2() {
 
 	return (
 		<InstructionContext.Provider value={{ instructions, setInstructions }}>
-			{isMobile ? (
-				<div
-					className={`flex flex-col items-center justify-center h-screen ${darkMode ? "bg-black text-white" : "bg-white text-black"} p-4`}
+			<div
+				className={`flex flex-col h-screen font-sans ${darkMode ? "bg-black text-white" : "bg-white text-black"}`}
+			>
+				<header
+					className={`flex items-center justify-between p-4 ${darkMode ? "bg-gray-900 border-b border-gray-800" : "bg-gray-100 border-b border-gray-300"} z-10`}
 				>
-					<p className="text-center text-xl mb-4">
-						For a better viewing experience, please visit this website on a
-						computer.
-					</p>
 					<Link href="/">
 						<button
 							className={`${darkMode ? "bg-white text-black" : "bg-black text-white"} py-2 px-4 rounded text-lg font-semibold hover:bg-gray-300`}
+							aria-label="Go back"
 						>
-							Go Back
+							&#8592;
 						</button>
 					</Link>
-				</div>
-			) : (
-				<div
-					className={`flex flex-col h-screen font-sans ${darkMode ? "bg-black text-white" : "bg-white text-black"} mb-5`}
-				>
-					<header
-						className={`flex items-center justify-between p-4 ${darkMode ? "bg-gray-900 border-b border-gray-800" : "bg-gray-100 border-b border-gray-300"} z-10`}
-					>
-						<Link href="/">
-							<button
-								className={`${darkMode ? "bg-white text-black" : "bg-black text-white"} py-2 px-4 rounded text-lg font-semibold hover:bg-gray-300`}
-								aria-label="Go back"
-							>
-								&#8592;
-							</button>
-						</Link>
-						<div className="flex items-center space-x-4 ml-auto">
-							<button
-								className={`${
-									darkMode ? "bg-white text-black" : "bg-black text-white"
-								} p-2 rounded-full text-lg font-semibold hover:bg-gray-300`}
-								onClick={toggleDarkMode}
-								aria-label={
-									darkMode ? "Switch to Light Mode" : "Switch to Dark Mode"
-								}
-							>
-								{darkMode ? <FaSun /> : <FaMoon />}
-							</button>
+					<div className="flex items-center space-x-4 ml-auto">
+						<button
+							className={`${
+								darkMode ? "bg-white text-black" : "bg-black text-white"
+							} p-2 rounded-full text-lg font-semibold hover:bg-gray-300`}
+							onClick={toggleDarkMode}
+							aria-label={
+								darkMode ? "Switch to Light Mode" : "Switch to Dark Mode"
+							}
+						>
+							{darkMode ? <FaSun /> : <FaMoon />}
+						</button>
 
-							<button
-								className={`${
-									darkMode ? "bg-white text-black" : "bg-black text-white"
-								} p-2 rounded-full text-lg font-semibold hover:bg-gray-300`}
-								onClick={toggleFeedbackMute}
-								aria-label={
-									isFeedbackMuted ? "Unmute Feedback" : "Mute Feedback"
-								}
-							>
-								{isFeedbackMuted ? <FaVolumeMute /> : <FaVolumeUp />}
-							</button>
-						</div>
+						<button
+							className={`${
+								darkMode ? "bg-white text-black" : "bg-black text-white"
+							} p-2 rounded-full text-lg font-semibold hover:bg-gray-300`}
+							onClick={toggleFeedbackMute}
+							aria-label={isFeedbackMuted ? "Unmute Feedback" : "Mute Feedback"}
+						>
+							{isFeedbackMuted ? <FaVolumeMute /> : <FaVolumeUp />}
+						</button>
+					</div>
 
-						{fencerId ? (
-							<button
-								className={`mx-4 w-9 h-9 rounded-full ${darkMode ? "bg-white" : "bg-black"} 
+					{fencerId ? (
+						<button
+							className={`mx-4 w-9 h-9 rounded-full ${darkMode ? "bg-white" : "bg-black"} 
     flex items-center justify-center cursor-pointer hover:bg-gray-300`}
-								onClick={showModal}
-								type="button"
+							onClick={showModal}
+							type="button"
+						>
+							<FaCog
+								className={`${darkMode ? "text-black" : "text-white"} text-2xl`}
+							/>
+						</button>
+					) : (
+						<div className="space-x-1">
+							<a
+								href="/signin"
+								className="ml-2 px-6 py-2 bg-[#1a2b3b] text-white rounded-lg hover:bg-[#2c3e50] transition"
 							>
-								<FaCog
-									className={`${darkMode ? "text-black" : "text-white"} text-2xl`}
-								/>
+								Login
+							</a>
+							<a
+								href="/signin?isSignUp=true"
+								className="px-6 py-2 border border-[#1a2b3b] text-[#1a2b3b] rounded-lg hover:bg-gray-50 transition"
+							>
+								Sign Up
+							</a>
+						</div>
+					)}
+
+					<Modal
+						isOpen={isModalVisible}
+						onRequestClose={handleCancel}
+						contentLabel="Settings"
+						ariaHideApp={false}
+						style={{
+							content: {
+								borderRadius: "20px",
+								width: "90%",
+								height: "500px",
+								maxWidth: "500px",
+								maxHeight: "90vh",
+								top: "50%",
+								left: "50%",
+								transform: "translate(-50%, -50%)",
+								padding: "20px",
+								position: "fixed",
+								overflowY: "auto",
+							},
+							overlay: {
+								backgroundColor: "rgba(0, 0, 0, 0.5)",
+								zIndex: 1000,
+							},
+						}}
+					>
+						<div className="flex flex-col items-center space-y-4">
+							<button
+								type="button"
+								className="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
+								onClick={handleCancel}
+							>
+								<FiX size={24} />
 							</button>
-						) : (
-							<div className="space-x-3">
-								<a
-									href="/signin"
-									className="ml-2 px-6 py-2 bg-[#1a2b3b] text-white rounded-lg hover:bg-[#2c3e50] transition"
-								>
-									Login
-								</a>
-								<a
-									href="/signin?isSignUp=true"
-									className="px-6 py-2 border border-[#1a2b3b] text-[#1a2b3b] rounded-lg hover:bg-gray-50 transition"
-								>
-									Sign Up
-								</a>
+							<h2 className="text-xl font-bold text-gray-800 mb-4">Settings</h2>
+
+							<div className="w-full flex flex-col items-center space-y-4">
+								<AddFencer decoded={decoded} />
+								<HeightInput handleHeightSave={handleHeightInput} />
+								{height ? (
+									<p className="text-gray-700">Current Height: {height}</p>
+								) : (
+									<p className="text-gray-700">Current Height: Not Set</p>
+								)}
 							</div>
-						)}
 
-						<Modal
-							isOpen={isModalVisible}
-							onRequestClose={handleCancel}
-							contentLabel="Settings"
-							ariaHideApp={false}
-							style={{
-								content: {
-									borderRadius: "20px",
-									width: "90%",
-									height: "500px",
-									maxWidth: "500px",
-									maxHeight: "90vh",
-									top: "50%",
-									left: "50%",
-									transform: "translate(-50%, -50%)",
-									padding: "20px",
-									position: "fixed",
-									overflowY: "auto",
-								},
-								overlay: {
-									backgroundColor: "rgba(0, 0, 0, 0.5)",
-									zIndex: 1000,
-								},
-							}}
-						>
-							<div className="flex flex-col items-center space-y-4">
-								<button
-									type="button"
-									className="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
-									onClick={handleCancel}
+							<div className="w-full flex flex-col items-center space-y-4">
+								<label htmlFor="coach-select" className="sr-only">
+									Select Coach
+								</label>
+								<select
+									id="coach-select"
+									value={currentCoach?.coach_id || ""}
+									onChange={(e) => {
+										const selectedCoach = coaches.find(
+											(coach) => coach.coach_id === e.target.value,
+										);
+										setCurrentCoach(selectedCoach);
+									}}
+									className="px-2 py-1 border border-gray-600 rounded-lg bg-gray-800 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200"
 								>
-									<FiX size={24} />
-								</button>
-								<h2 className="text-xl font-bold text-gray-800 mb-4">
-									Settings
-								</h2>
-
-								<div className="w-full flex flex-col items-center space-y-4">
-									<AddFencer decoded={decoded} />
-									<HeightInput handleHeightSave={handleHeightInput} />
-									{height ? (
-										<p className="text-gray-700">Current Height: {height}</p>
-									) : (
-										<p className="text-gray-700">Current Height: Not Set</p>
-									)}
-								</div>
-
-								<div className="w-full flex flex-col items-center space-y-4">
-									<label htmlFor="coach-select" className="sr-only">
-										Select Coach
-									</label>
-									<select
-										id="coach-select"
-										value={currentCoach?.coach_id || ""}
-										onChange={(e) => {
-											const selectedCoach = coaches.find(
-												(coach) => coach.coach_id === e.target.value,
-											);
-											setCurrentCoach(selectedCoach);
-										}}
-										className="px-2 py-1 border border-gray-600 rounded-lg bg-gray-800 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200"
-									>
-										<option value="" disabled>
-											Select a Coach to Remove
-										</option>
-										{coaches.map((coach) => (
-											<option
-												className="bg-gray-800 text-white"
-												key={coach.coach_id}
-												value={coach.coach_id}
-											>
-												{coach.coach_name}
-											</option>
-										))}
-									</select>
-
-									<div className="relative">
-										<button
-											onClick={removeCoach}
-											className="bg-red-600 px-3 py-2 hover:bg-red-500 text-white font-semibold rounded shadow-md cursor-pointer"
-											type="button"
-											disabled={!currentCoach}
+									<option value="" disabled>
+										Select a Coach to Remove
+									</option>
+									{coaches.map((coach) => (
+										<option
+											className="bg-gray-800 text-white"
+											key={coach.coach_id}
+											value={coach.coach_id}
 										>
-											Remove Coach
-										</button>
-									</div>
-								</div>
+											{coach.coach_name}
+										</option>
+									))}
+								</select>
 
-								{/* Bottom Actions */}
-								<hr className="border-gray-300 w-full mt-6" />
-								<div className="w-full flex justify-around space-x-4 mt-4">
-									<Logout />
-									<DeleteAccountButton userId={fencerId} type="fencer" />
+								<div className="relative">
+									<button
+										onClick={removeCoach}
+										className="bg-red-600 px-3 py-2 hover:bg-red-500 text-white font-semibold rounded shadow-md cursor-pointer"
+										type="button"
+										disabled={!currentCoach}
+									>
+										Remove Coach
+									</button>
 								</div>
 							</div>
-						</Modal>
-					</header>
 
-					<main className="flex flex-grow h-screen flex-row relative">
-						<SidebarMenu fencerId={fencerId} />
-
-						<div className="w-1/3 h-full flex flex-col items-center justify-center space-y-4 z-10 p-4">
-							<Stream_Vid
-								onVideoChange={handleVideoChange}
-								isRecording={isRecording}
-								toggleRecording={toggleRecording}
-								fencerId={fencerId}
-								setInitialLoading={setInitialLoading}
-								setAnalysis={setInitialAnalysis}
-								videoId={videoId}
-								videoCount={videoCount}
-								initialAnalysis={initialAnalysis}
-								blockUpload={blockUpload}
-								setBlockUpload={setBlockUpload}
-							/>
-							<div className="w-full mt-10">
-								<MemoizedInstruction
-									isRunning={isRunning}
-									instructionIndex={instructionIndex}
-								/>
-								<div style={{ marginBottom: "20px" }}></div>{" "}
-								{/* Added space between the Timer and Instruction */}
-								<MemoizedTimer
-									onTimerStart={handleTimerStart}
-									onReset={handleReset}
-									isStartDisabled={isStartDisabled}
-									resetTimer={resetTimer}
-									initialTime={instructions[instructionIndex]?.time}
-									onRunningChange={setIsTimerRunning}
-									darkMode={darkMode}
-									instructions={instructions}
-									instructionIndex={instructionIndex}
-									setInstructionIndex={handleInstructionChange}
-								/>
-							</div>
-							{!fencerId ? (
-								<>
-									<p className="pt-3 text-lg">
-										{3 - videoCount} uploads left without signing in for 24
-										hours
-									</p>
-									<p>Get unlimited uploads by signing up for a free account</p>
-								</>
-							) : (
-								<div className="pt-3" />
-							)}
-							<div className="w-full aspect-video bg-black flex items-center justify-center rounded-lg relative border border-gray-600 mt-4">
-								<Fencer_Canvas
-									videoSource={height ? videoSource : null}
-									isRecording={isRecording}
-									setPose={setPose}
-									containerWidth="100%"
-									containerHeight="100%"
-									darkMode={darkMode}
-									fencerId={fencerId}
-									setUploadAngles={setUploadAngles}
-									setIsRecording={setIsRecording}
-									setAnalysis={setInitialAnalysis}
-									setInitialLoading={setInitialLoading}
-									videoId={videoId}
-								/>
+							{/* Bottom Actions */}
+							<hr className="border-gray-300 w-full mt-6" />
+							<div className="w-full flex justify-around space-x-4 mt-4">
+								<Logout />
+								<DeleteAccountButton userId={fencerId} type="fencer" />
 							</div>
 						</div>
+					</Modal>
+				</header>
 
-						<div className="w-2/3 h-full flex flex-col p-4">
-							<Chatbot
+				<main className="flex flex-grow h-screen flex-row relative">
+					<SidebarMenu fencerId={fencerId} />
+
+					<div className="w-1/3 h-full flex flex-col items-center justify-center z-10 mr-2 pl-2">
+						<Stream_Vid
+							onVideoChange={handleVideoChange}
+							isRecording={isRecording}
+							toggleRecording={toggleRecording}
+							fencerId={fencerId}
+							setInitialLoading={setInitialLoading}
+							setAnalysis={setInitialAnalysis}
+							videoId={videoId}
+							videoCount={videoCount}
+							initialAnalysis={initialAnalysis}
+							blockUpload={blockUpload}
+							setBlockUpload={setBlockUpload}
+						/>
+						<div className="w-full flex flex-col items-center">
+							<MemoizedInstruction
+								isRunning={isRunning}
+								instructionIndex={instructionIndex}
+							/>
+							<MemoizedTimer
+								onTimerStart={handleTimerStart}
+								onReset={handleReset}
+								isStartDisabled={isStartDisabled}
+								resetTimer={resetTimer}
+								initialTime={instructions[instructionIndex]?.time}
+								onRunningChange={setIsTimerRunning}
 								darkMode={darkMode}
-								initialAnalysis={initialAnalysis}
-								setChatCount={setChatCount}
-								chatCount={chatCount}
-								videoId={videoId}
-								decodeRun={decodeRun}
-								isLoggedIn={!!fencerId}
-								initialLoading={initialLoading}
-								fingerprint={fingerprint}
-								fencerId={fencerId}
-								setBlockUpload={setBlockUpload}
+								instructions={instructions}
+								instructionIndex={instructionIndex}
+								setInstructionIndex={handleInstructionChange}
 							/>
 						</div>
 
-						<div
-							className={`absolute top-0 left-0 p-4 ${darkMode ? "bg-gray-800 text-white" : "bg-gray-200 text-black"} rounded`}
-						>
-							{feedback.map((msg, index) => (
-								<div key={index}>{msg}</div>
-							))}
+						{!fencerId ? (
+							<p className="text-lg">
+								{3 - videoCount} uploads left without signing in for 24 hours
+							</p>
+						) : (
+							<div className="pt-3" />
+						)}
+						<div className="w-full aspect-video bg-black flex items-center justify-center rounded-lg relative border border-gray-600 mt-4">
+							<Fencer_Canvas
+								videoSource={height ? videoSource : null}
+								isRecording={isRecording}
+								setPose={setPose}
+								containerWidth="100%"
+								containerHeight="100%"
+								darkMode={darkMode}
+								fencerId={fencerId}
+								setUploadAngles={setUploadAngles}
+								setIsRecording={setIsRecording}
+								setAnalysis={setInitialAnalysis}
+								setInitialLoading={setInitialLoading}
+								videoId={videoId}
+							/>
 						</div>
-					</main>
+					</div>
 
-					<HeightInputModal
-						isOpen={isHeightModalOpen}
-						onClose={() => setIsHeightModalOpen(false)}
-						onSave={handleHeightSave}
-					/>
+					<div className="w-2/3 h-full flex flex-col p-4">
+						<Chatbot
+							darkMode={darkMode}
+							initialAnalysis={initialAnalysis}
+							setChatCount={setChatCount}
+							chatCount={chatCount}
+							videoId={videoId}
+							decodeRun={decodeRun}
+							isLoggedIn={!!fencerId}
+							initialLoading={initialLoading}
+							fingerprint={fingerprint}
+							fencerId={fencerId}
+							setBlockUpload={setBlockUpload}
+						/>
+					</div>
 
-					<style jsx>{`
+					<div
+						className={`absolute top-0 left-0 p-4 ${darkMode ? "bg-gray-800 text-white" : "bg-gray-200 text-black"} rounded`}
+					>
+						{feedback.map((msg, index) => (
+							<div key={index}>{msg}</div>
+						))}
+					</div>
+				</main>
+
+				<HeightInputModal
+					isOpen={isHeightModalOpen}
+					onClose={() => setIsHeightModalOpen(false)}
+					onSave={handleHeightSave}
+				/>
+
+				<style jsx>{`
             .countdown-circle {
               width: 40px;
               height: 40px;
@@ -1018,8 +985,7 @@ export default function Fencer_Page2() {
               color: white;
             }
           `}</style>
-				</div>
-			)}
+			</div>
 		</InstructionContext.Provider>
 	);
 }

@@ -1,6 +1,7 @@
 import { Inter } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
+import { Capacitor } from "@capacitor/core";
 
 const inter = Inter({ subsets: ["latin"] });
 import { GoogleOAuthProvider } from "@react-oauth/google";
@@ -45,6 +46,10 @@ export const metadata = {
 export const viewport = {
 	themeColor: "#ffffff",
 };
+
+if (Capacitor.isNativePlatform()) {
+	window.location.href = "https://mygardeapp.com";
+}
 
 export default function RootLayout({ children }) {
 	return (

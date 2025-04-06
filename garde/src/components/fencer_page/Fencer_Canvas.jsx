@@ -487,43 +487,44 @@ const WebcamPose = ({
 					</>
 				)}
 			</div>
-			<div
-				id="3d-plot"
-				style={{
-					width: "100px",
-					height: "100px",
-					position: "absolute",
-					bottom: "50px",
-					right: "0px",
-					zIndex: 10,
-					background: "rgba(0,0,0,0)",
-					borderRadius: "15px",
-					border: "2px solid white",
-				}}
-			/>
 
-			{/* <div
-				style={{ position: "absolute", top: "-10%", left: "90%", zIndex: 20 }}
-			> */}
-			<div
-				style={{
-					position: "absolute",
-					top: "10px",
-					right: "10px",
-					zIndex: 20,
-				}}
-			>
-				<MdBuild
-					className="w-10 h-10 hover:bg-slate-700 rounded-md"
-					onClick={ShowInstructionMenu}
-				/>{" "}
-				{showInstructionMenu && (
-					<FencerInstructionMenu setInstructionMenu={setInstructionMenu} />
-				)}
+			<div>
+				<div
+					id="3d-plot"
+					className="md:block hidden w-20 h-20 bg-transparent rounded-2xl border-2 border-white relative z-10"
+				/>
+
+				<div className="relative z-20 mt-4">
+					<MdBuild
+						className="md:w-10 md:h-10 h-5 w-5 hover:bg-slate-700 rounded-md text-white"
+						onClick={ShowInstructionMenu}
+					/>
+					{showInstructionMenu && (
+						<FencerInstructionMenu setInstructionMenu={setInstructionMenu} />
+					)}
+				</div>
 			</div>
 		</>
 	);
 };
+
+/*
+<div
+id="3d-plot"
+className="w-20 h-20 bg-transparent rounded-2xl border-2 border-white
+		 relative md:absolute md:bottom-[50px] md:right-0 md:z-10"
+/>
+
+<div className="relative md:absolute md:top-[10px] md:right-[10px] md:z-20 mt-4">
+<MdBuild
+	className="w-10 h-10 hover:bg-slate-700 rounded-md text-white"
+	onClick={ShowInstructionMenu}
+/>
+{showInstructionMenu && (
+	<FencerInstructionMenu setInstructionMenu={setInstructionMenu} />
+)}
+</div>
+*/
 
 export default WebcamPose;
 

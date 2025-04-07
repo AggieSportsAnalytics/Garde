@@ -330,34 +330,38 @@ export default function Signin() {
 									Select type to enable Google Login
 								</div>
 							) : (
-								<GoogleLogin
-									width="280"
-									onSuccess={handleGoogleSuccess}
-									onError={handleGoogleError}
-								/>
+								<div>
+									{!Capacitor.isNativePlatform() ? (
+										<GoogleLogin
+											width="280"
+											onSuccess={handleGoogleSuccess}
+											onError={handleGoogleError}
+										/>
+									) : (
+										<button
+											type="button"
+											className="w-[280px] text-sm p-2 bg-white text-center text-black rounded-sm"
+											onClick={async () => {
+												try {
+													const googleUser = await GoogleAuth.signIn();
+													const credential = googleUser.authentication?.idToken;
+
+													if (!credential)
+														throw new Error("No credential returned");
+
+													await handleGoogleSuccess({ credential });
+												} catch (error) {
+													console.error("Native Google Auth error", error);
+													handleGoogleError();
+												}
+											}}
+										>
+											Sign in with Google
+										</button>
+									)}
+								</div>
 							)}
 						</div>
-						{Capacitor.isNativePlatform() && type && passed && (
-							<button
-								type="button"
-								className="w-[280px] bg-white text-black py-2 rounded-lg font-semibold mt-4"
-								onClick={async () => {
-									try {
-										const googleUser = await GoogleAuth.signIn();
-										const credential = googleUser.authentication?.idToken;
-
-										if (!credential) throw new Error("No credential returned");
-
-										await handleGoogleSuccess({ credential });
-									} catch (error) {
-										console.error("Native Google Auth error", error);
-										handleGoogleError();
-									}
-								}}
-							>
-								Sign in with Google
-							</button>
-						)}
 
 						<Link
 							className="mt-2 flex justify-center text-blue-400"

@@ -52,15 +52,15 @@ export default function Signin() {
 		};
 	}, []);
 
-	useEffect(() => {
-		const timer = setTimeout(() => {
-			if (!captchaStarted) {
-				window.location.reload();
-			}
-		}, 3000);
+	// useEffect(() => {
+	// 	const timer = setTimeout(() => {
+	// 		if (!captchaStarted) {
+	// 			window.location.reload();
+	// 		}
+	// 	}, 5000);
 
-		return () => clearTimeout(timer);
-	}, [captchaStarted]);
+	// 	return () => clearTimeout(timer);
+	// }, [captchaStarted]);
 
 	useEffect(() => {
 		const initPage = async () => {

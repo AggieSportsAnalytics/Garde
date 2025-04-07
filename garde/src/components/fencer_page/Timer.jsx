@@ -146,16 +146,13 @@ const Timer = ({
 	};
 
 	return (
-		<div
-			className="flex flex-col items-center justify-center"
-			style={{ maxHeight: "10vh", width: "100%" }}
-		>
+		<div className="flex flex-col items-center justify-center w-full max-w-xl">
 			<div
-				className={`font-sans text-6xl mb-4 transition-all ease-out duration-300 rounded-full ${darkMode ? "text-white" : "text-black"}`}
+				className={`font-sans md:text-6xl text-md mb-1 transition-all ease-out duration-300 rounded-full ${darkMode ? "text-white" : "text-black"}`}
 			>
 				{isCountingDown ? countdown : formatTime(time)}
 			</div>
-			<div className="space-x-2">
+			<div className="flex flex-col items-center space-y-1">
 				<button
 					className={`text-white border py-2 px-4 rounded text-sm transition duration-150 ease-in-out ${
 						darkMode

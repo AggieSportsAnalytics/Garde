@@ -13,11 +13,12 @@ export default function Home() {
 		<div className="bg-[#faf9f5]">
 			<Navbar />
 			<Hero />
-			{/* <About /> */}
 			<Showcase />
 			<Features />
 			<Banner />
-			<Contact />
+			<div id="contact">
+				<Contact />
+			</div>
 			<Footer />
 		</div>
 	);

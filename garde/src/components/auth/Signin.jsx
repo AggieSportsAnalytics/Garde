@@ -9,6 +9,7 @@ import CoachPageScaffold from "../coach_page/CoachPageScaffold";
 import checkAuth from "@/src/app/hooks/jwt_verify";
 import RestrictedAlert from "../ui/RestrictedAlert";
 import axios from "axios";
+import { FiRefreshCw } from "react-icons/fi";
 
 export default function Signin() {
 	const [email, setEmail] = useState("");
@@ -52,15 +53,16 @@ export default function Signin() {
 		};
 	}, []);
 
-	// useEffect(() => {
-	// 	const timer = setTimeout(() => {
-	// 		if (!captchaStarted) {
-	// 			window.location.reload();
-	// 		}
-	// 	}, 5000);
+	useEffect(() => {
+		const timer = setTimeout(() => {
+			if (!captchaStarted) {
+				setPassed(false);
+				setCaptchaRun(true);
+			}
+		}, 5000);
 
-	// 	return () => clearTimeout(timer);
-	// }, [captchaStarted]);
+		return () => clearTimeout(timer);
+	}, [captchaStarted]);
 
 	useEffect(() => {
 		const initPage = async () => {
@@ -216,9 +218,18 @@ export default function Signin() {
 
 					<RestrictedAlert redirect="signin" />
 					<div className="bg-gray-800 p-8 rounded-lg shadow-lg max-w-md w-full">
-						<h1 className="text-center text-2xl font-semibold mb-6">
-							{isSignUp ? "Sign Up" : "Sign In"}
-						</h1>
+						<div className="relative mb-6">
+							<h1 className="text-center text-2xl font-semibold">
+								{isSignUp ? "Sign Up" : "Sign In"}
+							</h1>
+							<button
+								type="button"
+								onClick={() => window.location.reload()}
+								className="absolute right-0 top-1/2 -translate-y-1/2"
+							>
+								<FiRefreshCw className="text-2xl" />
+							</button>
+						</div>
 
 						<form onSubmit={handleSubmit} className="space-y-6">
 							<div>
@@ -326,8 +337,9 @@ export default function Signin() {
 						/>
 						{!passed && captchaRun && (
 							<p className="text-center text-sm text-red-500 py-1">
-								Please refresh the page and try again, if this issue persists
-								please contact support@gardeai.com
+								If Cloudflare verify not showing up, please refresh the page and
+								try again, if this issue persists please contact
+								support@gardeai.com
 							</p>
 						)}
 

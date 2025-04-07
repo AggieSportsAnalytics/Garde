@@ -8,6 +8,7 @@ import {
 import { useSearchParams, useRouter } from "next/navigation";
 import axios from "axios";
 import axiosInstance from "@/src/components/axios";
+import Link from "next/link";
 
 function VerifyEmail() {
 	const [message, setMessage] = useState("Verifying...");
@@ -63,13 +64,13 @@ function VerifyEmail() {
 
 	return (
 		<div className="min-h-screen bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 flex flex-col items-center justify-center text-white p-4">
-			<div className="absolute top-4 left-4">
+			<Link className="absolute top-4 left-4" href="/">
 				<img
 					src="/images/garde-square.png"
 					alt="Logo"
 					className="w-24 h-auto"
 				/>
-			</div>
+			</Link>
 			<div className="bg-gray-800 p-6 rounded-lg shadow-lg text-center max-w-md">
 				{message === "Verifying..." ? (
 					<div className="flex flex-col items-center space-y-4">

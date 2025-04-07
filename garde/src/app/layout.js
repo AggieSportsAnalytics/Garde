@@ -1,7 +1,6 @@
 import { Inter } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
-import { Capacitor } from "@capacitor/core";
 
 const inter = Inter({ subsets: ["latin"] });
 import { GoogleOAuthProvider } from "@react-oauth/google";
@@ -44,6 +43,9 @@ export const metadata = {
 };
 
 export const viewport = {
+	width: "device-width",
+	initialScale: 1,
+	viewportFit: "cover",
 	themeColor: "#ffffff",
 };
 
@@ -51,10 +53,6 @@ export default function RootLayout({ children }) {
 	return (
 		<html lang="en">
 			<head>
-				<meta
-					name="viewport"
-					content="width=device-width, initial-scale=1.0, viewport-fit=cover"
-				/>
 				<link
 					rel="apple-touch-icon"
 					sizes="180x180"

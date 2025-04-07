@@ -47,10 +47,6 @@ export const viewport = {
 	themeColor: "#ffffff",
 };
 
-if (Capacitor.isNativePlatform()) {
-	window.location.href = "https://gardeai.com";
-}
-
 export default function RootLayout({ children }) {
 	return (
 		<html lang="en">

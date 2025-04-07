@@ -10,6 +10,7 @@ import checkAuth from "@/src/app/hooks/jwt_verify";
 import RestrictedAlert from "../ui/RestrictedAlert";
 import axios from "axios";
 import { FiRefreshCw } from "react-icons/fi";
+import { Capacitor } from "@capacitor/core";
 
 export default function Signin() {
 	const [email, setEmail] = useState("");
@@ -55,6 +56,10 @@ export default function Signin() {
 
 	useEffect(() => {
 		const timer = setTimeout(() => {
+			if (Capacitor.isNativePlatform()) {
+				setPassed(true);
+				return;
+			}
 			if (!captchaStarted) {
 				setPassed(false);
 				setCaptchaRun(true);

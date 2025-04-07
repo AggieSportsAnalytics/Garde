@@ -13,6 +13,7 @@
 		"@capacitor/android": "^7.2.0",
 		"@capacitor/core": "^7.2.0",
 		"@capacitor/ios": "^7.2.0",
+		"@codetrix-studio/capacitor-google-auth": "^3.4.0-rc.4",
 		"@fingerprintjs/fingerprintjs": "^4.6.1",
 		"@mediapipe/pose": "^0.5.1675469404",
 		"@react-oauth/google": "^0.12.1",

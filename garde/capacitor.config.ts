@@ -8,6 +8,13 @@ const config: CapacitorConfig = {
     url: 'https://gardeai.com',
     cleartext: true,
   },
+  plugins: {
+    GoogleAuth: {
+      scopes: ["profile", "email", "openid"],
+      serverClientId: `${process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID}.apps.googleusercontent.com`,
+      forceCodeForRefreshToken: true
+    }
+  }
 };
 
 export default config;

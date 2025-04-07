@@ -11,6 +11,7 @@ import RestrictedAlert from "../ui/RestrictedAlert";
 import axios from "axios";
 import { FiRefreshCw } from "react-icons/fi";
 import { Capacitor } from "@capacitor/core";
+import { GoogleAuth } from "@codetrix-studio/capacitor-google-auth";
 
 export default function Signin() {
 	const [email, setEmail] = useState("");
@@ -31,6 +32,14 @@ export default function Signin() {
 	);
 
 	useEffect(() => {
+		if (Capacitor.isNativePlatform()) {
+			GoogleAuth.initialize({
+				clientId: `${process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID}.apps.googleusercontent.com`,
+				scopes: ["profile", "email", "openid"],
+				grantOfflineAccess: true,
+			});
+		}
+
 		window.callback = async (token) => {
 			setCaptchaStarted(true);
 			try {
@@ -328,6 +337,28 @@ export default function Signin() {
 								/>
 							)}
 						</div>
+						{Capacitor.isNativePlatform() && type && passed && (
+							<button
+								type="button"
+								className="w-[280px] bg-white text-black py-2 rounded-lg font-semibold mt-4"
+								onClick={async () => {
+									try {
+										const googleUser = await GoogleAuth.signIn();
+										const credential = googleUser.authentication?.idToken;
+
+										if (!credential) throw new Error("No credential returned");
+
+										await handleGoogleSuccess({ credential });
+									} catch (error) {
+										console.error("Native Google Auth error", error);
+										handleGoogleError();
+									}
+								}}
+							>
+								Sign in with Google
+							</button>
+						)}
+
 						<Link
 							className="mt-2 flex justify-center text-blue-400"
 							href="/privacy-policy"

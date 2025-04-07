@@ -41,12 +41,12 @@ export default function CoachPage() {
 				renewSession(decoded).then((val) => {
 					if (!val) {
 						alert("Your session has expired. Please log in again.");
-						router.push("/signin");
+						window.location.href = "/signin";
 					}
 				});
 			} catch (error) {
 				console.error(error);
-				router.push("/signin?restricted=true");
+				window.location.href = "/signin?restricted=true";
 			}
 		};
 

@@ -35,7 +35,7 @@ function Navbar({ setLoggedIn, loggedIn }) {
 				console.error(error);
 			}
 		} else {
-			router.push("/signin?redirect=/tournaments");
+			window.location.href = "/signin?redirect=/tournaments";
 		}
 	};
 

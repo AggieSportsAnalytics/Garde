@@ -95,7 +95,6 @@ const Navbar = () => {
 							<span className="text-slate-400 ml-2">Logout</span>
 						</button>
 					) : (
-						// DO NOT USE NEXT/LINK FOR ROUTING TO SIGNIN PAGE
 						<a
 							href="/signin"
 							className="flex hover:text-blue-300 transition-colors duration-200"
@@ -146,7 +145,6 @@ const Navbar = () => {
 							<span className="ml-2">Logout</span>
 						</button>
 					) : (
-						// DO NOT USE NEXT/LINK FOR ROUTING TO SIGNIN PAGE
 						<a
 							href="/signin"
 							className="flex hover:text-blue-500 transition-colors duration-200"

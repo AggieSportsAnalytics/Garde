@@ -43,7 +43,6 @@ const Hero = () => {
 			{/* Left side with light background */}
 			<div className="w-full md:w-1/2 px-4 pt-32 md:pt-36 relative">
 				<div className="max-w-xl mx-auto">
-					{/* DO NOT USE NEXT/LINK FOR ROUTING TO SIGNIN PAGE */}
 					<div className="flex gap-4 mb-16">
 						<a
 							href="/signin"

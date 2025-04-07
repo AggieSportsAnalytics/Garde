@@ -1,6 +1,5 @@
 "use client";
 import React from "react";
-import { motion } from "framer-motion";
 
 const Showcase = () => {
 	return (
@@ -20,7 +19,8 @@ const Showcase = () => {
 								Advanced Reasoning
 							</h3>
 							<p className="mt-2 text-sm text-gray-600">
-								Empowers tactical decisions with intelligent data analysis and predictive algorithms.
+								Empowers tactical decisions with intelligent data analysis and
+								predictive algorithms.
 							</p>
 						</div>
 						{/* Feature Card: Vision Analysis */}
@@ -34,7 +34,8 @@ const Showcase = () => {
 								Vision Analysis
 							</h3>
 							<p className="mt-2 text-sm text-gray-600">
-								Provides real-time analysis to capture critical insights from every movement.
+								Provides real-time analysis to capture critical insights from
+								every movement.
 							</p>
 						</div>
 						{/* Feature Card: Speech-to-Speech */}
@@ -48,7 +49,8 @@ const Showcase = () => {
 								Speech-to-Speech
 							</h3>
 							<p className="mt-2 text-sm text-gray-600">
-								Enables interactive voice feedback to guide your performance dynamically.
+								Enables interactive voice feedback to guide your performance
+								dynamically.
 							</p>
 						</div>
 						{/* Feature Card: Pose Mapping */}
@@ -62,7 +64,8 @@ const Showcase = () => {
 								Pose Mapping
 							</h3>
 							<p className="mt-2 text-sm text-gray-600">
-								Tracks and maps body movements to optimize your fencing stance and form.
+								Tracks and maps body movements to optimize your fencing stance
+								and form.
 							</p>
 						</div>
 					</div>
@@ -72,8 +75,9 @@ const Showcase = () => {
 							Meet GSX-a1
 						</h2>
 						<h2 className="text-[#1a2b3b] text-lg sm:text-5xl md:text-xl mt-10 font-platypi">
-							Generative Sports Expert Alpha 1 is a state-of-the-art AI assistant built by Garde and trained on
-							specialized fencing datasets to help you analyze your bouts and perform at your best.
+							Generative Sports Expert Alpha 1 is a state-of-the-art AI
+							assistant built by Garde and trained on specialized fencing
+							datasets to help you analyze your bouts and perform at your best.
 						</h2>
 					</div>
 				</div>

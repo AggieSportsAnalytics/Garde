@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useEffect, useState, Suspense } from "react";
-import Link from "next/link";
 import axiosInstance from "@/src/components/axios";
 import axios from "axios";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -77,7 +76,7 @@ const ForgotPassword = () => {
 
 				setMessage("Successfully reset password.");
 				setTimeout(() => {
-					router.push("/signin");
+					window.location.href = "/signin";
 				}, 1000);
 			} else {
 				setMessage("Failed, enter a valid email address, type, and passwords.");
@@ -87,14 +86,14 @@ const ForgotPassword = () => {
 			if (error.response?.status === 403) {
 				setMessage("Unable to update password for users with google login.");
 				setTimeout(() => {
-					router.push("/signin");
+					window.location.href = "/signin";
 				}, 3000);
 			} else if (error.response?.status === 404) {
 				setMessage(
 					`Failed, user with email ${email} of type '${type}' not found.`,
 				);
 				setTimeout(() => {
-					router.push("/signin");
+					window.location.href = "/signin";
 				}, 3000);
 			} else {
 				setMessage("Failed to reset password, please try again.");
@@ -111,7 +110,6 @@ const ForgotPassword = () => {
 	return (
 		<div className="min-h-screen flex items-center justify-center bg-gray-900 text-white px-4">
 			<div className="absolute top-4 left-4">
-				{/* Keep this as an <a> tag, need full page refresh for /signin */}
 				<a href="/signin" className="cursor-pointer">
 					<button
 						type="button"
@@ -182,12 +180,12 @@ const ForgotPassword = () => {
 					</p>
 				)}
 				<div className="mt-6 text-center">
-					<Link
+					<a
 						href="/signin"
 						className="text-blue-400 hover:text-blue-500 text-sm"
 					>
 						Back to Sign In
-					</Link>
+					</a>
 				</div>
 			</div>
 		</div>

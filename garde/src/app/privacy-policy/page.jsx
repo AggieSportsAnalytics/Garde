@@ -11,7 +11,7 @@ const PrivacyPolicy = () => {
 	useEffect(() => {
 		fetch("/privacy-policy.html")
 			.then((response) => response.text())
-			.then((data) => setHtmlContent(data))
+			.then((data) => setHtmlContent(DOMPurify.sanitize(data)))
 			.catch((error) => console.error("Error loading the HTML file:", error));
 	}, []);
 
@@ -26,7 +26,7 @@ const PrivacyPolicy = () => {
 					&#8592;
 				</button>
 			</Link>
-			<div>{parse(DOMPurify.sanitize(htmlContent))}</div>
+			<div>{parse(htmlContent)}</div>
 		</div>
 	);
 };

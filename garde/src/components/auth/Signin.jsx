@@ -74,7 +74,7 @@ export default function Signin() {
 				}
 			} catch (error) {
 				console.error(error);
-				router.push("/signin?restricted=true");
+				window.location.href = "/signin?restricted=true";
 			}
 		};
 
@@ -337,9 +337,9 @@ export default function Signin() {
 						/>
 						{!passed && captchaRun && (
 							<p className="text-center text-sm text-red-500 py-1">
-								If Cloudflare verify not showing up, please refresh the page and
-								try again, if this issue persists please contact
-								support@gardeai.com
+								If the Cloudflare verification prompt doesn't appear, please
+								refresh the page and try again. If it's still loading, please
+								wait. If the issue persists, contact support@gardeai.com.
 							</p>
 						)}
 

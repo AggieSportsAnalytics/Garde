@@ -48,7 +48,7 @@ export const viewport = {
 };
 
 if (Capacitor.isNativePlatform()) {
-	window.location.href = "https://mygardeapp.com";
+	window.location.href = "https://gardeai.com";
 }
 
 export default function RootLayout({ children }) {

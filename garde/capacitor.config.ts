@@ -1,7 +1,7 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.gardeai',
+  appId: 'com.gardeai.app',
   appName: 'Garde',
   // webDir: 'dist',
   server: {

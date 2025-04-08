@@ -34,7 +34,7 @@ export default function Signin() {
 	useEffect(() => {
 		if (Capacitor.isNativePlatform()) {
 			GoogleAuth.initialize({
-				clientId: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID,
+				clientId: process.env.NEXT_PUBLIC_IOS_GOOGLE_CLIENT_ID,
 				scopes: ["profile", "email", "openid"],
 				grantOfflineAccess: true,
 			});

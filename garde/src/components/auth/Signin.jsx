@@ -216,8 +216,11 @@ export default function Signin() {
 			const googleUser = await GoogleAuth.signIn();
 			const credential = googleUser.authentication?.idToken;
 
+			console.log(googleUser);
+			console.log(credential);
+
 			if (credential) {
-				await handleGoogleSuccess({ credential });
+				await handleGoogleSuccess({ response: credential });
 			}
 		} catch (error) {
 			console.error("Native Google Auth error", error);

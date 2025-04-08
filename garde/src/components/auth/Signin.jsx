@@ -34,7 +34,7 @@ export default function Signin() {
 	useEffect(() => {
 		if (Capacitor.isNativePlatform()) {
 			GoogleAuth.initialize({
-				clientId: `${process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID}.apps.googleusercontent.com`,
+				clientId: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID,
 				scopes: ["profile", "email", "openid"],
 				grantOfflineAccess: true,
 			});
@@ -211,6 +211,23 @@ export default function Signin() {
 		setIsSignUp(!isSignUp);
 	};
 
+	const nativeGoogleSignin = async () => {
+		try {
+			const googleUser = await GoogleAuth.signIn();
+			const credential = googleUser.authentication?.idToken;
+
+			console.log(googleUser);
+			console.log(credential);
+
+			if (credential) {
+				await handleGoogleSuccess({ credential });
+			}
+		} catch (error) {
+			console.error("Native Google Auth error", error);
+			handleGoogleError();
+		}
+	};
+
 	return (
 		<>
 			{loading && type === "coach" ? (
@@ -341,20 +358,7 @@ export default function Signin() {
 										<button
 											type="button"
 											className="w-[280px] text-sm p-2 bg-white text-center text-black rounded-sm"
-											onClick={async () => {
-												try {
-													const googleUser = await GoogleAuth.signIn();
-													const credential = googleUser.authentication?.idToken;
-
-													if (!credential)
-														throw new Error("No credential returned");
-
-													await handleGoogleSuccess({ credential });
-												} catch (error) {
-													console.error("Native Google Auth error", error);
-													handleGoogleError();
-												}
-											}}
+											onClick={nativeGoogleSignin}
 										>
 											Sign in with Google
 										</button>

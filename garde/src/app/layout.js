@@ -71,6 +71,11 @@ export default function RootLayout({ children }) {
 					href="/favicon-16x16.png"
 				/>
 				<link rel="manifest" href="/site.webmanifest" />
+				<link rel="preconnect" href="https://fonts.googleapis.com" />
+				<link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+				<link href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700&display=swap" rel="stylesheet" />
+				<link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&display=swap" rel="stylesheet" />
+				{/* For the Tiempos Text font, add it to your CSS or use local font files */}
 				<Script
 					src="https://challenges.cloudflare.com/turnstile/v0/api.js"
 					async
@@ -78,7 +83,7 @@ export default function RootLayout({ children }) {
 				/>
 			</head>
 			<GoogleOAuthProvider clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID}>
-				<body className={inter.className}>
+				<body className={`${inter.className}`}>
 					<Providers>{children}</Providers>
 				</body>
 			</GoogleOAuthProvider>

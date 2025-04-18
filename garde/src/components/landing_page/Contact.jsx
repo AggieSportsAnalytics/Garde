@@ -2,6 +2,7 @@
 import React, { useRef, useState } from "react";
 import axios from "axios";
 import { FaLinkedin, FaYoutube, FaInstagram } from "react-icons/fa";
+import { motion } from "framer-motion";
 import Link from "next/link";
 
 const Contact = () => {
@@ -39,104 +40,119 @@ const Contact = () => {
 	};
 
 	return (
-		<section className="bg-[#faf9f5] py-12 px-6">
-			{/* Floating Centered Card */}
-			<div className="max-w-lg mx-auto bg-[#2c3e50] p-8 rounded-3xl shadow-2xl">
-				<h2 className="text-4xl font-platypi text-white text-center mb-8">
-					Interested?
-				</h2>
-				<h3 className="text-lg font-platypi text-white text-center mb-8">
-					Fill out the form below and we will be in touch shortly!
-				</h3>
-				<form ref={form} onSubmit={sendEmail} className="space-y-6">
-					<div>
-						<label htmlFor="name" className="block text-lg text-gray-300 mb-2">
-							Name
-						</label>
-						<input
-							type="text"
-							name="user_name"
-							placeholder="Your Name"
-							className="w-full px-4 py-2 rounded-lg bg-gray-800 text-gray-300 placeholder-gray-500 border border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-							required
-						/>
-					</div>
-					<div>
-						<label htmlFor="email" className="block text-lg text-gray-300 mb-2">
-							Email
-						</label>
-						<input
-							type="email"
-							name="user_email"
-							placeholder="Your Email"
-							className="w-full px-4 py-2 rounded-lg bg-gray-800 text-gray-300 placeholder-gray-500 border border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-							required
-						/>
-					</div>
-					<div>
-						<label
-							htmlFor="message"
-							className="block text-lg text-gray-300 mb-2"
-						>
-							Message
-						</label>
-						<textarea
-							name="message"
-							placeholder="Your Message"
-							rows="5"
-							className="w-full px-4 py-2 rounded-lg bg-gray-800 text-gray-300 placeholder-gray-500 border border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-							required
-						></textarea>
-					</div>
-					{/* Centered Send Message Button */}
-					<div className="flex justify-center">
-						<button
-							type="submit"
-							className={`px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition duration-300 ${
-								loading ? "bg-gray-500" : ""
-							}`}
-							disabled={loading}
-						>
-							{loading ? "Sending..." : "Send Message"}
-						</button>
-					</div>
-					{success && <p className="text-center mt-4 text-white">{success}</p>}
-				</form>
+		<div
+			id="contact"
+			className="w-full px-0 py-16 bg-slate-50 border-t border-slate-100"
+		>
+			<div className="max-w-7xl mx-auto px-6">
+				<div className="bg-white rounded-2xl overflow-hidden shadow-xl border border-emerald-100 transform hover:scale-[1.01] transition-all duration-300">
+					<div className="px-8 py-10 md:px-16 md:py-12">
+						<h2 className="text-3xl md:text-4xl font-bold text-slate-800 text-center mb-3 font-mono">
+							Interested?
+						</h2>
+						<p className="text-slate-600 text-center max-w-lg mx-auto mb-10 font-mono">
+							Fill out the form below and we will be in touch shortly!
+						</p>
 
-				{/* Social Media Icons */}
-				<div className="flex justify-center mt-4">
-					<div className="flex space-x-4">
-						<div className="bg-slate-500 w-12 h-12 rounded-xl hover:bg-slate-400 flex items-center justify-center">
+						<form
+							ref={form}
+							onSubmit={sendEmail}
+							className="space-y-6 max-w-4xl mx-auto font-mono"
+						>
+							<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+								<div>
+									<label htmlFor="name" className="block text-slate-700 mb-2">
+										Name
+									</label>
+									<input
+										name="user_name"
+										required
+										type="text"
+										id="name"
+										placeholder="Your Name"
+										className="w-full bg-slate-50 border border-slate-200 rounded-md p-4 text-slate-800 placeholder-slate-400 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all font-mono"
+									/>
+								</div>
+
+								<div>
+									<label htmlFor="email" className="block text-slate-700 mb-2">
+										Email
+									</label>
+									<input
+										type="email"
+										id="email"
+										name="user_email"
+										required
+										placeholder="Your Email"
+										className="w-full bg-slate-50 border border-slate-200 rounded-md p-4 text-slate-800 placeholder-slate-400 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all font-mono"
+									/>
+								</div>
+							</div>
+
+							<div>
+								<label htmlFor="message" className="block text-slate-700 mb-2">
+									Message
+								</label>
+								<textarea
+									name="message"
+									required
+									id="message"
+									placeholder="Your Message"
+									rows="5"
+									className="w-full bg-slate-50 border border-slate-200 rounded-md p-4 text-slate-800 placeholder-slate-400 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all resize-none font-mono"
+								/>
+							</div>
+
+							<div className="flex justify-center mt-8">
+								<motion.button
+									type="submit"
+									className="bg-emerald-600 hover:bg-emerald-700 text-white px-8 py-3 rounded-md font-medium text-lg transition-all font-tiempos"
+									whileHover={{
+										y: -2,
+										boxShadow: "0 10px 25px -5px rgba(16, 185, 129, 0.5)",
+									}}
+									whileTap={{ scale: 0.98 }}
+									disabled={loading}
+								>
+									{loading ? "Sending..." : "Send Message"}
+								</motion.button>
+							</div>
+							{success && (
+								<p className="text-center mt-4 text-black">{success}</p>
+							)}
+						</form>
+
+						{/* Social media links */}
+						<div className="flex justify-center mt-10 space-x-6">
 							<Link
-								href="https://www.linkedin.com/company/gardeai/"
+								href="https://www.linkedin.com/company/gardeai"
 								target="_blank"
 								rel="noreferrer"
+								className="bg-slate-100 hover:bg-emerald-100 text-slate-700 hover:text-emerald-700 p-3 rounded-md transition-all"
 							>
-								<FaLinkedin className="w-6 h-6 text-white" />
+								<FaLinkedin size={25} />
 							</Link>
-						</div>
-						<div className="bg-slate-500 w-12 h-12 rounded-xl hover:bg-slate-400 flex items-center justify-center">
 							<Link
 								href="https://www.instagram.com/garde.ai"
 								target="_blank"
 								rel="noreferrer"
+								className="bg-slate-100 hover:bg-emerald-100 text-slate-700 hover:text-emerald-700 p-3 rounded-md transition-all"
 							>
-								<FaInstagram className="w-6 h-6 text-white" />
+								<FaInstagram size={25} />
 							</Link>
-						</div>
-						<div className="bg-slate-500 w-12 h-12 rounded-xl hover:bg-slate-400 flex items-center justify-center">
 							<Link
 								href="https://www.youtube.com/@gardefencing"
 								target="_blank"
 								rel="noreferrer"
+								className="bg-slate-100 hover:bg-emerald-100 text-slate-700 hover:text-emerald-700 p-3 rounded-md transition-all"
 							>
-								<FaYoutube className="w-6 h-6 text-white" />
+								<FaYoutube size={25} />
 							</Link>
 						</div>
 					</div>
 				</div>
 			</div>
-		</section>
+		</div>
 	);
 };
 

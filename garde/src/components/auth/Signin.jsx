@@ -216,7 +216,7 @@ export default function Signin() {
 			{loading && type === "coach" ? (
 				<CoachPageScaffold />
 			) : (
-				<div className="min-h-screen flex items-center justify-center bg-gray-900 text-white px-4">
+				<div className="min-h-screen flex items-center justify-center bg-gray-900 text-white p-4">
 					{loading && <Loader loading={loading} />}
 					<div className="absolute top-4 left-4">
 						<Link href="/" className="cursor-pointer">

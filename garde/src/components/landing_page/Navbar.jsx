@@ -60,7 +60,7 @@ const Navbar = () => {
 			initial={{ y: -100 }}
 			animate={{ y: 0 }}
 			transition={{ type: "spring", stiffness: 100 }}
-			className="fixed top-4 left-4 right-4 z-50 flex items-center justify-between p-4 bg-white/10 backdrop-blur-lg rounded-2xl shadow-lg text-white"
+			className="fixed top-4 left-4 right-4 z-50 flex items-center justify-between p-4 bg-slate-800/70 backdrop-blur-md rounded-2xl shadow-lg text-white"
 		>
 			{/* Logo or Brand Name */}
 			<Link href="/" className="flex items-center">
@@ -82,7 +82,7 @@ const Navbar = () => {
 						className="flex items-center gap-2 hover:text-blue-300 transition-colors duration-200"
 					>
 						<FaTrophy size={20} className="text-slate-200" />
-						<span className="text-slate-400">Tournaments</span>
+						<span className="text-slate-200">Tournaments</span>
 					</Link>
 
 					{loggedIn ? (
@@ -92,7 +92,7 @@ const Navbar = () => {
 							className="flex hover:text-blue-300 transition-colors duration-200"
 						>
 							<BiLogOut size={20} className="text-slate-200" />
-							<span className="text-slate-400 ml-2">Logout</span>
+							<span className="text-slate-200 ml-2">Logout</span>
 						</button>
 					) : (
 						<a
@@ -100,7 +100,7 @@ const Navbar = () => {
 							className="flex hover:text-blue-300 transition-colors duration-200"
 						>
 							<BiLogIn size={20} className="text-slate-200" />
-							<span className="text-slate-400 ml-2">Sign-In/Sign-Up</span>
+							<span className="text-slate-200 ml-2">Sign-In/Sign-Up</span>
 						</a>
 					)}
 				</div>

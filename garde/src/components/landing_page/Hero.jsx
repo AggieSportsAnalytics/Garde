@@ -227,19 +227,19 @@ const Hero = () => {
 							</motion.h1>
 							<div className="mt-4 relative">
 								{/* Redesigned tagline container with consistent text and box alignment */}
-								<div className="relative max-w-[280px] md:max-w-[360px] lg:max-w-[420px] mx-auto lg:mx-0 lg:ml-0 overflow-visible pb-2">
+								<div className="relative max-w-[240px] md:max-w-[300px] lg:max-w-[300px] mx-auto lg:mx-0 lg:ml-0 overflow-visible pb-2">
 									{/* Main text first - this ensures the box wraps around the text */}
 									<div className="relative z-20 text-center lg:text-left flex items-center justify-center lg:justify-start h-10">
-										<div className="inline-block overflow-hidden px-4">
+										<div className="inline-block overflow-hidden px-3">
 											{isClient && (
 												<TextGenerateEffect
-													words="Smart Coaching for Smarter Performance"
+													words="Train smarter, instantly"
 													className="text-[clamp(0.65rem,3vw,1.2rem)] font-bold text-emerald-700 inline-block whitespace-nowrap tracking-tight"
 												/>
 											)}
 											{!isClient && (
 												<h2 className="text-[clamp(0.65rem,3vw,1.2rem)] font-bold text-emerald-700 inline-block whitespace-nowrap tracking-tight">
-													Smart Coaching for Smarter Performance
+													Train smarter, instantly
 												</h2>
 											)}
 										</div>
@@ -249,7 +249,7 @@ const Hero = () => {
 									<motion.div
 										initial={{ width: 0, height: 0, opacity: 0.4, top: "-10%", left: "-6px" }}
 										animate={{ 
-											width: "105%", 
+											width: "100%", 
 											height: "120%",
 											opacity: 0.5
 										}}
@@ -271,11 +271,11 @@ const Hero = () => {
 											boxShadow: '0 0 15px rgba(16, 185, 129, 0.2), inset 0 0 8px rgba(16, 185, 129, 0.1)'
 										}}
 										className="absolute top-0 bottom-0 my-auto h-[calc(100%+4px)]
-											-left-4 -right-4
-											sm:-left-6 sm:-right-8
-											md:-left-8 md:-right-10
-											lg:-left-6 lg:-right-6
-											xl:-left-6 xl:-right-10"
+											-left-3 -right-3
+											sm:-left-4 sm:-right-4
+											md:-left-6 md:-right-6
+											lg:-left-4 lg:-right-4
+											xl:-left-4 xl:-right-4"
 										onAnimationComplete={() => isClient && setBoxAnimationComplete(true)}
 									>
 										{/* Contained grid of dots that stay within the box */}

@@ -2,6 +2,13 @@ import React from "react";
 import "../../app/globals.css";
 import { motion } from "framer-motion";
 
+// This component has been disabled as its content is already included in the Hero component
+const Features = () => {
+	return null; // Return null instead of duplicating the "See GSX-a1 in action" section
+};
+
+// Previous implementation (commented out to avoid duplication)
+/*
 const Features = () => {
 	return (
 		<div className="max-w-7xl mx-auto px-4 my-8">
@@ -36,5 +43,6 @@ const Features = () => {
 		</div>
 	);
 };
+*/
 
 export default Features;

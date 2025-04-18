@@ -1,6 +1,13 @@
 import React from "react";
 import { MagicCard } from "../ui/MagicCard"; // Import MagicCard component
 
+// This component has been disabled as its content is already included in the Hero component
+const Banner = () => {
+  return null; // Return null instead of duplicating the "Our Mission" section
+};
+
+// Previous implementation is commented out to avoid duplication
+/* 
 const Banner = () => {
   return (
     <section className="bg-[#faf9f5] py-12">
@@ -15,5 +22,6 @@ const Banner = () => {
     </section>
   );
 };
+*/
 
 export default Banner;

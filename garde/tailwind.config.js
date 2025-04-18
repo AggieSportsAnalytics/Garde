@@ -31,6 +31,9 @@ module.exports = {
 			fontFamily: {
 				libre: ["Libre Baskerville", "serif"],
 				platypi: ["Platypi", "serif"],
+				nanum: ["Nanum Myeongjo", "serif"],
+				mono: ["Fira Code", "Fira Mono", "Menlo", "Consolas", "DejaVu Sans Mono", "monospace"],
+				tiempos: ["Tiempos Text", "Georgia", "Times New Roman", "serif"],
 			},
 			backgroundImage: {
 				"gradient-radial": "radial-gradient(var(--tw-gradient-stops))",

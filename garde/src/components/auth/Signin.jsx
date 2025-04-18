@@ -216,9 +216,6 @@ export default function Signin() {
 			const googleUser = await GoogleAuth.signIn();
 			const credential = googleUser.authentication?.idToken;
 
-			console.log(googleUser);
-			console.log(credential);
-
 			if (credential) {
 				await handleGoogleSuccess({ response: credential });
 			}

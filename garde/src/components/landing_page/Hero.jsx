@@ -244,18 +244,18 @@ const Hero = () => {
 							</motion.h1>
 							<div className="mt-4 relative">
 								{/* Redesigned tagline container with consistent text and box alignment */}
-								<div className="relative max-w-[240px] md:max-w-[300px] lg:max-w-[300px] mx-auto lg:mx-0 lg:ml-0 overflow-visible pb-2">
+								<div className="relative max-w-[280px] sm:max-w-[300px] lg:max-w-[320px] mx-auto lg:mx-0 lg:ml-0 overflow-visible pb-2">
 									{/* Main text first - this ensures the box wraps around the text */}
-									<div className="relative z-20 text-center lg:text-left flex items-center justify-center lg:justify-start h-10">
-										<div className="inline-block overflow-hidden px-3">
+									<div className="relative z-20 text-center lg:text-left flex items-center justify-center lg:justify-start h-12 sm:h-10">
+										<div className="inline-block overflow-hidden px-4 sm:px-3">
 											{isClient && (
 												<TextGenerateEffect
 													words="Train smarter, instantly"
-													className="text-[clamp(0.65rem,3vw,1.2rem)] font-bold text-emerald-700 inline-block whitespace-nowrap tracking-tight"
+													className="text-[1.1rem] sm:text-[1.2rem] font-bold text-emerald-700 inline-block whitespace-nowrap tracking-tight"
 												/>
 											)}
 											{!isClient && (
-												<h2 className="text-[clamp(0.65rem,3vw,1.2rem)] font-bold text-emerald-700 inline-block whitespace-nowrap tracking-tight">
+												<h2 className="text-[1.1rem] sm:text-[1.2rem] font-bold text-emerald-700 inline-block whitespace-nowrap tracking-tight">
 													Train smarter, instantly
 												</h2>
 											)}
@@ -295,7 +295,7 @@ const Hero = () => {
 												"0 0 15px rgba(16, 185, 129, 0.2), inset 0 0 8px rgba(16, 185, 129, 0.1)",
 										}}
 										className="absolute top-0 bottom-0 my-auto h-[calc(100%+4px)]
-											-left-3 -right-3
+											-left-4 -right-4
 											sm:-left-4 sm:-right-4
 											md:-left-6 md:-right-6
 											lg:-left-4 lg:-right-4
@@ -385,23 +385,10 @@ const Hero = () => {
 								teams in <i>any</i> sport.
 							</motion.p>
 
-							{/* Search/Query Input */}
-							<div className="mt-8 max-w-[calc(100%-2rem)] sm:max-w-md mx-auto lg:mx-0">
-								<div className="relative group">
-									<div className="absolute -inset-0.5 bg-gradient-to-r from-emerald-600 to-emerald-400 rounded-full opacity-70 blur-sm group-hover:opacity-100 transition duration-300 group-hover:duration-200 group-hover:blur-md"></div>
-									<PlaceholdersAndVanishInput
-										placeholders={placeholders}
-										onSubmit={handleSubmit}
-										onChange={() => {}}
-										className="relative bg-white rounded-full shadow-lg border border-emerald-100 group-hover:border-emerald-200 transition-all duration-300"
-									/>
-								</div>
-							</div>
-
 							{/* CTA Button */}
-							<div className="mt-8 flex flex-wrap gap-4 justify-center lg:justify-start">
+							<div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
 								<motion.button
-									className="px-8 py-3 bg-emerald-600 text-white rounded-md hover:shadow-lg transition-all flex items-center gap-2 transform hover:scale-105 font-tiempos"
+									className="px-8 py-3 bg-emerald-600 text-white rounded-md hover:shadow-lg transition-all flex items-center gap-2 transform hover:scale-105 font-tiempos w-full sm:w-auto justify-center"
 									onClick={handleSubmit}
 									type="button"
 									whileHover={{ y: -2 }}
@@ -413,7 +400,7 @@ const Hero = () => {
 
 								<motion.a
 									href="#features"
-									className="px-8 py-3 bg-transparent border border-emerald-600 text-emerald-700 rounded-md hover:bg-emerald-50 transition-all font-tiempos"
+									className="px-8 py-3 bg-transparent border border-emerald-600 text-emerald-700 rounded-md hover:bg-emerald-50 transition-all font-tiempos w-full sm:w-auto text-center"
 									whileHover={{ y: -2 }}
 									whileTap={{ scale: 0.98 }}
 								>
@@ -475,6 +462,19 @@ const Hero = () => {
 								</div>
 							</div>
 
+							{/* Search/Query Input - Moved here, below the image showcase */}
+							<div className="mt-12 max-w-[calc(100%-2rem)] sm:max-w-md mx-auto">
+								<div className="relative group">
+									<div className="absolute -inset-0.5 bg-gradient-to-r from-emerald-600 to-emerald-400 rounded-full opacity-70 blur-sm group-hover:opacity-100 transition duration-300 group-hover:duration-200 group-hover:blur-md"></div>
+									<PlaceholdersAndVanishInput
+										placeholders={placeholders}
+										onSubmit={handleSubmit}
+										onChange={() => {}}
+										className="relative bg-white rounded-full shadow-lg border border-emerald-100 group-hover:border-emerald-200 transition-all duration-300"
+									/>
+								</div>
+							</div>
+
 							{/* Decorative elements */}
 							<div className="absolute -z-10 -top-4 -left-4 w-20 h-20 rounded-full bg-emerald-100 animate-pulse"></div>
 							<div className="absolute -z-10 -bottom-4 -right-4 w-16 h-16 rounded-full bg-blue-100 animate-pulse"></div>
@@ -483,12 +483,8 @@ const Hero = () => {
 				</div>
 			</div>
 
-			{/* Rest of the sections with plain white background */}
-			<div className="bg-white relative z-20">
-				{/* Features Section - REPLACED WITH CONTAINER SCROLL ANIMATION */}
-				<div id="features" className="px-6 mx-auto max-w-7xl pt-0 pb-0 -mt-1">
-					<div className="flex flex-col items-center">
-						<div className="w-16 h-1 bg-gradient-to-r from-emerald-400 to-blue-500 mb-4 rounded-full mt-6"></div>
+			<div className="flex flex-col items-center mt-12 sm:mt-24">
+						<div className="w-16 h-1 bg-gradient-to-r from-emerald-400 to-blue-500 mb-4 rounded-full"></div>
 
 						<div className="mb-4">
 							<h2 className="text-3xl md:text-4xl font-bold text-slate-800 text-center">
@@ -502,7 +498,7 @@ const Hero = () => {
 						</div>
 
 						{/* Feature cards in a row - MOVED ABOVE THE CONTAINER */}
-						<div className="max-w-7xl mx-auto mb-8">
+						<div className="max-w-7xl mx-auto">
 							<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
 								<motion.div
 									className="bg-white backdrop-blur-lg border border-slate-200 rounded-xl p-6 hover:shadow-lg transition-all"
@@ -515,10 +511,10 @@ const Hero = () => {
 									transition={{ duration: 0.4 }}
 								>
 									<h3 className="text-xl font-bold text-slate-800 mb-2">
-										1. Advanced Reasoning
+										Advanced Reasoning
 									</h3>
 									<p className="text-slate-600">
-										Our custom model turns raw stats into winning tactics.
+										Converts complex statistics into winning strategies.
 									</p>
 								</motion.div>
 
@@ -533,11 +529,10 @@ const Hero = () => {
 									transition={{ duration: 0.4, delay: 0.1 }}
 								>
 									<h3 className="text-xl font-bold text-slate-800 mb-2">
-										2. Vision Analysis
+										Vision Analysis
 									</h3>
 									<p className="text-slate-600">
-										Combining every movement frame-by-frame to surface critical
-										insights, we give tailored feedback.
+										Delivers frame-by-frame movement breakdowns for tailored feedback.
 									</p>
 								</motion.div>
 
@@ -552,11 +547,10 @@ const Hero = () => {
 									transition={{ duration: 0.4, delay: 0.2 }}
 								>
 									<h3 className="text-xl font-bold text-slate-800 mb-2">
-										3. Speech-to-Speech
+										Speech-to-Speech Interaction
 									</h3>
 									<p className="text-slate-600">
-										Has live conversational features while you practice -- no
-										screens needed.
+										Offers live, conversational coaching during practice sessions—no screens required.
 									</p>
 								</motion.div>
 
@@ -571,14 +565,62 @@ const Hero = () => {
 									transition={{ duration: 0.4, delay: 0.3 }}
 								>
 									<h3 className="text-xl font-bold text-slate-800 mb-2">
-										4. Injury Prevention
+										Injury Prevention
 									</h3>
 									<p className="text-slate-600">
-										Prevents injury risk across any sport to optimize form.
+										Analyzes form in real-time to minimize injury risks across all sports.
 									</p>
 								</motion.div>
 							</div>
 						</div>
+
+						
+			{/* Rest of the sections with plain white background */}
+			<div className="bg-none relative z-20">
+				{/* Features Section - REPLACED WITH CONTAINER SCROLL ANIMATION */}
+				<div id="features" className="px-6 mx-auto max-w-7xl pt-0 pb-0 mt-2 sm:mt-8">
+					{/* Mobile app preview section below feature cards */}
+					<div className="grid grid-cols-1 xs:grid-cols-2 gap-2 sm:gap-8 items-start mt-4 sm:mt-12 mb-8 sm:mb-16 bg-transparent px-2 sm:px-6">
+						<div className="w-[75%] xs:w-full mx-auto">
+							<ContainerScroll titleComponent={<></>}>
+								<div className="h-full w-full flex items-center justify-center bg-transparent py-2 sm:py-4">
+									<div className="h-full w-full overflow-hidden">
+										<Image
+											src="/images/phoneDemo.gif"
+											alt="Mobile Analytics Preview"
+											width={300}
+											height={600}
+											className="w-full h-auto object-contain scale-100 xs:scale-95 sm:scale-100"
+											priority
+										/>
+									</div>
+								</div>
+							</ContainerScroll>
+						</div>
+
+						<div className="text-slate-700 bg-transparent px-6 xs:px-3 sm:px-4 mt-2 xs:mt-0">
+							<h3 className="text-lg xs:text-xl sm:text-2xl font-bold mb-2 text-slate-800">
+								<span>Your AI Coach, Always Ready in Your Pocket</span>
+							</h3>
+
+							<p className="font-semibold mb-2 sm:mb-4 text-sm xs:text-base sm:text-xl">
+								Install Garde Mobile App
+								<br />Level up your training wherever you are:
+							</p>
+
+							<ul className="space-y-1 xs:space-y-2 sm:space-y-3 list-disc list-inside text-sm xs:text-base sm:text-lg">
+								<li>Record or upload sports clips instantly</li>
+								<li>Receive jargon-free AI performance breakdowns in seconds</li>
+								<li>Ask follow-up questions like, "How do I fix my technique?" and receive immediate guidance</li>
+								<li>Track your progress with personalized drills and metrics</li>
+							</ul>
+
+							<p className="mt-2 sm:mt-4 text-sm xs:text-base sm:text-lg">
+								Whether you're competing in tournaments or training solo, Garde puts expert-level AI coaching at your fingertips.
+							</p>
+						</div>
+					</div>
+
 
 						{/* <ContainerScroll titleComponent={<div></div>}>
 							<div className="h-full w-full flex items-center justify-center bg-white">

@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import axios from "axios";
 import axiosInstance from "../axios";
 
@@ -7,17 +7,14 @@ const Stream_Vid = ({
 	isRecording,
 	toggleRecording,
 	fencerId,
-	setAnalysis,
 	videoCount,
 	setInitialLoading,
 	videoId,
-	initialAnalysis,
-	setBlockUpload,
-	blockUpload,
 }) => {
 	const refFileInput = useRef(null);
 	const [videoAdded, setVideoAdded] = useState(false); // Track if video has been added
 	const [streamDone, setStreamDone] = useState(false);
+	const [oldChat, setOldChat] = useState(true);
 
 	const handleFileChange = async (event) => {
 		const file = event.target.files[0];
@@ -33,7 +30,6 @@ const Stream_Vid = ({
 
 	const addVideo = async () => {
 		if (!videoAdded) {
-			setBlockUpload(true);
 			refFileInput.current.click();
 		} else {
 			onVideoChange(null); // Clear the video source
@@ -46,6 +42,27 @@ const Stream_Vid = ({
 			}
 		}
 	};
+
+	useEffect(() => {
+		const getChats = async () => {
+			try {
+				const workerUrl = `${process.env.NEXT_PUBLIC_GARDE_WORKER}/getVideo/${fencerId}`;
+				const response = await axiosInstance.get(workerUrl);
+				const noneMatch = response.data?.data?.every(
+					(record) => record.video_id !== videoId,
+				);
+				if (noneMatch) {
+					setOldChat(false);
+				} else {
+					setOldChat(true);
+				}
+			} catch (error) {
+				console.error(error);
+			}
+		};
+
+		getChats();
+	}, [fencerId, videoId]);
 
 	const handleVideoUpload = async (file) => {
 		setInitialLoading(true);
@@ -90,8 +107,8 @@ const Stream_Vid = ({
 						headers: { "Content-Type": "application/json" },
 					},
 				),
-				axios.post(
-					`${process.env.NEXT_PUBLIC_CHAT_URL}/analyze/upload`,
+				axios.put(
+					`${process.env.NEXT_PUBLIC_CHAT_URL}/analyze/upload/${newId}`,
 					mp4Vid,
 					{
 						headers: {
@@ -100,12 +117,6 @@ const Stream_Vid = ({
 					},
 				),
 			]);
-
-			const uploadResult = results[2];
-			if (uploadResult.status === "fulfilled") {
-				const { analysis } = uploadResult.value.data;
-				setAnalysis(analysis);
-			}
 		} catch (error) {
 			console.error("Error during file upload:", error);
 		} finally {
@@ -126,30 +137,19 @@ const Stream_Vid = ({
 				<button
 					type="button"
 					className={
-						(videoCount >= 3 && !fencerId) ||
-						blockUpload ||
-						streamDone ||
-						initialAnalysis
+						(videoCount >= 1 && !fencerId) || streamDone || oldChat
 							? "bg-gray-200 cursor-not-allowed text-gray-400 font-bold py-2 px-4 rounded shadow-md"
 							: "bg-white text-black font-bold py-2 px-4 rounded shadow-md hover:bg-gray-100"
 					}
 					onClick={addVideo}
-					disabled={
-						(videoCount >= 3 && !fencerId) ||
-						blockUpload ||
-						streamDone ||
-						initialAnalysis
-					}
+					disabled={(videoCount >= 1 && !fencerId) || streamDone || oldChat}
 				>
 					{videoAdded ? "Remove Video" : "Add Video"}
 				</button>
 				<button
 					type="button"
 					className={
-						(videoCount >= 3 && !fencerId) ||
-						blockUpload ||
-						streamDone ||
-						initialAnalysis
+						(videoCount >= 1 && !fencerId) || streamDone || oldChat
 							? "bg-gray-200 cursor-not-allowed text-gray-400 font-bold py-2 px-4 rounded shadow-md"
 							: "bg-white text-black font-bold py-2 px-4 rounded shadow-md hover:bg-gray-100"
 					}
@@ -159,12 +159,7 @@ const Stream_Vid = ({
 							setStreamDone(true);
 						}
 					}}
-					disabled={
-						(videoCount >= 3 && !fencerId) ||
-						blockUpload ||
-						streamDone ||
-						initialAnalysis
-					}
+					disabled={(videoCount >= 1 && !fencerId) || streamDone || oldChat}
 				>
 					{isRecording && !videoAdded ? "Stop Recording" : "Record Video"}
 				</button>

@@ -24,7 +24,6 @@ const WebcamPose = ({
 	fencerId,
 	setUploadAngles,
 	setIsRecording,
-	setAnalysis,
 	setInitialLoading,
 	videoId,
 }) => {
@@ -384,8 +383,8 @@ const WebcamPose = ({
 						headers: { "Content-Type": "application/json" },
 					},
 				),
-				axios.post(
-					`${process.env.NEXT_PUBLIC_CHAT_URL}/analyze/upload`,
+				axios.put(
+					`${process.env.NEXT_PUBLIC_CHAT_URL}/analyze/upload/${newId}`,
 					mp4Vid,
 					{
 						headers: {
@@ -394,12 +393,6 @@ const WebcamPose = ({
 					},
 				),
 			]);
-
-			const uploadResult = results[2];
-			if (uploadResult.status === "fulfilled") {
-				const { analysis } = uploadResult.value.data;
-				setAnalysis(analysis);
-			}
 		} catch (error) {
 			console.error("Error during file upload:", error);
 		} finally {
@@ -468,7 +461,7 @@ const WebcamPose = ({
 					</>
 				) : (
 					<>
-						{videoSrc ? (
+						{videoSrc && (
 							<video
 								className="rounded-md z-50"
 								ref={videoRef}
@@ -481,8 +474,6 @@ const WebcamPose = ({
 								controls
 								src={videoSrc}
 							/>
-						) : (
-							<HLSPlayer videoUrl={videoUrl} />
 						)}
 					</>
 				)}

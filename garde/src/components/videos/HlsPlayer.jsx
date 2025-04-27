@@ -1,7 +1,7 @@
 import { useRef, useEffect, useState } from "react";
 import Hls from "hls.js";
 
-const HLSPlayer = ({ videoUrl, isLooping, thumbnail }) => {
+const HLSPlayer = ({ videoUrl, isLooping, thumbnail, autoplay = true }) => {
 	const videoRef = useRef(null);
 	const [stopVideo, setStopVideo] = useState(false);
 
@@ -24,12 +24,13 @@ const HLSPlayer = ({ videoUrl, isLooping, thumbnail }) => {
 				});
 
 				hls.on(Hls.Events.MANIFEST_PARSED, () => {
-					// videoRef.current.play();
-					setTimeout(() => {
-						videoRef.current.play().catch((err) => {
-							console.warn("Delayed play() failed", err);
-						});
-					}, 100);
+					if (autoplay) {
+						setTimeout(() => {
+							videoRef.current.play().catch((err) => {
+								console.warn("Delayed play() failed", err);
+							});
+						}, 100);
+					}
 				});
 
 				return () => {
@@ -39,6 +40,7 @@ const HLSPlayer = ({ videoUrl, isLooping, thumbnail }) => {
 			if (videoRef.current.canPlayType("application/vnd.apple.mpegurl")) {
 				// For Safari and other native HLS-supporting browsers
 				videoRef.current.src = videoUrl;
+				videoRef.current.autoplay = autoplay;
 				videoRef.current.addEventListener("loadedmetadata", () => {
 					videoRef.current.play();
 				});
@@ -46,7 +48,7 @@ const HLSPlayer = ({ videoUrl, isLooping, thumbnail }) => {
 		} catch (error) {
 			console.error("HLS connection failed:", error);
 		}
-	}, [videoUrl]);
+	}, [videoUrl, autoplay]);
 
 	if (!videoUrl || stopVideo) {
 		return null;
@@ -57,6 +59,7 @@ const HLSPlayer = ({ videoUrl, isLooping, thumbnail }) => {
 			<video
 				ref={videoRef}
 				controls
+				autoPlay={autoplay}
 				loop={isLooping}
 				muted
 				poster={thumbnail}

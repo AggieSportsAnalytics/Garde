@@ -5,11 +5,10 @@ import { useRouter } from "next/navigation";
 import { marked } from "marked";
 import parse from "html-react-parser";
 import DOMPurify from "dompurify";
+import HLSPlayer from "../videos/HlsPlayer";
 
 export default function Chatbot({
 	darkMode,
-	initialAnalysis,
-	chatCount,
 	setChatCount,
 	initialLoading,
 	videoId,
@@ -17,12 +16,12 @@ export default function Chatbot({
 	isLoggedIn,
 	decodeRun,
 	fingerprint,
-	setBlockUpload,
 }) {
 	const [userInput, setUserInput] = useState("");
 	const [chatHistory, setChatHistory] = useState([]);
 	const [loading, setLoading] = useState(false);
 	const [videoUrl, setVideoUrl] = useState("");
+	const [showWebm, setShowWebm] = useState(true);
 	const workerUrl = `${process.env.NEXT_PUBLIC_GARDE_WORKER}`;
 	const router = useRouter();
 
@@ -58,6 +57,56 @@ export default function Chatbot({
 	}
 
 	useEffect(() => {
+		const injectPdfsIfAvailable = async () => {
+			const bucketUrl = process.env.NEXT_PUBLIC_BUCKET_URL;
+			const basePath = fencerId
+				? `${bucketUrl}/${fencerId}/${videoId}`
+				: `${bucketUrl}/no-id/${videoId}`;
+
+			const candidates = [
+				{
+					label: "Fencer Report",
+					path: "fencing_analysis_report.pdf",
+				},
+				{
+					label: "Coach Report",
+					path: "coach_report.pdf",
+				},
+			];
+
+			// Check if PDFs exist by making HEAD requests
+			const available = await Promise.all(
+				candidates.map(async (item) => {
+					const url = `${basePath}/${item.path}`;
+					try {
+						await axios.head(url);
+						return {
+							sender: "bot",
+							message: marked.parse(
+								`## Your ${item.label}
+[Download ${item.label}](${url})`,
+							),
+						};
+					} catch (error) {
+						console.error(`PDF not found: ${item.label}`, error);
+						return null;
+					}
+				}),
+			);
+
+			// filter out nulls and append to chat
+			const validPdfs = available.filter(Boolean);
+			if (validPdfs.length > 0) {
+				setChatHistory((h) => [...h, ...validPdfs]);
+			}
+		};
+
+		if (!decodeRun) return;
+
+		injectPdfsIfAvailable();
+	}, [videoId, fencerId, decodeRun, initialLoading]);
+
+	useEffect(() => {
 		const chatContainer = document.querySelector(".chat-messages");
 		if (chatContainer) {
 			chatContainer.scrollTop = chatContainer.scrollHeight;
@@ -80,7 +129,7 @@ export default function Chatbot({
 					return;
 				}
 
-				if (hist) {
+				if (hist?.length > 0) {
 					setChatHistory(
 						JSON.parse(hist).map((msg) =>
 							msg.sender === "bot"
@@ -88,7 +137,6 @@ export default function Chatbot({
 								: msg,
 						),
 					);
-					setBlockUpload(true);
 				}
 			} catch (error) {
 				console.error(error);
@@ -100,33 +148,16 @@ export default function Chatbot({
 		}
 		const bucketUrl = process.env.NEXT_PUBLIC_BUCKET_URL;
 		if (fencerId && videoId) {
-			const videoUrl = `${bucketUrl}/${fencerId}/${videoId}/full_video.mp4`;
+			const videoUrl = `${bucketUrl}/${fencerId}/${videoId}`;
 			setVideoUrl(videoUrl);
 		} else if (!fencerId) {
-			const videoUrl = `${bucketUrl}/no-id/${videoId}/full_video.mp4`;
+			const videoUrl = `${bucketUrl}/no-id/${videoId}`;
 			setVideoUrl(videoUrl);
 		}
 		if (videoId) {
 			getChat();
 		}
 	}, [videoId, fencerId, decodeRun]);
-
-	//use either real initialAnalysis or dummy data in debug mode
-	useEffect(() => {
-		const getInitialAnalysis = async () => {
-			const formattedAnalysis = await marked(initialAnalysis);
-
-			setChatHistory([{ sender: "bot", message: formattedAnalysis }]);
-
-			const res = axiosInstance.put(`${workerUrl}/updateMessages/${videoId}`, {
-				messages: JSON.stringify([{ sender: "bot", message: initialAnalysis }]),
-			});
-		};
-
-		if (initialAnalysis) {
-			getInitialAnalysis();
-		}
-	}, [initialAnalysis, videoId]);
 
 	const handleSubmit = async (e) => {
 		e.preventDefault();
@@ -157,7 +188,7 @@ export default function Chatbot({
 				{
 					query: currentInput,
 					messages: chatHistory,
-					videoUrl: videoUrl,
+					videoUrl: `${videoUrl}/full_video.mp4`,
 				},
 				{
 					headers: {
@@ -227,18 +258,31 @@ export default function Chatbot({
 			className="flex flex-col h-full p-4 border-l border-gray-300"
 			style={{ pointerEvents: "auto" }}
 		>
-			{!isLoggedIn && (
-				<>
-					<p className="text-center">
-						{10 - chatCount} chats left without signing in for 24 hours
-					</p>
-					<p className="text-center">
-						Get unlimited chats/uploads by signing up for a free account
-					</p>
-				</>
-			)}
-
 			<div className="flex-1 overflow-y-auto mb-4 chat-messages">
+				<div className="flex">
+					{videoUrl && (
+						<div className="w-72 mb-3 ml-auto mr-3">
+							<HLSPlayer
+								videoUrl={`${videoUrl}/playlist.m3u8`}
+								autoplay={false}
+							/>
+						</div>
+					)}
+				</div>
+				{showWebm && videoUrl && (
+					<div className="w-72 mb-3">
+						<video
+							src={`${videoUrl}/analyzed_video.webm`}
+							controls
+							autoPlay={false}
+							muted
+							className="w-full rounded-lg"
+							onError={() => setShowWebm(false)}
+							controlsList="nodownload"
+						/>
+					</div>
+				)}
+
 				{chatHistory.length === 0 ? (
 					<div className="text-center text-gray-500 my-4">
 						{initialLoading ? "Analyzing video..." : "Waiting for video upload"}
@@ -294,45 +338,8 @@ export default function Chatbot({
 					</div>
 				)}
 			</div>
-
-			{/* <form onSubmit={handleSubmit} className="flex">
-				<input
-					type="text"
-					value={userInput}
-					onChange={(e) => setUserInput(e.target.value)}
-					className={`flex-1 px-3 py-2 rounded-l-lg focus:outline-none ${
-						darkMode
-							? "bg-gray-700 text-white"
-							: "bg-gray-100 text-black border border-gray-300"
-					}`}
-					placeholder="Ask about your fencing technique..."
-					disabled={
-						loading ||
-						chatHistory.length === 0 ||
-						(10 - chatCount <= 0 && !isLoggedIn)
-					}
-				/>
-				<button
-					type="submit"
-					className={`px-4 py-2 rounded-r-lg ${
-						darkMode ? "bg-blue-600" : "bg-blue-500"
-					} text-white ${
-						loading ||
-						chatHistory.length === 0 ||
-						(10 - chatCount <= 0 && !isLoggedIn)
-							? "opacity-50 cursor-not-allowed"
-							: "hover:bg-blue-600"
-					}`}
-					disabled={
-						loading ||
-						chatHistory.length === 0 ||
-						(10 - chatCount <= 0 && !isLoggedIn)
-					}
-				>
-					Send
-				</button>
-			</form> */}
-			<form onSubmit={handleSubmit} className="flex w-full max-w-xl mx-auto">
+			{/* Chatbot disabled for now */}
+			{/* <form onSubmit={handleSubmit} className="flex w-full max-w-xl mx-auto">
 				<input
 					type="text"
 					value={userInput}
@@ -345,8 +352,7 @@ export default function Chatbot({
 					placeholder="Ask about your fencing technique..."
 					disabled={
 						loading ||
-						chatHistory.length === 0 ||
-						(10 - chatCount <= 0 && !isLoggedIn)
+						chatHistory.length === 0
 					}
 				/>
 				<button
@@ -355,21 +361,18 @@ export default function Chatbot({
 						darkMode ? "bg-blue-600" : "bg-blue-500"
 					} text-white ${
 						loading ||
-						chatHistory.length === 0 ||
-						(10 - chatCount <= 0 && !isLoggedIn)
+						chatHistory.length === 0
 							? "opacity-50 cursor-not-allowed"
 							: "hover:bg-blue-600"
 					}`}
 					disabled={
 						loading ||
-						chatHistory.length === 0 ||
-						(10 - chatCount <= 0 && !isLoggedIn)
+						chatHistory.length === 0
 					}
 				>
 					Send
 				</button>
-			</form>
-
+			</form> */}
 			{chatHistory.length === 0 && (
 				<div className="text-center text-xs text-gray-500 mt-2">
 					Chat will be enabled after video analysis completes

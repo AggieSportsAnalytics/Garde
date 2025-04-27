@@ -75,13 +75,11 @@ export default function Fencer_Page2() {
 	const [uploadAngles, setUploadAngles] = useState(false);
 	const [coaches, setCoaches] = useState([]);
 	const [currentCoach, setCurrentCoach] = useState({});
-	const [initialAnalysis, setInitialAnalysis] = useState("");
 	const [videoCount, setVideoCount] = useState(0);
 	const [chatCount, setChatCount] = useState(0);
 	const [initialLoading, setInitialLoading] = useState(false);
 	const [fingerprint, setFingerprint] = useState("");
 	const [decodeRun, setDecodeRun] = useState(false);
-	const [blockUpload, setBlockUpload] = useState(false);
 	const router = useRouter();
 	const { videoId } = useParams();
 
@@ -888,12 +886,9 @@ export default function Fencer_Page2() {
 							toggleRecording={toggleRecording}
 							fencerId={fencerId}
 							setInitialLoading={setInitialLoading}
-							setAnalysis={setInitialAnalysis}
 							videoId={videoId}
 							videoCount={videoCount}
-							initialAnalysis={initialAnalysis}
-							blockUpload={blockUpload}
-							setBlockUpload={setBlockUpload}
+							initialLoading={initialLoading}
 						/>
 						<div className="w-full flex flex-col items-center">
 							<MemoizedInstruction
@@ -916,7 +911,8 @@ export default function Fencer_Page2() {
 
 						{!fencerId ? (
 							<p className="text-lg">
-								{3 - videoCount} uploads left without signing in for 24 hours
+								{Math.max(1 - videoCount, 0)} analyses left without signing in
+								for 24 hours
 							</p>
 						) : (
 							<div className="pt-3" />
@@ -932,7 +928,6 @@ export default function Fencer_Page2() {
 								fencerId={fencerId}
 								setUploadAngles={setUploadAngles}
 								setIsRecording={setIsRecording}
-								setAnalysis={setInitialAnalysis}
 								setInitialLoading={setInitialLoading}
 								videoId={videoId}
 							/>
@@ -942,7 +937,6 @@ export default function Fencer_Page2() {
 					<div className="w-2/3 h-full flex flex-col p-4">
 						<Chatbot
 							darkMode={darkMode}
-							initialAnalysis={initialAnalysis}
 							setChatCount={setChatCount}
 							chatCount={chatCount}
 							videoId={videoId}
@@ -951,7 +945,6 @@ export default function Fencer_Page2() {
 							initialLoading={initialLoading}
 							fingerprint={fingerprint}
 							fencerId={fencerId}
-							setBlockUpload={setBlockUpload}
 						/>
 					</div>
 

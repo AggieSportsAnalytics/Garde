@@ -115,10 +115,6 @@ const Hero = () => {
 		// Cycle through all GIFs every 3 seconds
 		timerRef.current = setInterval(() => {
 			setCurrentGifIndex((prev) => (prev + 1) % backgroundGifs.length);
-			console.log(
-				"Switching GIF to index:",
-				(currentGifIndex + 1) % backgroundGifs.length,
-			);
 		}, 3000);
 
 		return () => {

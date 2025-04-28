@@ -259,7 +259,7 @@ export default function Chatbot({
 		>
 			<div className="flex-1 overflow-y-auto mb-4 chat-messages">
 				<div className="flex">
-					{videoUrl && initialLoading === false && (
+					{videoUrl && !initialLoading && (
 						<div className="w-72 mb-3 ml-auto mr-3">
 							<HLSPlayer
 								videoUrl={`${videoUrl}/playlist.m3u8`}
@@ -269,7 +269,7 @@ export default function Chatbot({
 					)}
 				</div>
 				<div className="w-72 mb-3">
-					{initialLoading === false && videoUrl && (
+					{videoUrl && !initialLoading && (
 						<video
 							src={`${videoUrl}/analyzed_video.webm`}
 							controls
@@ -283,8 +283,7 @@ export default function Chatbot({
 
 				{chatHistory.length === 0 ? (
 					<div className="text-center text-gray-500 my-4">
-						{initialLoading === null && "Waiting for video upload"}
-						{initialLoading === true && "Analyzing video"}
+						{initialLoading ? "Analyzing video" : "Waiting for video upload"}
 					</div>
 				) : (
 					chatHistory.map((chat, index) => (

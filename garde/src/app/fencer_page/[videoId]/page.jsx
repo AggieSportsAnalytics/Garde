@@ -77,7 +77,7 @@ export default function Fencer_Page2() {
 	const [currentCoach, setCurrentCoach] = useState({});
 	const [videoCount, setVideoCount] = useState(0);
 	const [chatCount, setChatCount] = useState(0);
-	const [initialLoading, setInitialLoading] = useState(false);
+	const [initialLoading, setInitialLoading] = useState(null);
 	const [fingerprint, setFingerprint] = useState("");
 	const [decodeRun, setDecodeRun] = useState(false);
 	const router = useRouter();

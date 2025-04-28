@@ -21,7 +21,6 @@ export default function Chatbot({
 	const [chatHistory, setChatHistory] = useState([]);
 	const [loading, setLoading] = useState(false);
 	const [videoUrl, setVideoUrl] = useState("");
-	const [showWebm, setShowWebm] = useState(true);
 	const workerUrl = `${process.env.NEXT_PUBLIC_GARDE_WORKER}`;
 	const router = useRouter();
 
@@ -260,7 +259,7 @@ export default function Chatbot({
 		>
 			<div className="flex-1 overflow-y-auto mb-4 chat-messages">
 				<div className="flex">
-					{videoUrl && !initialLoading && (
+					{videoUrl && initialLoading === false && (
 						<div className="w-72 mb-3 ml-auto mr-3">
 							<HLSPlayer
 								videoUrl={`${videoUrl}/playlist.m3u8`}
@@ -270,7 +269,7 @@ export default function Chatbot({
 					)}
 				</div>
 				<div className="w-72 mb-3">
-					{!initialLoading && videoUrl && (
+					{initialLoading === false && videoUrl && (
 						<video
 							src={`${videoUrl}/analyzed_video.webm`}
 							controls
@@ -284,7 +283,8 @@ export default function Chatbot({
 
 				{chatHistory.length === 0 ? (
 					<div className="text-center text-gray-500 my-4">
-						{initialLoading ? "Analyzing video..." : "Waiting for video upload"}
+						{initialLoading === null && "Waiting for video upload"}
+						{initialLoading === true && "Analyzing video"}
 					</div>
 				) : (
 					chatHistory.map((chat, index) => (

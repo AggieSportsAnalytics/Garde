@@ -305,8 +305,6 @@ export default function Chatbot({
 					)}
 				</div>
 
-				{Number(oldChat)}
-
 				{((videoUrl && initialLoading === false) || oldChat) &&
 					validPdfs.map((pdf) => (
 						<div key={pdf.link} className="flex justify-start mb-4">

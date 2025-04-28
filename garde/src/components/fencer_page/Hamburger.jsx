@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import axiosInstance from "../axios";
 import { useRouter } from "next/navigation";
 import { v4 as uuidv4 } from "uuid";
+import { FaTrashAlt } from "react-icons/fa";
 
 export default function SidebarMenu({ fencerId }) {
 	const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -37,6 +38,26 @@ export default function SidebarMenu({ fencerId }) {
 
 		return () => document.removeEventListener("mousedown", handleClickOutside);
 	}, [fencerId, isMenuOpen]);
+
+	const handleDeleteChat = async (fencerId, videoId) => {
+		try {
+			const confirmed = window.confirm(
+				"Are you sure you want to delete this chat?",
+			);
+			if (!confirmed) return;
+
+			const deleteUrl = `${process.env.NEXT_PUBLIC_GARDE_WORKER}/deleteChat/${fencerId}/${videoId}`;
+			await axiosInstance.delete(deleteUrl);
+
+			setChats((prevChats) =>
+				prevChats.filter((chat) => chat.video_id !== videoId),
+			);
+
+			router.push("/fencer_page");
+		} catch (error) {
+			console.error("Failed to delete chat:", error);
+		}
+	};
 
 	return (
 		<div className="relative z-50" ref={menuRef}>
@@ -87,12 +108,26 @@ export default function SidebarMenu({ fencerId }) {
 								<li
 									key={`${chat.video_id}_${index}`}
 									className="hover:bg-gray-700 p-2 rounded cursor-pointer flex justify-between items-center"
-									onClick={() => router.push(`/fencer_page/${chat.video_id}`)}
 								>
-									<span className="text-gray-400 text-sm">
-										&nbsp;&nbsp;&nbsp;&nbsp;
-										{new Date(`${chat.timestamp}Z`).toLocaleString()}
-									</span>
+									<div
+										onClick={() => router.push(`/fencer_page/${chat.video_id}`)}
+										className="flex-1"
+									>
+										<span className="text-gray-400 text-sm">
+											&nbsp;&nbsp;&nbsp;&nbsp;
+											{new Date(`${chat.timestamp}Z`).toLocaleString()}
+										</span>
+									</div>
+									<button
+										type="button"
+										onClick={(e) => {
+											e.stopPropagation();
+											handleDeleteChat(fencerId, chat.video_id);
+										}}
+										className="ml-2 text-red-400 hover:text-red-600"
+									>
+										<FaTrashAlt size={12} />
+									</button>
 								</li>
 							))}
 					</ul>

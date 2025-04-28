@@ -69,6 +69,11 @@ export default {
 					);
 				}
 
+				if (path.includes("/deleteChat")) {
+					const [_, __, fencer_id, video_id] = path.split("/");
+					return await deleteChat(fencer_id, video_id);
+				}
+
 				if (path.includes("/deleteTournament")) {
 					const pathName = path.split("/");
 					return await deleteTournament(pathName[pathName.length - 1]);
@@ -1181,6 +1186,33 @@ async function deleteCoachFencers(fencerId, coachId) {
 			},
 		},
 	);
+
+	return addCorsHeaders(res);
+}
+
+async function deleteChat(fencerId, videoId) {
+	const query = `
+        DELETE FROM videos
+        WHERE video_id = ?;
+    `;
+	await DB.prepare(query).bind(videoId).run();
+
+	const listResult = await BUCKET.list({ prefix: `${fencerId}/${videoId}` });
+
+	if (listResult.objects.length > 0) {
+		await Promise.all(
+			listResult.objects.map(async (video) => {
+				await BUCKET.delete(video.key);
+			}),
+		);
+	}
+
+	const res = new Response(JSON.stringify({ message: "Chat and videos" }), {
+		status: 200,
+		headers: {
+			"Content-Type": "application/json",
+		},
+	});
 
 	return addCorsHeaders(res);
 }

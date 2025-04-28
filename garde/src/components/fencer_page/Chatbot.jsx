@@ -21,6 +21,8 @@ export default function Chatbot({
 	const [chatHistory, setChatHistory] = useState([]);
 	const [loading, setLoading] = useState(false);
 	const [videoUrl, setVideoUrl] = useState("");
+	const [validPdfs, setValidPdfs] = useState([]);
+	const [oldChat, setOldChat] = useState(false);
 	const workerUrl = `${process.env.NEXT_PUBLIC_GARDE_WORKER}`;
 	const router = useRouter();
 
@@ -28,6 +30,27 @@ export default function Chatbot({
 		gfm: true,
 		breaks: true,
 	});
+
+	useEffect(() => {
+		const getChats = async () => {
+			try {
+				const workerUrl = `${process.env.NEXT_PUBLIC_GARDE_WORKER}/getVideo/${fencerId}`;
+				const response = await axiosInstance.get(workerUrl);
+				const noneMatch = response.data?.data?.every(
+					(record) => record.video_id !== videoId,
+				);
+				if (noneMatch) {
+					setOldChat(false);
+				} else {
+					setOldChat(true);
+				}
+			} catch (error) {
+				console.error(error);
+			}
+		};
+
+		getChats();
+	}, [fencerId, videoId]);
 
 	async function addQuery() {
 		try {
@@ -78,13 +101,10 @@ export default function Chatbot({
 				candidates.map(async (item) => {
 					const url = `${basePath}/${item.path}`;
 					try {
-						await axios.head(url);
+						// await axios.head(url);
 						return {
-							sender: "bot",
-							message: marked.parse(
-								`## Your ${item.label}
-[Download ${item.label}](${url})`,
-							),
+							link: url,
+							label: item.label,
 						};
 					} catch (error) {
 						console.error(`PDF not found: ${item.label}`, error);
@@ -95,15 +115,13 @@ export default function Chatbot({
 
 			// filter out nulls and append to chat
 			const validPdfs = available.filter(Boolean);
-			if (validPdfs.length > 0) {
-				setChatHistory((h) => [...h, ...validPdfs]);
-			}
+			setValidPdfs(validPdfs);
 		};
 
-		if (!decodeRun) return;
+		if (!decodeRun || !videoUrl || initialLoading || !videoId) return;
 
 		injectPdfsIfAvailable();
-	}, [videoId, fencerId, decodeRun, initialLoading]);
+	}, [videoId, fencerId, decodeRun, initialLoading, videoUrl]);
 
 	useEffect(() => {
 		const chatContainer = document.querySelector(".chat-messages");
@@ -258,8 +276,14 @@ export default function Chatbot({
 			style={{ pointerEvents: "auto" }}
 		>
 			<div className="flex-1 overflow-y-auto mb-4 chat-messages">
+				{!oldChat && (
+					<div className="text-center text-gray-500 my-4">
+						{initialLoading ? "Analyzing video" : "Waiting for video upload"}
+					</div>
+				)}
+
 				<div className="flex">
-					{videoUrl && !initialLoading && (
+					{((videoUrl && initialLoading === false) || oldChat) && (
 						<div className="w-72 mb-3 ml-auto mr-3">
 							<HLSPlayer
 								videoUrl={`${videoUrl}/playlist.m3u8`}
@@ -269,7 +293,7 @@ export default function Chatbot({
 					)}
 				</div>
 				<div className="w-72 mb-3">
-					{videoUrl && !initialLoading && (
+					{((videoUrl && initialLoading === false) || oldChat) && (
 						<video
 							src={`${videoUrl}/analyzed_video.webm`}
 							controls
@@ -281,48 +305,63 @@ export default function Chatbot({
 					)}
 				</div>
 
-				{chatHistory.length === 0 ? (
-					<div className="text-center text-gray-500 my-4">
-						{initialLoading ? "Analyzing video" : "Waiting for video upload"}
-					</div>
-				) : (
-					chatHistory.map((chat, index) => (
+				{Number(oldChat)}
+
+				{((videoUrl && initialLoading === false) || oldChat) &&
+					validPdfs.map((pdf) => (
+						<div key={pdf.link} className="flex justify-start mb-4">
+							<div className="bg-gray-200 p-4 rounded-lg shadow max-w-xs">
+								<h3 className="text-md font-semibold text-gray-700 mb-2">
+									{pdf.label}
+								</h3>
+								<a
+									href={pdf.link}
+									target="_blank"
+									rel="noopener noreferrer"
+									className="text-blue-600 hover:underline text-sm"
+								>
+									Download PDF
+								</a>
+							</div>
+						</div>
+					))}
+
+				{chatHistory.map((chat, index) => (
+					<div
+						key={`${chat.sender}_${index}`}
+						className={`mb-3 ${
+							chat.sender === "user" ? "text-right" : "text-left"
+						}`}
+					>
 						<div
-							key={index}
-							className={`mb-3 ${
-								chat.sender === "user" ? "text-right" : "text-left"
+							className={`inline-block px-4 py-2 rounded-lg max-w-[85%] ${
+								chat.sender === "user"
+									? darkMode
+										? "bg-blue-600 text-white"
+										: "bg-blue-500 text-white"
+									: darkMode
+										? "bg-gray-700 text-white"
+										: "bg-gray-200 text-black"
 							}`}
 						>
-							<div
-								className={`inline-block px-4 py-2 rounded-lg max-w-[85%] ${
-									chat.sender === "user"
-										? darkMode
-											? "bg-blue-600 text-white"
-											: "bg-blue-500 text-white"
-										: darkMode
-											? "bg-gray-700 text-white"
-											: "bg-gray-200 text-black"
-								}`}
-							>
-								{chat.sender === "user" ? (
-									<div>{chat.message}</div>
-								) : (
-									<div className="bot-message prose">
-										{parse(DOMPurify.sanitize(chat.message))}
-									</div>
-								)}
-							</div>
-							{chat.sender === "bot" && index === chatHistory.length - 1 && (
-								<div className="mt-1 ml-1 text-xs text-gray-500">
-									{new Date().toLocaleTimeString([], {
-										hour: "2-digit",
-										minute: "2-digit",
-									})}
+							{chat.sender === "user" ? (
+								<div>{chat.message}</div>
+							) : (
+								<div className="bot-message prose">
+									{parse(DOMPurify.sanitize(chat.message))}
 								</div>
 							)}
 						</div>
-					))
-				)}
+						{chat.sender === "bot" && index === chatHistory.length - 1 && (
+							<div className="mt-1 ml-1 text-xs text-gray-500">
+								{new Date().toLocaleTimeString([], {
+									hour: "2-digit",
+									minute: "2-digit",
+								})}
+							</div>
+						)}
+					</div>
+				))}
 
 				{loading && (
 					<div className="text-left my-3">
@@ -371,11 +410,6 @@ export default function Chatbot({
 					Send
 				</button>
 			</form> */}
-			{chatHistory.length === 0 && (
-				<div className="text-center text-xs text-gray-500 mt-2">
-					Chat will be enabled after video analysis completes
-				</div>
-			)}
 		</div>
 	);
 }

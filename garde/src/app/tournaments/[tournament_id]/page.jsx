@@ -147,7 +147,8 @@ export default function TournamentPage({ params }) {
 				fetchParticipants();
 			} else {
 				window.alert("You must login to join tournaments");
-				router.push(`/signin?redirect=/tournaments/${tournament_id}`);
+				// router.push(`/signin?redirect=/tournaments/${tournament_id}`);
+				window.location.href = `/signin?redirect=/tournaments/${tournament_id}`;
 			}
 		} catch (error) {
 			setJoining(false);

@@ -31,16 +31,17 @@ const Stream_Vid = ({
 	const addVideo = async () => {
 		if (!videoAdded) {
 			refFileInput.current.click();
-		} else {
-			onVideoChange(null); // Clear the video source
-			setVideoAdded(false); // Reset state to show no video is added
-			if (isRecording) {
-				toggleRecording();
-			}
-			if (refFileInput.current) {
-				refFileInput.current.value = null;
-			}
 		}
+		//  else {
+		// 	onVideoChange(null); // Clear the video source
+		// 	setVideoAdded(false); // Reset state to show no video is added
+		// 	if (isRecording) {
+		// 		toggleRecording();
+		// 	}
+		// 	if (refFileInput.current) {
+		// 		refFileInput.current.value = null;
+		// 	}
+		// }
 	};
 
 	useEffect(() => {
@@ -137,19 +138,32 @@ const Stream_Vid = ({
 				<button
 					type="button"
 					className={
-						(videoCount >= 1 && !fencerId) || streamDone || oldChat
+						(videoCount >= 1 && !fencerId) ||
+						streamDone ||
+						oldChat ||
+						isRecording ||
+						videoAdded
 							? "bg-gray-200 cursor-not-allowed text-gray-400 font-bold py-2 px-4 rounded shadow-md"
 							: "bg-white text-black font-bold py-2 px-4 rounded shadow-md hover:bg-gray-100"
 					}
 					onClick={addVideo}
-					disabled={(videoCount >= 1 && !fencerId) || streamDone || oldChat}
+					disabled={
+						(videoCount >= 1 && !fencerId) ||
+						streamDone ||
+						oldChat ||
+						isRecording ||
+						videoAdded
+					}
 				>
 					{videoAdded ? "Remove Video" : "Add Video"}
 				</button>
 				<button
 					type="button"
 					className={
-						(videoCount >= 1 && !fencerId) || streamDone || oldChat
+						(videoCount >= 1 && !fencerId) ||
+						streamDone ||
+						oldChat ||
+						videoAdded
 							? "bg-gray-200 cursor-not-allowed text-gray-400 font-bold py-2 px-4 rounded shadow-md"
 							: "bg-white text-black font-bold py-2 px-4 rounded shadow-md hover:bg-gray-100"
 					}
@@ -159,7 +173,12 @@ const Stream_Vid = ({
 							setStreamDone(true);
 						}
 					}}
-					disabled={(videoCount >= 1 && !fencerId) || streamDone || oldChat}
+					disabled={
+						(videoCount >= 1 && !fencerId) ||
+						streamDone ||
+						oldChat ||
+						videoAdded
+					}
 				>
 					{isRecording && !videoAdded ? "Stop Recording" : "Record Video"}
 				</button>

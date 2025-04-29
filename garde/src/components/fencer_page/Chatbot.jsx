@@ -6,6 +6,7 @@ import { marked } from "marked";
 import parse from "html-react-parser";
 import DOMPurify from "dompurify";
 import HLSPlayer from "../videos/HlsPlayer";
+import ChatInput from "./ChatInput";
 
 export default function Chatbot({
 	darkMode,
@@ -202,11 +203,10 @@ export default function Chatbot({
 		try {
 			//real API call
 			const response = await axios.post(
-				`${process.env.NEXT_PUBLIC_CHAT_URL}/analyze/chat`,
+				`${process.env.NEXT_PUBLIC_CHAT_URL}/analyze/chat/${fencerId}/${videoId}`,
 				{
 					query: currentInput,
 					messages: chatHistory,
-					videoUrl: `${videoUrl}/full_video.mp4`,
 				},
 				{
 					headers: {
@@ -376,60 +376,14 @@ export default function Chatbot({
 				)}
 			</div>
 
-			<input
-				type="text"
-				value="Chat coming soon..."
-				disabled
-				className={`
-					fixed bottom-4 transform -translate-x-1/2
-					left-1/2
-					${isMenuOpen ? "md:left-[calc(50%+8rem)]" : ""}
-					
-					transition-all duration-300 ease-in-out
-					
-					w-full max-w-md
-					p-3 text-center text-gray-500
-					bg-white rounded-full shadow-md
-					border border-gray-300 focus:outline-none
-					z-40
-				`}
+			<ChatInput
+				userInput={userInput}
+				setUserInput={setUserInput}
+				loading={loading}
+				isMenuOpen={isMenuOpen}
+				darkMode={darkMode}
+				handleSubmit={handleSubmit}
 			/>
-
-			{/* Chatbot disabled for now */}
-			{/* <form onSubmit={handleSubmit} className="flex w-full max-w-xl mx-auto">
-				<input
-					type="text"
-					value={userInput}
-					onChange={(e) => setUserInput(e.target.value)}
-					className={`flex-1 min-w-0 px-3 py-2 rounded-l-lg focus:outline-none ${
-						darkMode
-							? "bg-gray-700 text-white"
-							: "bg-gray-100 text-black border border-gray-300"
-					}`}
-					placeholder="Ask about your fencing technique..."
-					disabled={
-						loading ||
-						chatHistory.length === 0
-					}
-				/>
-				<button
-					type="submit"
-					className={`px-4 py-2 rounded-r-lg ${
-						darkMode ? "bg-blue-600" : "bg-blue-500"
-					} text-white ${
-						loading ||
-						chatHistory.length === 0
-							? "opacity-50 cursor-not-allowed"
-							: "hover:bg-blue-600"
-					}`}
-					disabled={
-						loading ||
-						chatHistory.length === 0
-					}
-				>
-					Send
-				</button>
-			</form> */}
 		</div>
 	);
 }

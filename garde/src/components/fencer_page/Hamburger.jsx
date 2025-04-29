@@ -1,16 +1,23 @@
+"use client";
 import { useState, useEffect, useRef } from "react";
 import axiosInstance from "../axios";
 import { useRouter } from "next/navigation";
 import { v4 as uuidv4 } from "uuid";
 import { FaTrashAlt } from "react-icons/fa";
 
-export default function SidebarMenu({ fencerId }) {
-	const [isMenuOpen, setIsMenuOpen] = useState(false);
+export default function SidebarMenu({
+	fencerId,
+	isMenuOpen,
+	setIsMenuOpen,
+	darkMode,
+}) {
 	const [chats, setChats] = useState([]);
 	const router = useRouter();
 	const menuRef = useRef(null);
 
 	useEffect(() => {
+		if (!fencerId) return;
+		// fetch your list of chats…
 		const getChats = async () => {
 			try {
 				const workerUrl = `${process.env.NEXT_PUBLIC_GARDE_WORKER}/getVideo/${fencerId}`;
@@ -20,111 +27,113 @@ export default function SidebarMenu({ fencerId }) {
 				console.error(error);
 			}
 		};
-
-		const handleClickOutside = (event) => {
-			if (menuRef.current && !menuRef.current.contains(event.target)) {
-				setIsMenuOpen(false);
-			}
-		};
-
-		if (fencerId) {
-			getChats();
-		}
-		if (isMenuOpen) {
-			document.addEventListener("mousedown", handleClickOutside);
-		} else {
-			document.removeEventListener("mousedown", handleClickOutside);
-		}
-
-		return () => document.removeEventListener("mousedown", handleClickOutside);
-	}, [fencerId, isMenuOpen]);
+		getChats();
+	}, [fencerId, isMenuOpen, setIsMenuOpen]);
 
 	const handleDeleteChat = async (fencerId, videoId) => {
+		if (!window.confirm("Are you sure you want to delete this chat?")) return;
 		try {
-			const confirmed = window.confirm(
-				"Are you sure you want to delete this chat?",
-			);
-			if (!confirmed) return;
-
 			const deleteUrl = `${process.env.NEXT_PUBLIC_GARDE_WORKER}/deleteChat/${fencerId}/${videoId}`;
 			await axiosInstance.delete(deleteUrl);
-
-			setChats((prevChats) =>
-				prevChats.filter((chat) => chat.video_id !== videoId),
-			);
-
+			setChats((c) => c.filter((chat) => chat.video_id !== videoId));
 			router.push("/fencer_page");
-		} catch (error) {
-			console.error("Failed to delete chat:", error);
+		} catch (err) {
+			console.error(err);
 		}
 	};
 
 	return (
 		<div className="relative z-50" ref={menuRef}>
-			{/* Hamburger Icon (Top Left) */}
+			{/* hamburger */}
 			<button
-				className="absolute top-0 left-0 p-2 bg-gray-800 text-white"
-				type="button"
-				onClick={() => setIsMenuOpen((prev) => !prev)}
+				className={`absolute top-4 left-4 p-2 rounded-md ${
+					darkMode ? "bg-white text-black" : "bg-gray-800 text-white"
+				}`}
+				onClick={() => setIsMenuOpen((o) => !o)}
 			>
-				<div className="flex flex-col space-y-1 p-2 bg-gray-800 rounded">
-					<span className="block w-6 h-0.5 bg-white" />
-					<span className="block w-6 h-0.5 bg-white" />
-					<span className="block w-6 h-0.5 bg-white" />
+				<div className="flex flex-col space-y-1">
+					<span
+						className={`block w-6 h-0.5 ${darkMode ? "bg-black" : "bg-white"}`}
+					/>
+					<span
+						className={`block w-6 h-0.5 ${darkMode ? "bg-black" : "bg-white"}`}
+					/>
+					<span
+						className={`block w-6 h-0.5 ${darkMode ? "bg-black" : "bg-white"}`}
+					/>
 				</div>
 			</button>
 
-			{/* Sidebar Menu (Slides in) */}
+			{/* sidebar panel */}
 			<div
-				className={`fixed top-0 left-0 h-full w-64 bg-gray-900 text-white shadow-lg transform ${
-					isMenuOpen ? "translate-x-0" : "-translate-x-full"
-				} transition-transform duration-300 ease-in-out`}
+				className={`
+          fixed top-0 left-0 h-full w-64 shadow-lg transform transition-transform duration-300 ease-in-out
+          ${isMenuOpen ? "translate-x-0" : "-translate-x-full"}
+          ${darkMode ? "bg-gray-900 text-white" : "bg-white text-gray-900"}
+        `}
 			>
-				{/* Close Button */}
+				{/* close “×” */}
 				<button
-					className="absolute top-2 right-2 text-gray-400 hover:text-white"
-					onClick={() => setIsMenuOpen((prev) => !prev)}
+					type="button"
+					className={`absolute top-4 right-4 p-1 rounded-md ${
+						darkMode
+							? "text-gray-400 hover:text-white"
+							: "text-gray-600 hover:text-gray-800"
+					}`}
+					onClick={() => setIsMenuOpen(false)}
 				>
 					✕
 				</button>
 
-				{/* Sidebar Content */}
-				<div className="p-4">
-					<h2 className="text-lg font-semibold mb-4">Menu</h2>
-					<ul className="space-y-2 overflow-y-auto max-h-80">
+				<div className="p-6">
+					<h2
+						className={`text-xl font-semibold mb-4 ${
+							darkMode ? "text-white" : "text-gray-900"
+						}`}
+					>
+						Menu
+					</h2>
+					<ul className="space-y-2 overflow-y-auto max-h-[70vh]">
 						<li
-							className="hover:bg-gray-700 p-2 rounded cursor-pointer"
+							className={`p-2 rounded cursor-pointer ${
+								darkMode ? "hover:bg-gray-700" : "hover:bg-gray-200"
+							}`}
 							onClick={() => router.push(`/fencer_page/${uuidv4()}`)}
 						>
-							New Chat
-						</li>
-						<li className="hover:bg-gray-700 p-2 rounded cursor-pointer">
-							Chats
+							<span
+								className={`${darkMode ? "text-gray-200" : "text-gray-800"}`}
+							>
+								New Chat
+							</span>
 						</li>
 						{chats
-							?.slice()
+							.slice()
 							.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
-							.map((chat, index) => (
+							.map((chat) => (
 								<li
-									key={`${chat.video_id}_${index}`}
-									className="hover:bg-gray-700 p-2 rounded cursor-pointer flex justify-between items-center"
+									key={chat.video_id}
+									className={`flex justify-between items-center p-2 rounded cursor-pointer ${
+										darkMode ? "hover:bg-gray-700" : "hover:bg-gray-200"
+									}`}
+									onClick={() => router.push(`/fencer_page/${chat.video_id}`)}
 								>
-									<div
-										onClick={() => router.push(`/fencer_page/${chat.video_id}`)}
-										className="flex-1"
+									<span
+										className={`text-sm ${
+											darkMode ? "text-gray-400" : "text-gray-600"
+										}`}
 									>
-										<span className="text-gray-400 text-sm">
-											&nbsp;&nbsp;&nbsp;&nbsp;
-											{new Date(`${chat.timestamp}Z`).toLocaleString()}
-										</span>
-									</div>
+										{new Date(`${chat.timestamp}Z`).toLocaleString()}
+									</span>
 									<button
-										type="button"
 										onClick={(e) => {
 											e.stopPropagation();
 											handleDeleteChat(fencerId, chat.video_id);
 										}}
-										className="ml-2 text-red-400 hover:text-red-600"
+										className={`${
+											darkMode
+												? "text-red-400 hover:text-red-600"
+												: "text-red-500 hover:text-red-700"
+										}`}
 									>
 										<FaTrashAlt size={12} />
 									</button>

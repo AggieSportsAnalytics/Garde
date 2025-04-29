@@ -16,6 +16,7 @@ export default function Chatbot({
 	isLoggedIn,
 	decodeRun,
 	fingerprint,
+	isMenuOpen,
 }) {
 	const [userInput, setUserInput] = useState("");
 	const [chatHistory, setChatHistory] = useState([]);
@@ -272,19 +273,20 @@ export default function Chatbot({
 
 	return (
 		<div
-			className="flex flex-col h-full p-4 border-l border-gray-300"
+			className={`flex flex-col h-full p-4 border-gray-300 ${darkMode && "bg-black"}`}
 			style={{ pointerEvents: "auto" }}
 		>
-			<div className="flex-1 overflow-y-auto mb-4 chat-messages">
+			<div className="flex-1 overflow-y-auto chat-messages">
 				{!oldChat && (
 					<div className="text-center text-gray-500 my-4">
-						{initialLoading ? "Analyzing video" : "Waiting for video upload"}
+						{initialLoading && "Analyzing video"}
+						{initialLoading === null && "Waiting for video upload"}
 					</div>
 				)}
 
 				<div className="flex">
 					{((videoUrl && initialLoading === false) || oldChat) && (
-						<div className="w-72 mb-3 ml-auto mr-3">
+						<div className="w-72 ml-auto mr-3 mb-2">
 							<HLSPlayer
 								videoUrl={`${videoUrl}/playlist.m3u8`}
 								autoplay={false}
@@ -292,7 +294,7 @@ export default function Chatbot({
 						</div>
 					)}
 				</div>
-				<div className="w-72 mb-3">
+				<div className="w-72 mb-2">
 					{((videoUrl && initialLoading === false) || oldChat) && (
 						<video
 							src={`${videoUrl}/analyzed_video.webm`}
@@ -307,7 +309,7 @@ export default function Chatbot({
 
 				{((videoUrl && initialLoading === false) || oldChat) &&
 					validPdfs.map((pdf) => (
-						<div key={pdf.link} className="flex justify-start mb-4">
+						<div key={pdf.link} className="flex justify-start mb-2">
 							<div className="bg-gray-200 p-4 rounded-lg shadow max-w-xs">
 								<h3 className="text-md font-semibold text-gray-700 mb-2">
 									{pdf.label}
@@ -327,7 +329,7 @@ export default function Chatbot({
 				{chatHistory.map((chat, index) => (
 					<div
 						key={`${chat.sender}_${index}`}
-						className={`mb-3 ${
+						className={`mb-2 ${
 							chat.sender === "user" ? "text-right" : "text-left"
 						}`}
 					>
@@ -373,6 +375,26 @@ export default function Chatbot({
 					</div>
 				)}
 			</div>
+
+			<input
+				type="text"
+				value="Chat coming soon..."
+				disabled
+				className={`
+					fixed bottom-4 transform -translate-x-1/2
+					left-1/2
+					${isMenuOpen ? "md:left-[calc(50%+8rem)]" : ""}
+					
+					transition-all duration-300 ease-in-out
+					
+					w-full max-w-md
+					p-3 text-center text-gray-500
+					bg-white rounded-full shadow-md
+					border border-gray-300 focus:outline-none
+					z-40
+				`}
+			/>
+
 			{/* Chatbot disabled for now */}
 			{/* <form onSubmit={handleSubmit} className="flex w-full max-w-xl mx-auto">
 				<input

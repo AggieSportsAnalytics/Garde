@@ -80,6 +80,7 @@ export default function Fencer_Page2() {
 	const [initialLoading, setInitialLoading] = useState(null);
 	const [fingerprint, setFingerprint] = useState("");
 	const [decodeRun, setDecodeRun] = useState(false);
+	const [isMenuOpen, setIsMenuOpen] = useState(window.innerWidth >= 768);
 	const router = useRouter();
 	const { videoId } = useParams();
 
@@ -876,7 +877,7 @@ export default function Fencer_Page2() {
 					</Modal>
 				</header>
 
-				<main className="flex flex-grow h-screen flex-row relative">
+				{/* <main className="flex flex-grow h-screen flex-row relative">
 					<SidebarMenu fencerId={fencerId} />
 
 					<div className="w-1/3 h-full flex flex-col items-center justify-center z-10 mr-2 pl-2">
@@ -955,7 +956,58 @@ export default function Fencer_Page2() {
 							<div key={index}>{msg}</div>
 						))}
 					</div>
-				</main>
+				</main> */}
+
+				<>
+					<SidebarMenu
+						fencerId={fencerId}
+						isMenuOpen={isMenuOpen}
+						setIsMenuOpen={setIsMenuOpen}
+						darkMode={darkMode}
+					/>
+
+					<main
+						className={`
+          transition-all duration-300
+          ${isMenuOpen ? "md:ml-64" : "md:ml-0"}
+        `}
+					>
+						<div className="flex justify-center w-full mt-4">
+							<Stream_Vid
+								onVideoChange={handleVideoChange}
+								isRecording={isRecording}
+								toggleRecording={toggleRecording}
+								fencerId={fencerId}
+								setInitialLoading={setInitialLoading}
+								videoId={videoId}
+								videoCount={videoCount}
+								initialLoading={initialLoading}
+							/>
+						</div>
+
+						{!fencerId ? (
+							<p className="text-lg">
+								{Math.max(1 - videoCount, 0)} analyses left without signing in
+								for 24 hours
+							</p>
+						) : (
+							<div className="pt-3" />
+						)}
+
+						<Chatbot
+							darkMode={darkMode}
+							setChatCount={setChatCount}
+							chatCount={chatCount}
+							videoId={videoId}
+							decodeRun={decodeRun}
+							isLoggedIn={!!fencerId}
+							initialLoading={initialLoading}
+							fingerprint={fingerprint}
+							fencerId={fencerId}
+							isMenuOpen={isMenuOpen}
+						/>
+					</main>
+				</>
 
 				<HeightInputModal
 					isOpen={isHeightModalOpen}

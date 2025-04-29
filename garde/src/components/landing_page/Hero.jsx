@@ -166,7 +166,7 @@ const Hero = () => {
 	return (
 		<div className="relative min-h-screen overflow-hidden bg-gradient-to-b from-white to-gray-50 font-tiempos">
 			{/* Top Hero Section with cycling GIF background */}
-			<div className="relative pb-16 md:pb-0">
+			<div className="relative pb-4 md:pb-0">
 				{/* Background GIF with overlay - limited to top section */}
 				<div className="absolute inset-0 z-0 overflow-hidden h-[85vh] max-h-[720px]">
 					<div className="absolute inset-0 bg-white/85 z-10"></div>{" "}
@@ -417,6 +417,7 @@ const Hero = () => {
 											animate={{ opacity: 1, scale: 1 }}
 											exit={{ opacity: 0, scale: 0.95 }}
 											transition={{ duration: 0.5, ease: "easeInOut" }}
+											style={{ height: "270px", width: "100%" }}
 										>
 											<Image
 												src={sampleImages[currentImageIndex]}
@@ -479,157 +480,166 @@ const Hero = () => {
 				</div>
 			</div>
 
-			<div className="flex flex-col items-center mt-12 sm:mt-24">
-						<div className="w-16 h-1 bg-gradient-to-r from-emerald-400 to-blue-500 mb-4 rounded-full"></div>
+			<div className="flex flex-col items-center mt-4">
+				<div className="w-16 h-1 bg-gradient-to-r from-emerald-400 to-blue-500 mb-4 rounded-full"></div>
 
-						<div className="mb-4">
-							<h2 className="text-3xl md:text-4xl font-bold text-slate-800 text-center">
-								Meet GSX-a1 — Your Generative Sports Expert
-							</h2>
-							<p className="text-slate-600 max-w-2xl mx-auto mt-4 text-center">
-								Garde is a vision-language model for sports trained on authentic
-								coaching insights to analytics and coaching. Get feedback for
-								any sport, from basketball shot correction to marathon strides.
-							</p>
-						</div>
+				<div className="mb-4">
+					<h2 className="text-3xl md:text-4xl font-bold text-slate-800 text-center">
+						Meet GSX-a1 — Your Generative Sports Expert
+					</h2>
+					<p className="text-slate-600 max-w-2xl mx-auto mt-4 text-center">
+						Garde is a vision-language model for sports trained on authentic
+						coaching insights to analytics and coaching. Get feedback for any
+						sport, from basketball shot correction to marathon strides.
+					</p>
+				</div>
 
-						{/* Feature cards in a row - MOVED ABOVE THE CONTAINER */}
-						<div className="max-w-7xl mx-auto">
-							<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-								<motion.div
-									className="bg-white backdrop-blur-lg border border-slate-200 rounded-xl p-6 hover:shadow-lg transition-all"
-									whileHover={{
-										y: -5,
-										boxShadow: "0 10px 30px -15px rgba(0, 0, 0, 0.1)",
-									}}
-									initial={{ opacity: 0, y: 20 }}
-									animate={{ opacity: 1, y: 0 }}
-									transition={{ duration: 0.4 }}
-								>
-									<h3 className="text-xl font-bold text-slate-800 mb-2">
-										Advanced Reasoning
-									</h3>
-									<p className="text-slate-600">
-										Converts complex statistics into winning strategies.
-									</p>
-								</motion.div>
-
-								<motion.div
-									className="bg-white backdrop-blur-lg border border-slate-200 rounded-xl p-6 hover:shadow-lg transition-all"
-									whileHover={{
-										y: -5,
-										boxShadow: "0 10px 30px -15px rgba(0, 0, 0, 0.1)",
-									}}
-									initial={{ opacity: 0, y: 20 }}
-									animate={{ opacity: 1, y: 0 }}
-									transition={{ duration: 0.4, delay: 0.1 }}
-								>
-									<h3 className="text-xl font-bold text-slate-800 mb-2">
-										Vision Analysis
-									</h3>
-									<p className="text-slate-600">
-										Delivers frame-by-frame movement breakdowns for tailored feedback.
-									</p>
-								</motion.div>
-
-								<motion.div
-									className="bg-white backdrop-blur-lg border border-slate-200 rounded-xl p-6 hover:shadow-lg transition-all"
-									whileHover={{
-										y: -5,
-										boxShadow: "0 10px 30px -15px rgba(0, 0, 0, 0.1)",
-									}}
-									initial={{ opacity: 0, y: 20 }}
-									animate={{ opacity: 1, y: 0 }}
-									transition={{ duration: 0.4, delay: 0.2 }}
-								>
-									<h3 className="text-xl font-bold text-slate-800 mb-2">
-										Speech-to-Speech Interaction
-									</h3>
-									<p className="text-slate-600">
-										Offers live, conversational coaching during practice sessions—no screens required.
-									</p>
-								</motion.div>
-
-								<motion.div
-									className="bg-white backdrop-blur-lg border border-slate-200 rounded-xl p-6 hover:shadow-lg transition-all"
-									whileHover={{
-										y: -5,
-										boxShadow: "0 10px 30px -15px rgba(0, 0, 0, 0.1)",
-									}}
-									initial={{ opacity: 0, y: 20 }}
-									animate={{ opacity: 1, y: 0 }}
-									transition={{ duration: 0.4, delay: 0.3 }}
-								>
-									<h3 className="text-xl font-bold text-slate-800 mb-2">
-										Injury Prevention
-									</h3>
-									<p className="text-slate-600">
-										Analyzes form in real-time to minimize injury risks across all sports.
-									</p>
-								</motion.div>
-							</div>
-						</div>
-
-						
-			{/* Rest of the sections with plain white background */}
-			<div className="bg-none relative z-20">
-				{/* Features Section - REPLACED WITH CONTAINER SCROLL ANIMATION */}
-				<div id="features" className="px-6 mx-auto max-w-7xl pt-0 pb-0 mt-2 sm:mt-8">
-					{/* Mobile app preview section below feature cards */}
-					<div className="grid grid-cols-1 xs:grid-cols-2 gap-2 sm:gap-8 items-start mt-4 sm:mt-12 mb-8 sm:mb-16 bg-transparent px-2 sm:px-6">
-						<div className="w-[75%] xs:w-full mx-auto">
-							<ContainerScroll titleComponent={<></>}>
-								<div className="h-full w-full flex items-center justify-center bg-transparent py-2 sm:py-4">
-									<div className="h-full w-full overflow-hidden">
-										<Image
-											src="/images/phoneDemo.gif"
-											alt="Mobile Analytics Preview"
-											width={300}
-											height={600}
-											className="w-full h-auto object-contain scale-100 xs:scale-95 sm:scale-100"
-											priority
-										/>
-									</div>
-								</div>
-							</ContainerScroll>
-						</div>
-
-						<div className="text-slate-700 bg-transparent px-6 xs:px-3 sm:px-4 mt-2 xs:mt-0">
-							<h3 className="text-lg xs:text-xl sm:text-2xl font-bold mb-2 text-slate-800">
-								<span>Your AI Coach, Always Ready in Your Pocket</span>
+				{/* Feature cards in a row - MOVED ABOVE THE CONTAINER */}
+				<div className="max-w-7xl mx-auto">
+					<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+						<motion.div
+							className="bg-white backdrop-blur-lg border border-slate-200 rounded-xl p-6 hover:shadow-lg transition-all"
+							whileHover={{
+								y: -5,
+								boxShadow: "0 10px 30px -15px rgba(0, 0, 0, 0.1)",
+							}}
+							initial={{ opacity: 0, y: 20 }}
+							animate={{ opacity: 1, y: 0 }}
+							transition={{ duration: 0.4 }}
+						>
+							<h3 className="text-xl font-bold text-slate-800 mb-2">
+								Advanced Reasoning
 							</h3>
-
-							<p className="font-semibold mb-2 sm:mb-4 text-sm xs:text-base sm:text-xl">
-								Install Garde Mobile App
-								<br />Level up your training wherever you are:
+							<p className="text-slate-600">
+								Converts complex statistics into winning strategies.
 							</p>
+						</motion.div>
 
-							<ul className="space-y-1 xs:space-y-2 sm:space-y-3 list-disc list-inside text-sm xs:text-base sm:text-lg">
-								<li>Record or upload sports clips instantly</li>
-								<li>Receive jargon-free AI performance breakdowns in seconds</li>
-								<li>Ask follow-up questions like, "How do I fix my technique?" and receive immediate guidance</li>
-								<li>Track your progress with personalized drills and metrics</li>
-							</ul>
-
-							<p className="mt-2 sm:mt-4 text-sm xs:text-base sm:text-lg">
-								Whether you're competing in tournaments or training solo, Garde puts expert-level AI coaching at your fingertips.
+						<motion.div
+							className="bg-white backdrop-blur-lg border border-slate-200 rounded-xl p-6 hover:shadow-lg transition-all"
+							whileHover={{
+								y: -5,
+								boxShadow: "0 10px 30px -15px rgba(0, 0, 0, 0.1)",
+							}}
+							initial={{ opacity: 0, y: 20 }}
+							animate={{ opacity: 1, y: 0 }}
+							transition={{ duration: 0.4, delay: 0.1 }}
+						>
+							<h3 className="text-xl font-bold text-slate-800 mb-2">
+								Vision Analysis
+							</h3>
+							<p className="text-slate-600">
+								Delivers frame-by-frame movement breakdowns for tailored
+								feedback.
 							</p>
-						</div>
+						</motion.div>
+
+						<motion.div
+							className="bg-white backdrop-blur-lg border border-slate-200 rounded-xl p-6 hover:shadow-lg transition-all"
+							whileHover={{
+								y: -5,
+								boxShadow: "0 10px 30px -15px rgba(0, 0, 0, 0.1)",
+							}}
+							initial={{ opacity: 0, y: 20 }}
+							animate={{ opacity: 1, y: 0 }}
+							transition={{ duration: 0.4, delay: 0.2 }}
+						>
+							<h3 className="text-xl font-bold text-slate-800 mb-2">
+								Speech-to-Speech Interaction
+							</h3>
+							<p className="text-slate-600">
+								Offers live, conversational coaching during practice sessions—no
+								screens required.
+							</p>
+						</motion.div>
+
+						<motion.div
+							className="bg-white backdrop-blur-lg border border-slate-200 rounded-xl p-6 hover:shadow-lg transition-all"
+							whileHover={{
+								y: -5,
+								boxShadow: "0 10px 30px -15px rgba(0, 0, 0, 0.1)",
+							}}
+							initial={{ opacity: 0, y: 20 }}
+							animate={{ opacity: 1, y: 0 }}
+							transition={{ duration: 0.4, delay: 0.3 }}
+						>
+							<h3 className="text-xl font-bold text-slate-800 mb-2">
+								Injury Prevention
+							</h3>
+							<p className="text-slate-600">
+								Analyzes form in real-time to minimize injury risks across all
+								sports.
+							</p>
+						</motion.div>
 					</div>
+				</div>
 
-
-						{/* <ContainerScroll titleComponent={<div></div>}>
-							<div className="h-full w-full flex items-center justify-center bg-white">
-								<Image
-									src="/images/New_FencerPage.png"
-									alt="Fencer Analytics Dashboard"
-									width={400}
-									height={300}
-									className="w-full h-auto object-contain"
-									priority
-								/>
+				{/* Rest of the sections with plain white background */}
+				<div className="bg-none relative z-20">
+					{/* Features Section - REPLACED WITH CONTAINER SCROLL ANIMATION */}
+					<div id="features" className="px-6 mx-auto max-w-7xl pt-0 pb-0">
+						{/* Mobile app preview section below feature cards */}
+						<div className="grid grid-cols-1 sm:grid-cols-2 items-start px-2 sm:px-6">
+							{/* LEFT SIDE: phone demo */}
+							<div className="w-full flex justify-center sm:justify-end pr-4 sm:pr-8">
+								<ContainerScroll titleComponent={<></>}>
+									<div className="flex h-full w-full items-center justify-center">
+										<div className="overflow-hidden">
+											<video
+												src="/images/garde-mobile-demo.webm"
+												muted
+												className="
+													block w-auto h-auto
+													max-h-[70vh] max-w-full
+													object-contain
+													xs:scale-90 sm:scale-95
+												"
+												autoPlay
+												loop
+											/>
+										</div>
+									</div>
+								</ContainerScroll>
 							</div>
-						</ContainerScroll> */}
+
+							{/* RIGHT SIDE: text */}
+							<div className="w-full text-slate-700 px-3 sm:px-4">
+								<h3 className="text-xl md:mt-28 sm:text-2xl font-bold mb-2 text-slate-800">
+									Your AI Coach, Always Ready in Your Pocket
+								</h3>
+
+								<button
+									type="button"
+									disabled
+									className="w-full bg-gray-300 text-gray-600 py-3 rounded-lg"
+								>
+									Mobile App (Coming Soon)
+								</button>
+
+								<p className="font-semibold mb-4 text-base sm:text-xl">
+									Level up your training wherever you are:
+								</p>
+
+								<ul className="list-disc list-inside space-y-2 text-base sm:text-lg">
+									<li>Record or upload sports clips instantly</li>
+									<li>
+										Receive jargon-free AI performance breakdowns in seconds
+									</li>
+									<li>
+										Ask follow-up questions like, "How do I fix my technique?"
+										and receive immediate guidance
+									</li>
+									<li>
+										Track your progress with personalized drills and metrics
+									</li>
+								</ul>
+
+								<p className="mt-4 text-base sm:text-lg">
+									Whether you're competing in tournaments or training solo,
+									Garde puts expert-level AI coaching at your fingertips.
+								</p>
+							</div>
+						</div>
 					</div>
 
 					{/* Visual separator */}
@@ -708,7 +718,7 @@ const Hero = () => {
 								<div className="absolute -inset-0.5 bg-gradient-to-r from-emerald-500 to-blue-500 rounded-2xl blur-xl opacity-20 animate-pulse" />
 								<div className="relative rounded-2xl overflow-hidden border border-slate-200 shadow-xl">
 									<video
-										src="/images/garde-demo.mp4"
+										src="/images/garde-demo.webm"
 										autoPlay
 										muted
 										controls

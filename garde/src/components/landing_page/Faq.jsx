@@ -71,7 +71,7 @@ function FAQSection() {
 	};
 
 	return (
-		<section className="max-w-4xl mx-auto px-6 py-12">
+		<section className="max-w-4xl mx-auto px-6 pb-12">
 			<h2 className="text-3xl font-bold text-center mb-10 text-gray-800">
 				Frequently Asked Questions
 			</h2>

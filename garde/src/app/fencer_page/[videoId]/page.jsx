@@ -986,7 +986,7 @@ export default function Fencer_Page2() {
 						</div>
 
 						{!fencerId ? (
-							<p className="text-lg">
+							<p className="text-lg text-center">
 								{Math.max(1 - videoCount, 0)} analyses left without signing in
 								for 24 hours
 							</p>

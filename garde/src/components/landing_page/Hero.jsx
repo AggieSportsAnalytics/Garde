@@ -480,10 +480,10 @@ const Hero = () => {
 				</div>
 			</div>
 
-			<div className="flex flex-col items-center mt-4">
+			<div className="flex flex-col items-center mt-12">
 				<div className="w-16 h-1 bg-gradient-to-r from-emerald-400 to-blue-500 mb-4 rounded-full"></div>
 
-				<div className="mb-4">
+				<div className="mb-4 mt-12">
 					<h2 className="text-3xl md:text-4xl font-bold text-slate-800 text-center">
 						Meet GSX-a1 — Your Generative Sports Expert
 					</h2>

@@ -596,6 +596,7 @@ const Hero = () => {
 												"
 												autoPlay
 												loop
+												controlsList="nodownload"
 											/>
 										</div>
 									</div>
